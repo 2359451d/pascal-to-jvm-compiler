@@ -12,4 +12,3 @@ submission details see
 You must include a `README.md` file and a `manual.md` file with your source code.
 
 * There are example README.md file and manual.md files in the SRC folder of the project template at the foot of this page.
-  * **not available yet**
