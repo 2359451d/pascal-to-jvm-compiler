@@ -7,6 +7,33 @@ submission details see
 * [issue](https://github.com/2359451d/L4-Dissertation-Repo/issues/4)
 * [moodle](https://moodle.gla.ac.uk/course/view.php?id=30221#section-7)
 
+# Progress
+
+Basic Progress:
+
+* syntactic analysis(might refine): ![syntactic_analysis](https://progress-bar.dev/100/?title=done)
+* contextual analysis: ![contextual_analysis](https://progress-bar.dev/28/?title=WIP)
+* code generation: ![contextual_analysis](https://progress-bar.dev/0/)
+* status report
+* dissertation
+
+Project Extension Progress:
+
+* OO Pascal feature
+* command tool
+* docker & npm deployment
+* other possible extension?
+  * AST visualisation
+  * etc.
+
+# ANTLR4.9.1 Dockerfile for Pascal grammar
+
+TBC
+
+Pull from ![DockerHub_url](https://img.shields.io/badge/DockerHub-antlr4.9.1--pascal-blue.svg?style=flat-square&logo=docker&labelColor=grey)
+
+Or build Dockerfile locally by script `docker_run.bash`
+
 # Note
 
 You must include a `README.md` file and a `manual.md` file with your source code.
