@@ -20,25 +20,52 @@ Basic Progress:
 Project Extension Progress:
 
 * OO Pascal feature
+* code optimisation
+  * intermediate code optimisation (seems some optimisation are handled to JVM)
 * command tool
 * docker & npm deployment
 * other possible extension?
   * AST visualisation
   * etc.
 
-# ANTLR4.9.1 Dockerfile for Pascal grammar
+# Regenerate Compiler Components (Lexer & Parser)
+
+source componets (visitor pattern) already given in this repo `src\main\java\ast_visitor` but still can regenerate these components using ANTLR4 if you want or the grammar file(`.g4`) has been changed
+
+## ANTLR4.9.1 Dockerfile for Pascal grammar
+
+QUICK WAY: using antlr by docker, image env
+
+* JDK8
+* ANTLR 4.9.1
 
 TBC
 
-Pull from [![DockerHub_url](https://img.shields.io/badge/DockerHub-antlr4.9.1--pascal-blue.svg?style=flat-square&logo=docker&labelColor=grey)](https://hub.docker.com/r/barlinbento/antlr4.9.1-pascal)
+Pull from [![DockerHub_url](https://img.shields.io/badge/DockerHub-antlr4.9.1--pascal-blue.svg?style=flat-square&logo=docker&labelColor=grey)](https://hub.docker.com/r/barlinbento/antlr4.9.1-pascal), make sure you are at the source  folder
 
-Or build Dockerfile locally by script `docker_run.bash`
+```bash
+docker pull barlinbento/antlr4.9.1-pascal
+```
+
+Or build Dockerfile locally by script
+
+```bash
+# win powershell/cmd usage
+$ .\docker_run.sh
+```
+
+```bash
+# linux usage
+$ ./docker_run
+```
 
 # Note
 
 You must include a `README.md` file and a `manual.md` file with your source code.
 
 * There are example README.md file and manual.md files in the SRC folder of the project template at the foot of this page.
+
+# ==============Template Organise TBC==============
 
 # Readme
 
@@ -80,4 +107,3 @@ Examples:
 
 * Run automated tests by running `pytest`
 * Start the software by running `bin/editor.exe` and opening the file `examples/example_01.bin`
-

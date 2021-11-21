@@ -1,0 +1,111 @@
+package utils;
+
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+
+public class SymbolTable<A> {
+
+    //private HashMap<String, A> globals, locals;
+    private Deque<HashMap<String, A>> scope_stack;
+    //private HashMap<String, A> current_scope; // ref to hashmap var locals, used to control the stack(deque) iteration
+
+    /**
+     * Initialise the symbol table
+     * Note: Global scope would be initialised in predefine() once perform the contextual analysis
+     */
+    public SymbolTable() {
+        //globals = new HashMap<String, A>();
+        //locals = null;
+        scope_stack = new LinkedList<>();
+        //current_scope = null;
+    }
+
+    public boolean put(String id, A attr) {
+        // Add (id,attr) to this symbol table, either to the
+        // local part (if enabled, choose the most recent one) or to the global part
+        // (otherwise). Return true if id is unique.
+        //HashMap<String, A> scope =
+                //(current_scope != null ? current_scope : globals);
+        // get the most recent stack frame
+        HashMap<String, A> scope = scope_stack.getLast();
+        // if the identifier is not defined yet
+        if (scope.get(id) == null) {
+            scope.put(id, attr);
+            return true;
+        } else
+            return false;
+    }
+
+    public A get(String id) {
+        // try to retrieve the identifier in current (local, most recent) scope
+        if (!scope_stack.isEmpty()) {
+            HashMap<String, A> scope = scope_stack.getLast();
+            if (scope.containsKey(id)) {
+                // retrieve the identifier in the most recent scope
+                return scope.get(id);
+            } else {
+                // try to retrieve the id in previous declared scopes from a reverse order
+                // (most recent first)
+                Iterator<HashMap<String, A>> scopeStackDescendingIterator = scope_stack.descendingIterator();
+                while (scopeStackDescendingIterator.hasNext()){
+                    scope = scopeStackDescendingIterator.next();
+                    if (scope.containsKey(id)) return scope.get(id);
+                }
+            }
+        }
+        return null;
+    }
+
+    //public A getLocal(String id) {
+    //    // Retrieve the attribute corresponding to id in the
+    //    // local part (most recent one) of this symbol table. Return the attribute,
+    //    // or null if id is not found.
+    //    if (current_scope != null)
+    //        return current_scope.get(id);
+    //    else
+    //        return null;
+    //}
+
+    public void enterLocalScope() {
+        // Enable the local part of this symbol table.
+        // One new symbol table corresponds to one new scope
+        scope_stack.addLast(new HashMap<>());
+    }
+
+    public void exitLocalScope() {
+        // Discard all entries in current scope of this symbol table.
+        // i.e. pop out the topmost stack frame
+        // or no effect if no more local scopes defined.
+        if (scope_stack.size() >1) scope_stack.removeLast();
+    }
+
+    //public String toString() {
+    //    // Return a textual representation of this symbol table.
+    //    String s = "Globals: " + globals + "\n";
+    //    if (locals != null)
+    //        s += "Locals: " + locals + "\n";
+    //    return s;
+    //}
+
+    public String displayCurrentScope(){
+        // Display all the symbols of current scope (most recent)
+        return "Symbols of current scope: " + scope_stack.getLast() + "\n";
+    }
+
+    public String displayScope(int depth) {
+        // Display all the symbols of the specific scope (given depth starting from 0)
+        Iterator<HashMap<String, A>> scopeStackIterator = scope_stack.iterator();
+        int count = 0;
+        HashMap<String, A> scope = null;
+
+        while (scopeStackIterator.hasNext()) {
+            scope = scopeStackIterator.next();
+            if (count==depth) break;
+            count++;
+        }
+        return "Symbols of the scope with depth " + depth + ": " + scope + "\n";
+    }
+
+}
