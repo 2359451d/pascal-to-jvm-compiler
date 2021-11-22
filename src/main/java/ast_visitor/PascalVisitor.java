@@ -149,11 +149,12 @@ public interface PascalVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitSimpleType(PascalParser.SimpleTypeContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link PascalParser#scalarType}.
+	 * Visit a parse tree produced by the {@code enumratedType}
+	 * labeled alternative in {@link PascalParser#scalarType}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitScalarType(PascalParser.ScalarTypeContext ctx);
+	T visitEnumratedType(PascalParser.EnumratedTypeContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PascalParser#subrangeType}.
 	 * @param ctx the parse tree
@@ -161,11 +162,19 @@ public interface PascalVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitSubrangeType(PascalParser.SubrangeTypeContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link PascalParser#typeIdentifier}.
+	 * Visit a parse tree produced by the {@code id}
+	 * labeled alternative in {@link PascalParser#typeIdentifier}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitTypeIdentifier(PascalParser.TypeIdentifierContext ctx);
+	T visitId(PascalParser.IdContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code primitiveType}
+	 * labeled alternative in {@link PascalParser#typeIdentifier}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitPrimitiveType(PascalParser.PrimitiveTypeContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PascalParser#structuredType}.
 	 * @param ctx the parse tree

@@ -1,4 +1,5 @@
-// Generated from /usr/local/grammar/Pascal.g4 by ANTLR 4.9.1
+// Generated from D:/Workspace/L4-Source-Repo/src/main/java/grammar\Pascal.g4 by ANTLR 4.9.1
+package ast_visitor;
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.*;
@@ -176,6 +177,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_program; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitProgram(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final ProgramContext program() throws RecognitionException {
@@ -230,6 +236,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_programHeading; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitProgramHeading(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final ProgramHeadingContext programHeading() throws RecognitionException {
@@ -297,6 +308,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_identifier; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitIdentifier(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final IdentifierContext identifier() throws RecognitionException {
@@ -368,6 +384,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_block; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitBlock(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final BlockContext block() throws RecognitionException {
@@ -461,6 +482,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_usesUnitsPart; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitUsesUnitsPart(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final UsesUnitsPartContext usesUnitsPart() throws RecognitionException {
@@ -505,6 +531,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_labelDeclarationPart; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitLabelDeclarationPart(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final LabelDeclarationPartContext labelDeclarationPart() throws RecognitionException {
@@ -557,6 +588,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_label; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitLabel(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final LabelContext label() throws RecognitionException {
@@ -596,6 +632,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_constantDefinitionPart; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitConstantDefinitionPart(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final ConstantDefinitionPartContext constantDefinitionPart() throws RecognitionException {
@@ -648,6 +689,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_constantDefinition; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitConstantDefinition(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final ConstantDefinitionContext constantDefinition() throws RecognitionException {
@@ -686,6 +732,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_constantChr; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitConstantChr(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final ConstantChrContext constantChr() throws RecognitionException {
@@ -735,6 +786,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_constant; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitConstant(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final ConstantContext constant() throws RecognitionException {
@@ -814,6 +870,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_unsignedNumber; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitUnsignedNumber(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final UnsignedNumberContext unsignedNumber() throws RecognitionException {
@@ -858,6 +919,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_unsignedInteger; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitUnsignedInteger(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final UnsignedIntegerContext unsignedInteger() throws RecognitionException {
@@ -887,6 +953,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_unsignedReal; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitUnsignedReal(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final UnsignedRealContext unsignedReal() throws RecognitionException {
@@ -917,6 +988,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_sign; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitSign(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final SignContext sign() throws RecognitionException {
@@ -956,6 +1032,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_bool_; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitBool_(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Bool_Context bool_() throws RecognitionException {
@@ -994,6 +1075,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_string; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitString(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final StringContext string() throws RecognitionException {
@@ -1033,6 +1119,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_typeDefinitionPart; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitTypeDefinitionPart(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final TypeDefinitionPartContext typeDefinitionPart() throws RecognitionException {
@@ -1091,6 +1182,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_typeDefinition; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitTypeDefinition(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final TypeDefinitionContext typeDefinition() throws RecognitionException {
@@ -1171,6 +1267,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_functionType; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitFunctionType(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final FunctionTypeContext functionType() throws RecognitionException {
@@ -1218,6 +1319,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_procedureType; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitProcedureType(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final ProcedureTypeContext procedureType() throws RecognitionException {
@@ -1266,6 +1372,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_type_; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitType_(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Type_Context type_() throws RecognitionException {
@@ -1344,6 +1455,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_simpleType; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitSimpleType(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final SimpleTypeContext simpleType() throws RecognitionException {
@@ -1395,21 +1511,35 @@ public class PascalParser extends Parser {
 	}
 
 	public static class ScalarTypeContext extends ParserRuleContext {
+		public ScalarTypeContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_scalarType; }
+	 
+		public ScalarTypeContext() { }
+		public void copyFrom(ScalarTypeContext ctx) {
+			super.copyFrom(ctx);
+		}
+	}
+	public static class EnumratedTypeContext extends ScalarTypeContext {
 		public TerminalNode LPAREN() { return getToken(PascalParser.LPAREN, 0); }
 		public IdentifierListContext identifierList() {
 			return getRuleContext(IdentifierListContext.class,0);
 		}
 		public TerminalNode RPAREN() { return getToken(PascalParser.RPAREN, 0); }
-		public ScalarTypeContext(ParserRuleContext parent, int invokingState) {
-			super(parent, invokingState);
+		public EnumratedTypeContext(ScalarTypeContext ctx) { copyFrom(ctx); }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitEnumratedType(this);
+			else return visitor.visitChildren(this);
 		}
-		@Override public int getRuleIndex() { return RULE_scalarType; }
 	}
 
 	public final ScalarTypeContext scalarType() throws RecognitionException {
 		ScalarTypeContext _localctx = new ScalarTypeContext(_ctx, getState());
 		enterRule(_localctx, 46, RULE_scalarType);
 		try {
+			_localctx = new EnumratedTypeContext(_localctx);
 			enterOuterAlt(_localctx, 1);
 			{
 			setState(330);
@@ -1443,6 +1573,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_subrangeType; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitSubrangeType(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final SubrangeTypeContext subrangeType() throws RecognitionException {
@@ -1471,18 +1606,39 @@ public class PascalParser extends Parser {
 	}
 
 	public static class TypeIdentifierContext extends ParserRuleContext {
+		public TypeIdentifierContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_typeIdentifier; }
+	 
+		public TypeIdentifierContext() { }
+		public void copyFrom(TypeIdentifierContext ctx) {
+			super.copyFrom(ctx);
+		}
+	}
+	public static class IdContext extends TypeIdentifierContext {
 		public IdentifierContext identifier() {
 			return getRuleContext(IdentifierContext.class,0);
 		}
+		public IdContext(TypeIdentifierContext ctx) { copyFrom(ctx); }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitId(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+	public static class PrimitiveTypeContext extends TypeIdentifierContext {
 		public TerminalNode CHAR() { return getToken(PascalParser.CHAR, 0); }
 		public TerminalNode BOOLEAN() { return getToken(PascalParser.BOOLEAN, 0); }
 		public TerminalNode INTEGER() { return getToken(PascalParser.INTEGER, 0); }
 		public TerminalNode REAL() { return getToken(PascalParser.REAL, 0); }
 		public TerminalNode STRING() { return getToken(PascalParser.STRING, 0); }
-		public TypeIdentifierContext(ParserRuleContext parent, int invokingState) {
-			super(parent, invokingState);
+		public PrimitiveTypeContext(TypeIdentifierContext ctx) { copyFrom(ctx); }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitPrimitiveType(this);
+			else return visitor.visitChildren(this);
 		}
-		@Override public int getRuleIndex() { return RULE_typeIdentifier; }
 	}
 
 	public final TypeIdentifierContext typeIdentifier() throws RecognitionException {
@@ -1494,6 +1650,7 @@ public class PascalParser extends Parser {
 			_errHandler.sync(this);
 			switch (_input.LA(1)) {
 			case IDENT:
+				_localctx = new IdContext(_localctx);
 				enterOuterAlt(_localctx, 1);
 				{
 				setState(338);
@@ -1505,6 +1662,7 @@ public class PascalParser extends Parser {
 			case INTEGER:
 			case REAL:
 			case STRING:
+				_localctx = new PrimitiveTypeContext(_localctx);
 				enterOuterAlt(_localctx, 2);
 				{
 				setState(339);
@@ -1543,6 +1701,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_structuredType; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitStructuredType(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final StructuredTypeContext structuredType() throws RecognitionException {
@@ -1603,6 +1766,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_unpackedStructuredType; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitUnpackedStructuredType(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final UnpackedStructuredTypeContext unpackedStructuredType() throws RecognitionException {
@@ -1669,6 +1837,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_stringtype; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitStringtype(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final StringtypeContext stringtype() throws RecognitionException {
@@ -1732,6 +1905,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_arrayType; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitArrayType(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final ArrayTypeContext arrayType() throws RecognitionException {
@@ -1803,6 +1981,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_typeList; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitTypeList(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final TypeListContext typeList() throws RecognitionException {
@@ -1851,6 +2034,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_indexType; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitIndexType(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final IndexTypeContext indexType() throws RecognitionException {
@@ -1882,6 +2070,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_componentType; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitComponentType(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final ComponentTypeContext componentType() throws RecognitionException {
@@ -1915,6 +2108,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_recordType; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitRecordType(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final RecordTypeContext recordType() throws RecognitionException {
@@ -1963,6 +2161,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_fieldList; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitFieldList(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final FieldListContext fieldList() throws RecognitionException {
@@ -2029,6 +2232,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_fixedPart; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitFixedPart(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final FixedPartContext fixedPart() throws RecognitionException {
@@ -2083,6 +2291,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_recordSection; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitRecordSection(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final RecordSectionContext recordSection() throws RecognitionException {
@@ -2130,6 +2343,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_variantPart; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitVariantPart(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final VariantPartContext variantPart() throws RecognitionException {
@@ -2188,6 +2406,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_tag; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitTag(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final TagContext tag() throws RecognitionException {
@@ -2242,6 +2465,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_variant; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitVariant(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final VariantContext variant() throws RecognitionException {
@@ -2283,6 +2511,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_setType; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitSetType(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final SetTypeContext setType() throws RecognitionException {
@@ -2318,6 +2551,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_baseType; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitBaseType(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final BaseTypeContext baseType() throws RecognitionException {
@@ -2351,6 +2589,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_fileType; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitFileType(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final FileTypeContext fileType() throws RecognitionException {
@@ -2400,6 +2643,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_pointerType; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitPointerType(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final PointerTypeContext pointerType() throws RecognitionException {
@@ -2441,6 +2689,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_variableDeclarationPart; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitVariableDeclarationPart(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final VariableDeclarationPartContext variableDeclarationPart() throws RecognitionException {
@@ -2499,6 +2752,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_variableDeclaration; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitVariableDeclaration(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final VariableDeclarationContext variableDeclaration() throws RecognitionException {
@@ -2535,6 +2793,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_procedureAndFunctionDeclarationPart; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitProcedureAndFunctionDeclarationPart(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final ProcedureAndFunctionDeclarationPartContext procedureAndFunctionDeclarationPart() throws RecognitionException {
@@ -2571,6 +2834,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_procedureOrFunctionDeclaration; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitProcedureOrFunctionDeclaration(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final ProcedureOrFunctionDeclarationContext procedureOrFunctionDeclaration() throws RecognitionException {
@@ -2625,6 +2893,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_procedureDeclaration; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitProcedureDeclaration(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final ProcedureDeclarationContext procedureDeclaration() throws RecognitionException {
@@ -2682,6 +2955,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_formalParameterList; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitFormalParameterList(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final FormalParameterListContext formalParameterList() throws RecognitionException {
@@ -2737,6 +3015,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_formalParameterSection; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitFormalParameterSection(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final FormalParameterSectionContext formalParameterSection() throws RecognitionException {
@@ -2807,6 +3090,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_parameterGroup; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitParameterGroup(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final ParameterGroupContext parameterGroup() throws RecognitionException {
@@ -2849,6 +3137,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_identifierList; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitIdentifierList(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final IdentifierListContext identifierList() throws RecognitionException {
@@ -2904,6 +3197,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_constList; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitConstList(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final ConstListContext constList() throws RecognitionException {
@@ -2964,6 +3262,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_functionDeclaration; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitFunctionDeclaration(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final FunctionDeclarationContext functionDeclaration() throws RecognitionException {
@@ -3016,6 +3319,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_resultType; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitResultType(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final ResultTypeContext resultType() throws RecognitionException {
@@ -3051,6 +3359,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_statement; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitStatement(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final StatementContext statement() throws RecognitionException {
@@ -3117,6 +3430,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_unlabelledStatement; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitUnlabelledStatement(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final UnlabelledStatementContext unlabelledStatement() throws RecognitionException {
@@ -3184,6 +3502,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_simpleStatement; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitSimpleStatement(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final SimpleStatementContext simpleStatement() throws RecognitionException {
@@ -3246,6 +3569,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_assignmentStatement; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitAssignmentStatement(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final AssignmentStatementContext assignmentStatement() throws RecognitionException {
@@ -3319,6 +3647,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_variable; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitVariable(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final VariableContext variable() throws RecognitionException {
@@ -3457,6 +3790,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_expression; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitExpression(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final ExpressionContext expression() throws RecognitionException {
@@ -3505,6 +3843,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_relationaloperator; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitRelationaloperator(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final RelationaloperatorContext relationaloperator() throws RecognitionException {
@@ -3551,6 +3894,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_simpleExpression; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitSimpleExpression(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final SimpleExpressionContext simpleExpression() throws RecognitionException {
@@ -3595,6 +3943,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_additiveoperator; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitAdditiveoperator(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final AdditiveoperatorContext additiveoperator() throws RecognitionException {
@@ -3641,6 +3994,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_term; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitTerm(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final TermContext term() throws RecognitionException {
@@ -3687,6 +4045,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_multiplicativeoperator; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitMultiplicativeoperator(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final MultiplicativeoperatorContext multiplicativeoperator() throws RecognitionException {
@@ -3729,6 +4092,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_signedFactor; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitSignedFactor(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final SignedFactorContext signedFactor() throws RecognitionException {
@@ -3800,6 +4168,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_factor; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitFactor(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final FactorContext factor() throws RecognitionException {
@@ -3892,6 +4265,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_unsignedConstant; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitUnsignedConstant(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final UnsignedConstantContext unsignedConstant() throws RecognitionException {
@@ -3958,6 +4336,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_functionDesignator; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitFunctionDesignator(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final FunctionDesignatorContext functionDesignator() throws RecognitionException {
@@ -4002,6 +4385,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_parameterList; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitParameterList(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final ParameterListContext parameterList() throws RecognitionException {
@@ -4054,6 +4442,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_set_; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitSet_(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Set_Context set_() throws RecognitionException {
@@ -4115,6 +4508,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_elementList; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitElementList(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final ElementListContext elementList() throws RecognitionException {
@@ -4195,6 +4593,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_element; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitElement(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final ElementContext element() throws RecognitionException {
@@ -4244,6 +4647,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_procedureStatement; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitProcedureStatement(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final ProcedureStatementContext procedureStatement() throws RecognitionException {
@@ -4296,6 +4704,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_actualParameter; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitActualParameter(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final ActualParameterContext actualParameter() throws RecognitionException {
@@ -4343,6 +4756,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_parameterwidth; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitParameterwidth(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final ParameterwidthContext parameterwidth() throws RecognitionException {
@@ -4377,6 +4795,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_gotoStatement; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitGotoStatement(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final GotoStatementContext gotoStatement() throws RecognitionException {
@@ -4407,6 +4830,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_emptyStatement; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitEmptyStatement(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final EmptyStatementContext emptyStatement() throws RecognitionException {
@@ -4433,6 +4861,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_empty_; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitEmpty_(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Empty_Context empty_() throws RecognitionException {
@@ -4471,6 +4904,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_structuredStatement; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitStructuredStatement(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final StructuredStatementContext structuredStatement() throws RecognitionException {
@@ -4536,6 +4974,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_compoundStatement; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitCompoundStatement(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final CompoundStatementContext compoundStatement() throws RecognitionException {
@@ -4578,6 +5021,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_statements; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitStatements(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final StatementsContext statements() throws RecognitionException {
@@ -4629,6 +5077,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_conditionalStatement; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitConditionalStatement(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final ConditionalStatementContext conditionalStatement() throws RecognitionException {
@@ -4684,6 +5137,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_ifStatement; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitIfStatement(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final IfStatementContext ifStatement() throws RecognitionException {
@@ -4750,6 +5208,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_caseStatement; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitCaseStatement(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final CaseStatementContext caseStatement() throws RecognitionException {
@@ -4827,6 +5290,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_caseListElement; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitCaseListElement(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final CaseListElementContext caseListElement() throws RecognitionException {
@@ -4868,6 +5336,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_repetetiveStatement; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitRepetetiveStatement(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final RepetetiveStatementContext repetetiveStatement() throws RecognitionException {
@@ -4926,6 +5399,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_whileStatement; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitWhileStatement(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final WhileStatementContext whileStatement() throws RecognitionException {
@@ -4968,6 +5446,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_repeatStatement; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitRepeatStatement(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final RepeatStatementContext repeatStatement() throws RecognitionException {
@@ -5014,6 +5497,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_forStatement; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitForStatement(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final ForStatementContext forStatement() throws RecognitionException {
@@ -5060,6 +5548,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_forList; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitForList(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final ForListContext forList() throws RecognitionException {
@@ -5104,6 +5597,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_initialValue; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitInitialValue(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final InitialValueContext initialValue() throws RecognitionException {
@@ -5135,6 +5633,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_finalValue; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitFinalValue(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final FinalValueContext finalValue() throws RecognitionException {
@@ -5171,6 +5674,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_withStatement; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitWithStatement(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final WithStatementContext withStatement() throws RecognitionException {
@@ -5215,6 +5723,11 @@ public class PascalParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_recordVariableList; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitRecordVariableList(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final RecordVariableListContext recordVariableList() throws RecognitionException {

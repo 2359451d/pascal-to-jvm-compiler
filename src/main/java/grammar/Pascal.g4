@@ -146,7 +146,7 @@ simpleType
    ;
 
 scalarType
-   : LPAREN identifierList RPAREN
+   : LPAREN identifierList RPAREN   # enumratedType
    ;
 
 subrangeType
@@ -154,8 +154,8 @@ subrangeType
    ;
 
 typeIdentifier
-   : identifier
-   | (CHAR | BOOLEAN | INTEGER | REAL | STRING)
+   : identifier                                 # id
+   | (CHAR | BOOLEAN | INTEGER | REAL | STRING)  # primitiveType
    ;
 
 structuredType
