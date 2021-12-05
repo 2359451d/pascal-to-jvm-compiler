@@ -13,12 +13,13 @@ public class SymbolTable<A> {
 
     /**
      * Initialise the symbol table
-     * Note: Global scope would be initialised in predefine() once perform the contextual analysis
+     * ~~Note: Global scope would be initialised in predefine() once perform the contextual analysis~~
      */
     public SymbolTable() {
         //globals = new HashMap<String, A>();
         //locals = null;
         scope_stack = new LinkedList<>();
+        scope_stack.addLast(new HashMap<>());
         //current_scope = null;
     }
 
@@ -49,12 +50,15 @@ public class SymbolTable<A> {
                 // try to retrieve the id in previous declared scopes from a reverse order
                 // (most recent first)
                 Iterator<HashMap<String, A>> scopeStackDescendingIterator = scope_stack.descendingIterator();
+                scopeStackDescendingIterator.next(); // skip current scope
                 while (scopeStackDescendingIterator.hasNext()){
+                    System.out.printf("No declaration in current scope - [depth %d], try to retrieve from former scope\n", scope_stack.size()-1);
                     scope = scopeStackDescendingIterator.next();
                     if (scope.containsKey(id)) return scope.get(id);
                 }
             }
         }
+        System.out.println("Searching exhausted, no declaration found!");
         return null;
     }
 
@@ -71,6 +75,7 @@ public class SymbolTable<A> {
     public void enterLocalScope() {
         // Enable the local part of this symbol table.
         // One new symbol table corresponds to one new scope
+        System.out.println("Enter new local scope, current depth = " + (scope_stack.size()-1));
         scope_stack.addLast(new HashMap<>());
     }
 
@@ -89,9 +94,17 @@ public class SymbolTable<A> {
     //    return s;
     //}
 
-    public String displayCurrentScope(){
+    public void displayCurrentScope(){
         // Display all the symbols of current scope (most recent)
-        return "Symbols of current scope: " + scope_stack.getLast() + "\n";
+        int size = scope_stack.size();
+        String isGlobal = size == 1? "global" : "local";
+        System.out.println("===========");
+        System.out.printf("Symbols of current scope - %s - [depth %d] \n", isGlobal, size -1);
+        HashMap<String, A> currentScope = scope_stack.getLast();
+        currentScope.forEach((id, type) ->{
+            System.out.println("id = " + id + " ,type = " +type);
+        });
+        System.out.println("===========");
     }
 
     public String displayScope(int depth) {

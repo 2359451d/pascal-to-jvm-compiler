@@ -13,6 +13,19 @@ Basic Progress:
 
 * syntactic analysis(might refine): ![syntactic_analysis](https://progress-bar.dev/100/?title=done)
 * contextual analysis: ![contextual_analysis](https://progress-bar.dev/28/?title=WIP)
+  * [Refer](http://web.fis.unico.it/local/SunDocs/pascal/lang_ref/index.html) as both standard & nonstandard information given
+  * Remark: predefined RTL varies in different Pascal extension
+    * [ISO 7185:1990 standard pascal](https://rti.etf.bg.ac.rs/rti/ir1p1/materijali/iso7185.pdf)
+    * [FPC RTL docs](https://wiki.freepascal.org/RTL)
+      * standard Pascal services
+      * extended Pascal services
+      * Object Pascal
+      * Delphi
+      * Turbo Pascal
+      * GNU Pascal
+      * Mac Pascal
+    * Turbo Pascal - Borland's dialect of the Pascal
+    * GNU Pascal - ISO 7185, ISO 10206 Extended Pascal, Borland Pascal 7.0, parts of Borland Delphi, Mac Pascal & Pascal-SC(PXSC)
 * code generation: ![contextual_analysis](https://progress-bar.dev/0/)
 * status report
 * dissertation

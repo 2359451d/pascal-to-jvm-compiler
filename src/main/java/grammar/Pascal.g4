@@ -154,8 +154,8 @@ subrangeType
    ;
 
 typeIdentifier
-   : identifier                                 # id
-   | (CHAR | BOOLEAN | INTEGER | REAL | STRING)  # primitiveType
+   : identifier                                 # typeId
+   | primitiveType=(CHAR | BOOLEAN | INTEGER | REAL | STRING)  # primitiveType
    ;
 
 structuredType
@@ -356,13 +356,13 @@ signedFactor
    ;
 
 factor
-   : variable
-   | LPAREN expression RPAREN
-   | functionDesignator
-   | unsignedConstant
-   | set_
-   | NOT factor
-   | bool_
+   : variable   # factorVar
+   | LPAREN expression RPAREN #factorExpr
+   | functionDesignator #factorFuncDesignator
+   | unsignedConstant #factorUnConst
+   | set_ #factorSet
+   | NOT factor #notFactor
+   | bool_ #factorBool
    ;
 
 unsignedConstant

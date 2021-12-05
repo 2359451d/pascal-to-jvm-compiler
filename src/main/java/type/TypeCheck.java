@@ -1,9 +1,5 @@
-//package type;
-//
-//import type.utils.Type;
-//
-//public interface TypeCheck {
-//
-//    boolean equiv(Type t1, Type t2);
-//
-//}
+package type;
+
+public interface TypeCheck {
+    boolean equiv(TypeCheck t1);
+}

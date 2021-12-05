@@ -1616,18 +1616,19 @@ public class PascalParser extends Parser {
 			super.copyFrom(ctx);
 		}
 	}
-	public static class IdContext extends TypeIdentifierContext {
+	public static class TypeIdContext extends TypeIdentifierContext {
 		public IdentifierContext identifier() {
 			return getRuleContext(IdentifierContext.class,0);
 		}
-		public IdContext(TypeIdentifierContext ctx) { copyFrom(ctx); }
+		public TypeIdContext(TypeIdentifierContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitId(this);
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitTypeId(this);
 			else return visitor.visitChildren(this);
 		}
 	}
 	public static class PrimitiveTypeContext extends TypeIdentifierContext {
+		public Token primitiveType;
 		public TerminalNode CHAR() { return getToken(PascalParser.CHAR, 0); }
 		public TerminalNode BOOLEAN() { return getToken(PascalParser.BOOLEAN, 0); }
 		public TerminalNode INTEGER() { return getToken(PascalParser.INTEGER, 0); }
@@ -1650,7 +1651,7 @@ public class PascalParser extends Parser {
 			_errHandler.sync(this);
 			switch (_input.LA(1)) {
 			case IDENT:
-				_localctx = new IdContext(_localctx);
+				_localctx = new TypeIdContext(_localctx);
 				enterOuterAlt(_localctx, 1);
 				{
 				setState(338);
@@ -1666,9 +1667,10 @@ public class PascalParser extends Parser {
 				enterOuterAlt(_localctx, 2);
 				{
 				setState(339);
+				((PrimitiveTypeContext)_localctx).primitiveType = _input.LT(1);
 				_la = _input.LA(1);
 				if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << BOOLEAN) | (1L << CHAR) | (1L << INTEGER) | (1L << REAL))) != 0) || _la==STRING) ) {
-				_errHandler.recoverInline(this);
+					((PrimitiveTypeContext)_localctx).primitiveType = (Token)_errHandler.recoverInline(this);
 				}
 				else {
 					if ( _input.LA(1)==Token.EOF ) matchedEOF = true;
@@ -4140,37 +4142,93 @@ public class PascalParser extends Parser {
 	}
 
 	public static class FactorContext extends ParserRuleContext {
+		public FactorContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_factor; }
+	 
+		public FactorContext() { }
+		public void copyFrom(FactorContext ctx) {
+			super.copyFrom(ctx);
+		}
+	}
+	public static class FactorSetContext extends FactorContext {
+		public Set_Context set_() {
+			return getRuleContext(Set_Context.class,0);
+		}
+		public FactorSetContext(FactorContext ctx) { copyFrom(ctx); }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitFactorSet(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+	public static class FactorBoolContext extends FactorContext {
+		public Bool_Context bool_() {
+			return getRuleContext(Bool_Context.class,0);
+		}
+		public FactorBoolContext(FactorContext ctx) { copyFrom(ctx); }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitFactorBool(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+	public static class FactorFuncDesignatorContext extends FactorContext {
+		public FunctionDesignatorContext functionDesignator() {
+			return getRuleContext(FunctionDesignatorContext.class,0);
+		}
+		public FactorFuncDesignatorContext(FactorContext ctx) { copyFrom(ctx); }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitFactorFuncDesignator(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+	public static class FactorUnConstContext extends FactorContext {
+		public UnsignedConstantContext unsignedConstant() {
+			return getRuleContext(UnsignedConstantContext.class,0);
+		}
+		public FactorUnConstContext(FactorContext ctx) { copyFrom(ctx); }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitFactorUnConst(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+	public static class NotFactorContext extends FactorContext {
+		public TerminalNode NOT() { return getToken(PascalParser.NOT, 0); }
+		public FactorContext factor() {
+			return getRuleContext(FactorContext.class,0);
+		}
+		public NotFactorContext(FactorContext ctx) { copyFrom(ctx); }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitNotFactor(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+	public static class FactorVarContext extends FactorContext {
 		public VariableContext variable() {
 			return getRuleContext(VariableContext.class,0);
 		}
+		public FactorVarContext(FactorContext ctx) { copyFrom(ctx); }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitFactorVar(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+	public static class FactorExprContext extends FactorContext {
 		public TerminalNode LPAREN() { return getToken(PascalParser.LPAREN, 0); }
 		public ExpressionContext expression() {
 			return getRuleContext(ExpressionContext.class,0);
 		}
 		public TerminalNode RPAREN() { return getToken(PascalParser.RPAREN, 0); }
-		public FunctionDesignatorContext functionDesignator() {
-			return getRuleContext(FunctionDesignatorContext.class,0);
-		}
-		public UnsignedConstantContext unsignedConstant() {
-			return getRuleContext(UnsignedConstantContext.class,0);
-		}
-		public Set_Context set_() {
-			return getRuleContext(Set_Context.class,0);
-		}
-		public TerminalNode NOT() { return getToken(PascalParser.NOT, 0); }
-		public FactorContext factor() {
-			return getRuleContext(FactorContext.class,0);
-		}
-		public Bool_Context bool_() {
-			return getRuleContext(Bool_Context.class,0);
-		}
-		public FactorContext(ParserRuleContext parent, int invokingState) {
-			super(parent, invokingState);
-		}
-		@Override public int getRuleIndex() { return RULE_factor; }
+		public FactorExprContext(FactorContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitFactor(this);
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitFactorExpr(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -4183,6 +4241,7 @@ public class PascalParser extends Parser {
 			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,48,_ctx) ) {
 			case 1:
+				_localctx = new FactorVarContext(_localctx);
 				enterOuterAlt(_localctx, 1);
 				{
 				setState(621);
@@ -4190,6 +4249,7 @@ public class PascalParser extends Parser {
 				}
 				break;
 			case 2:
+				_localctx = new FactorExprContext(_localctx);
 				enterOuterAlt(_localctx, 2);
 				{
 				setState(622);
@@ -4201,6 +4261,7 @@ public class PascalParser extends Parser {
 				}
 				break;
 			case 3:
+				_localctx = new FactorFuncDesignatorContext(_localctx);
 				enterOuterAlt(_localctx, 3);
 				{
 				setState(626);
@@ -4208,6 +4269,7 @@ public class PascalParser extends Parser {
 				}
 				break;
 			case 4:
+				_localctx = new FactorUnConstContext(_localctx);
 				enterOuterAlt(_localctx, 4);
 				{
 				setState(627);
@@ -4215,6 +4277,7 @@ public class PascalParser extends Parser {
 				}
 				break;
 			case 5:
+				_localctx = new FactorSetContext(_localctx);
 				enterOuterAlt(_localctx, 5);
 				{
 				setState(628);
@@ -4222,6 +4285,7 @@ public class PascalParser extends Parser {
 				}
 				break;
 			case 6:
+				_localctx = new NotFactorContext(_localctx);
 				enterOuterAlt(_localctx, 6);
 				{
 				setState(629);
@@ -4231,6 +4295,7 @@ public class PascalParser extends Parser {
 				}
 				break;
 			case 7:
+				_localctx = new FactorBoolContext(_localctx);
 				enterOuterAlt(_localctx, 7);
 				{
 				setState(631);
