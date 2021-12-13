@@ -1,5 +1,8 @@
 package type;
 
+import type.error.Invalid;
+import type.error.Undefined;
+
 public abstract class Type {
 
     public static final Primitive INTEGER = new Primitive("int");
@@ -11,10 +14,13 @@ public abstract class Type {
     public static final Str STR = new Str();
     public static final File FILE = new File();
 
-    public static final Error ERROR = new Error();
+    // error type
+    public static final Invalid INVALID_TYPE = new Invalid();
+    public static final Undefined UNDEFINED_TYPE = new Undefined();
 
     //public static final Str STRING = new Str();
 
     public abstract boolean equiv(Type type);
+
 
 }

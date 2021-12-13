@@ -264,10 +264,10 @@ formalParameterList
    ;
 
 formalParameterSection
-   : parameterGroup
-   | VAR parameterGroup
-   | FUNCTION parameterGroup
-   | PROCEDURE parameterGroup
+   : parameterGroup  #noLabelParam
+   | VAR parameterGroup #varLabelParam
+   | FUNCTION parameterGroup #funcParam
+   | PROCEDURE parameterGroup #procParam
    ;
 
 parameterGroup
@@ -316,49 +316,50 @@ variable
    ;
 
 expression
-   : simpleExpression (relationaloperator expression)?
+   : simpleExpression (relationalOperator=(EQUAL| NOT_EQUAL| LT| LE| GE| GT| IN)
+                        e2=expression)?
    ;
 
-relationaloperator
-   : EQUAL
-   | NOT_EQUAL
-   | LT
-   | LE
-   | GE
-   | GT
-   | IN
-   ;
+//relationaloperator
+//   : EQUAL
+//   | NOT_EQUAL
+//   | LT
+//   | LE
+//   | GE
+//   | GT
+//   | IN
+//   ;
 
 simpleExpression
-   : term (additiveoperator simpleExpression)?
+   : term (additiveOperator=(PLUS| MINUS| OR) simpleExpression)?
    ;
 
-additiveoperator
-   : PLUS
-   | MINUS
-   | OR
-   ;
+//additiveoperator
+//   : PLUS
+//   | MINUS
+//   | OR
+//   ;
 
 term
-   : signedFactor (multiplicativeoperator term)?
+   : signedFactor (multiplicativeOperator=(STAR| SLASH| DIV| MOD| AND) term)?
    ;
 
-multiplicativeoperator
-   : STAR
-   | SLASH
-   | DIV
-   | MOD
-   | AND
-   ;
+//multiplicativeoperator
+//   : STAR
+//   | SLASH
+//   | DIV
+//   | MOD
+//   | AND
+//   ;
 
 signedFactor
-   : (PLUS | MINUS)? factor
+   : monadicOperator=(PLUS | MINUS)? factor
    ;
 
 factor
    : variable   # factorVar
    | LPAREN expression RPAREN #factorExpr
-   | functionDesignator #factorFuncDesignator
+   | functionDesignator #factorFuncDesignator // function call
    | unsignedConstant #factorUnConst
    | set_ #factorSet
    | NOT factor #notFactor

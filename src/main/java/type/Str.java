@@ -11,7 +11,7 @@ public class Str extends Type{
 
     @Override
     public boolean equiv(Type type) {
-        return (type instanceof Str) && (type.equals(this));
+        return (type instanceof Str) ;
     }
 
     @Override

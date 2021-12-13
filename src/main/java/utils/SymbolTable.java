@@ -1,9 +1,6 @@
 package utils;
 
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.*;
 
 public class SymbolTable<A> {
 
@@ -60,6 +57,10 @@ public class SymbolTable<A> {
         }
         System.out.println("Searching exhausted, no declaration found!");
         return null;
+    }
+
+    public Map<String, A> getAllVarInCurrentScope() {
+        return scope_stack.getLast();
     }
 
     //public A getLocal(String id) {

@@ -43,7 +43,7 @@ Project Extension Progress:
 
 # Regenerate Compiler Components (Lexer & Parser)
 
-source componets (visitor pattern) already given in this repo `src\main\java\ast_visitor` but still can regenerate these components using ANTLR4 if you want or the grammar file(`.g4`) has been changed
+source componets (visitor pattern) already given in this repo `src\main\java\ast` but still can regenerate these components using ANTLR4 if you want or the grammar file(`.g4`) has been changed
 
 ## ANTLR4.9.1 Dockerfile for Pascal grammar
 

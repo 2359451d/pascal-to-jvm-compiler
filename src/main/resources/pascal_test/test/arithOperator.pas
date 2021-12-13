@@ -38,4 +38,17 @@ begin
   f := 10 + true;{Not work, operands must be real or int}
   f := 10 + 10.0;{Not work, right is real, but left is int}
   f := 10 * 10.0;{Not work, right is real, but left is int}
+
+  d:= 10 + 10.0 - 10;{works, right is real, left is real}
+  f:= 10 * 10.0 - 10;{Not work, right is real, left is int}
+
+  f := 10 * (10 + 1); {works, involves parentheses}
+  d := 10 + (10 + 1); {works, involves parentheses, though d is real,right is int}
+  f := 10 + (10.0 + 1);{Not work, right is real, left is int}
+
+  f:= -1;{works}
+  d:= +1; {works, though left is real, right is int}
+  d:= -1.0;{works}
+  f:= -1.0;{Not work, left is int, right is real}
+  f:= -true;{Not work, operand must be int or real}
 end.
