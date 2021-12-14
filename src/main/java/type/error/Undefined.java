@@ -10,4 +10,9 @@ public class Undefined extends Type {
 
         return (this).equals(otherType);
     }
+
+    @Override
+    public String toString() {
+        return "Undefined type";
+    }
 }

@@ -1,6 +1,8 @@
 program division(input, output);
 var x,y,quotient,remainder:0..MaxInt;
 begin
+  %
+  h
   read(x,y);
   remainder:=x; quotient:=0;
   while remainder>=y do

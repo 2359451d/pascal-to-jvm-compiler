@@ -2,23 +2,26 @@ package type;
 
 public class ActualParam extends Param {
 
-    private Type type;
     private String label;
 
     public ActualParam(Type type) {
-        this.type = type;
+        setType(type);
         this.label = null;
     }
 
     public ActualParam(Type type, String label) {
-        this.type = type;
+        setType(type);
         this.label = label;
+    }
+
+    public String getLabel() {
+        return label;
     }
 
     @Override
     public String toString() {
         return "ActualParam{" +
-                "type=" + type +
+                "type=" + getType() +
                 ", label='" + label + '\'' +
                 '}';
     }
@@ -26,9 +29,9 @@ public class ActualParam extends Param {
     @Override
     public boolean equiv(Type type) {
         if (!(type instanceof ActualParam)) {
-            return this.type.equiv(type);
+            return getType().equiv(type);
         }
         ActualParam that = (ActualParam) type;
-        return this.type.equiv(that.type) && this.label.equals(that.label);
+        return getType().equiv(that.getType()) && this.label.equals(that.label);
     }
 }

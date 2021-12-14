@@ -8,10 +8,11 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import runtime.RunTimeLibFactory;
 import type.*;
-import utils.BooleanMessage;
+import utils.ErrorMessage;
 import utils.SymbolTable;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class PascalCheckerVisitor extends PascalBaseVisitor<Type> {
@@ -46,7 +47,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<Type> {
                 finishLine + ":" + finishCol
                 + " " + message);
         errorCount++;
-    }
+     }
 
     private void reportError(ParserRuleContext ctx, String message, Object... args
     ) {
@@ -125,14 +126,15 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<Type> {
 
     @Override
     public Type visitVariableDeclaration(PascalParser.VariableDeclarationContext ctx) {
+        System.out.println("Variable Decl Starts*************");
         List<PascalParser.IdentifierContext> identifierContextList = ctx.identifierList().identifier();
         for (PascalParser.IdentifierContext identifierContext : identifierContextList) {
             String id = identifierContext.IDENT().getText();
             Type type = visit(ctx.type_());
-            System.out.println("type = " + type);
             define(id, type, ctx);
         }
         symbolTable.displayCurrentScope();
+        System.out.println("Variable Decl ends\n*************");
         return null;
     }
 
@@ -346,20 +348,59 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<Type> {
     }
 
     /**
+     * Check single formal parameter and actual parameter
+     * Whether these are the same or not
+     * @param formalParam
+     * @param actualParam
+     * @return
+     */
+    private boolean checkFormalAndActual(FormalParam formalParam, ActualParam actualParam) {
+        if (formalParam.getLabel() == null) return formalParam.getType().equiv(actualParam.getType());
+        if (!(formalParam.getLabel().equals(actualParam.getLabel()))) return false;
+        return formalParam.equiv(actualParam.getType());
+    }
+
+    /**
      * @param signature
      * @param actualParameters
      * @return BooleanMessage - contains {boolean flag, List<String> messageSequence}
      */
-    private BooleanMessage checkSignature(Proc signature, List<PascalParser.ActualParameterContext> actualParameters) {
-        BooleanMessage booleanMessage = new BooleanMessage();
-        List<Type> formalParams = signature.getFormalParams();
-        //if (actualParameters.size() < formalParams.size()) {
-        //
-        //
-        //}
-        //formalParams.forEach(formalParams);
-        //return false;
-        return booleanMessage;
+    private ErrorMessage checkSignature(Proc signature, List<PascalParser.ActualParameterContext> actualParameters) {
+        ErrorMessage errorMessage = new ErrorMessage();
+        // default - set the flag to false, i.e. exist errors to report
+        //errorMessage.setFlag(false);
+        List<Type> formalParameters = signature.getFormalParams();
+        // if actual parameters length cannot match the formal parameters, directly return the error message
+        if (actualParameters.size() < formalParameters.size()) {
+            errorMessage.setMessageSequence(new StringBuilder(String.format(
+                    "The number of actual parameters cannot match the signature! " +
+                            "Actual: %d, Expected: %d",
+                    actualParameters.size(),
+                    formalParameters.size())));
+        } else {
+            AtomicInteger count = new AtomicInteger(0);
+            //List<String> messageSequence = new ArrayList<>();
+            StringBuilder stringBuilder = new StringBuilder();
+            formalParameters.forEach(
+                    formal->{
+                        Type actual = visit(actualParameters.get(count.getAndIncrement()));
+                        ActualParam _actual = (ActualParam) actual;
+                        FormalParam _formal = (FormalParam) formal;
+                        if (!checkFormalAndActual(_formal, _actual)) {
+                            if (stringBuilder.length() == 0) {
+                                stringBuilder.append("Actual parameter cannot match the formal parameter!\n");
+                            }
+                            stringBuilder.append(String.format(
+                                    "- Pos[%d]\n" +
+                                            " Actual: %s, Expected: %s",
+                                    count.get(), _actual, _formal
+                            ));
+                        }
+                    }
+            );
+            errorMessage.setMessageSequence(stringBuilder);
+        }
+        return errorMessage;
     }
 
     @Override
@@ -380,8 +421,10 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<Type> {
             Proc _signature = (Proc) signature;
             //check signatures
             List<PascalParser.ActualParameterContext> actualParameterContextList = ctx.parameterList().actualParameter();
-            for (PascalParser.ActualParameterContext actualParameter : actualParameterContextList) {
-                System.out.println("actualParameter = " + visit(actualParameter));
+            ErrorMessage errorMessage = checkSignature(_signature, actualParameterContextList);
+            System.out.println("booleanMessage = " + errorMessage);
+            if (errorMessage.hasErrors()) {
+                reportError(errorMessage.getMessageSequence(), ctx);
             }
 
             //// type checking

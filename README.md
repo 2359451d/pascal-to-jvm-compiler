@@ -7,6 +7,13 @@ submission details see
 * [issue](https://github.com/2359451d/L4-Dissertation-Repo/issues/4)
 * [moodle](https://moodle.gla.ac.uk/course/view.php?id=30221#section-7)
 
+## Active Issues
+
+See
+
+* [issues](https://github.com/2359451d/L4-Source-Repo/issues) or 
+* [board](https://github.com/2359451d/L4-Source-Repo/projects/1)
+
 # Progress
 
 Basic Progress:

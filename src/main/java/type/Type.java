@@ -23,4 +23,6 @@ public abstract class Type {
     public abstract boolean equiv(Type type);
 
 
+
+
 }

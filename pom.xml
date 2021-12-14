@@ -21,12 +21,20 @@
             <version>4.9.1</version>
         </dependency>
 
-        <!--Junit-->
+        <!--Junit: Used for Simple Unit Test and setup regression -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.13.2</version>
             <scope>compile</scope>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/commons-lang/commons-lang -->
+        <!-- Used to enhance default toString() method & provide good formatting with Object-->
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.2</version>
         </dependency>
 
     </dependencies>

@@ -76,7 +76,7 @@ public class SymbolTable<A> {
     public void enterLocalScope() {
         // Enable the local part of this symbol table.
         // One new symbol table corresponds to one new scope
-        System.out.println("Enter new local scope, current depth = " + (scope_stack.size()-1));
+        System.out.println("Enter new local scope, last depth = " + (scope_stack.size()-1));
         scope_stack.addLast(new HashMap<>());
     }
 
@@ -99,13 +99,13 @@ public class SymbolTable<A> {
         // Display all the symbols of current scope (most recent)
         int size = scope_stack.size();
         String isGlobal = size == 1? "global" : "local";
-        System.out.println("===========");
+        System.out.println("\n===========");
         System.out.printf("Symbols of current scope - %s - [depth %d] \n", isGlobal, size -1);
         HashMap<String, A> currentScope = scope_stack.getLast();
         currentScope.forEach((id, type) ->{
             System.out.println("id = " + id + " ,type = " +type);
         });
-        System.out.println("===========");
+        System.out.println("===========\n");
     }
 
     public String displayScope(int depth) {

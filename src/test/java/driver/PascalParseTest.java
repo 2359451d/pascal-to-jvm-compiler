@@ -10,7 +10,8 @@ import utils.test.rules.TestParse;
 
 import java.io.PrintStream;
 
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
+
 
 @TestResourcePath("testPascalParse/")
 public class PascalParseTest {
@@ -38,18 +39,19 @@ public class PascalParseTest {
     public void testParseHelloWorldWithSuccess() {
         //System.out.println("testParse.getMethodName() = " + testParse.getMethodName());
 
+        // get the prepared lexer
         PascalCustomLexer lexer = testParse.getLexer();
-        // create a parser, processing the content of the buffer of lexer
+        // get the prepared parser
         PascalParser parser = testParse.getParser();
         ParseTree tree = parser.program();
         //ANTLRErrorStrategy errorHandler = parser.getErrorHandler();
 
         int tokenError = lexer.getTokenErrors();
         int syntaxErrors = parser.getNumberOfSyntaxErrors();
-        out.println(tokenError + " token recognition errors");
-        out.println(syntaxErrors + " syntactic errors");
         assertEquals(0, tokenError);
         assertEquals(0, syntaxErrors);
+        out.println(tokenError + " token recognition errors");
+        out.println(syntaxErrors + " syntactic errors");
     }
 
     @Test
@@ -62,5 +64,7 @@ public class PascalParseTest {
         int syntaxErrors = parser.getNumberOfSyntaxErrors();
         assertEquals(1, tokenError);
         assertEquals(1, syntaxErrors);
+        out.println(tokenError + " token recognition errors");
+        out.println(syntaxErrors + " syntactic errors");
     }
 }

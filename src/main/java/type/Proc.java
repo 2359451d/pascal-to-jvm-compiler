@@ -30,7 +30,7 @@ public class Proc extends Type{
 
     @Override
     public String toString() {
-        return "Proc{" +
+        return "Proc{\n" +
                 "formalParams=" + formalParams +
                 '}';
     }
