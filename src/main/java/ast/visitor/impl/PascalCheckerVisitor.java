@@ -288,6 +288,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<Type> {
         for (PascalParser.IdentifierContext identifier : identifiers) {
             // for each group, define the corresponding formal parameter with null label
             // (x,y,...:Type)
+            System.out.println("Defin no label Param!!!!!!!!!!!!!");
             define(identifier.getText(), new FormalParam(type, null), ctx);
         }
         return null;
@@ -311,6 +312,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<Type> {
         for (PascalParser.IdentifierContext identifier : identifiers) {
             // for each group, define the corresponding formal parameter with var label
             // (var x,y,...:Type)
+            System.out.println("Defin var label Param!!!!!!!!!!!!!");
             define(identifier.getText(), new FormalParam(type, "var"), ctx);
         }
         return null;
@@ -331,8 +333,9 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<Type> {
 
         System.out.println("PROC DECL Starts*************************");
         symbolTable.enterLocalScope();
+
+        // if the procedure has formal parameters
         if (ctx.formalParameterList() != null) {
-            Type paramList = visit(ctx.formalParameterList());
             List<PascalParser.FormalParameterSectionContext> formalParameterSectionList = ctx.formalParameterList().formalParameterSection();
             for (PascalParser.FormalParameterSectionContext paramSection : formalParameterSectionList) {
                 // define parameter group in current scope of type Param(Type,String:label)
@@ -342,8 +345,8 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<Type> {
             Map<String, Type> allParams = symbolTable.getAllVarInCurrentScope();
             allParams.forEach((k, v) -> params.add(v));
         }
-        visit(ctx.block());
-        symbolTable.exitLocalScope();
+        visit(ctx.block()); // scope & type checking in current proc scope
+        symbolTable.exitLocalScope(); // back to last scope
         define(id, new Proc(params), ctx);
         System.out.println("PROC DECL ENDS*************************");
         symbolTable.displayCurrentScope();
