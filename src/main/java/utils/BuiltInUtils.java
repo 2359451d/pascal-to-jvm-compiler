@@ -1,5 +1,6 @@
 package utils;
 
+import type.SymbolTable;
 import type.Type;
 
 import java.util.Arrays;

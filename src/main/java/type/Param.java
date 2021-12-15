@@ -1,11 +1,24 @@
 package type;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import utils.CustomToStringStyle;
+
 public abstract class Param extends Type {
     private Type type;
 
-    public Type getType() { return type; }
+    public Type getType() {
+        return type;
+    }
 
-    public void setType(Type type) { this.type = type; }
+    public void setType(Type type) {
+        this.type = type;
+    }
+
+    //@Override
+    //public String toString() {
+    //    return ToStringBuilder.reflectionToString(this,
+    //            CustomToStringStyle.SHORT_PREFIX_MULTI_LINE_STYLE);
+    //}
 
     @Override
     public boolean equiv(Type that) {

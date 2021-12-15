@@ -62,9 +62,9 @@
 │   │   │   │       ├── TypeChecker.java
 │   │   │   │       └── TypeDeprecated.java
 │   │   │   └── utils
-│   │   │       ├── BooleanMessage.java
 │   │   │       ├── BuiltIn.java
 │   │   │       ├── BuiltInUtils.java
+│   │   │       ├── ErrorMessage.java
 │   │   │       ├── ResourceHelper.java
 │   │   │       ├── SymbolTable.java
 │   │   │       └── test

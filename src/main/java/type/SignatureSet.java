@@ -2,6 +2,7 @@ package type;
 
 import java.util.Set;
 
+@Deprecated
 public class SignatureSet extends Type{
 
     private Set<Signature> acceptableSignatures;

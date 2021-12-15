@@ -4,7 +4,7 @@ package runtime;
 
 import runtime.proc.Write;
 import type.Type;
-import utils.SymbolTable;
+import type.SymbolTable;
 
 import java.util.HashMap;
 import java.util.Map;

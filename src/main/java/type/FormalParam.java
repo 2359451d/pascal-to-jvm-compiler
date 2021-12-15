@@ -17,13 +17,13 @@ public class FormalParam extends Param {
         this.label = label;
     }
 
-    @Override
-    public String toString() {
-        return "Param{" +
-                "type=" + getType() +
-                ", label='" + label + '\'' +
-                "}";
-    }
+    //@Override
+    //public String toString() {
+    //    return "Param{" +
+    //            "type=" + getType() +
+    //            ", label='" + label + '\'' +
+    //            "}";
+    //}
 
     @Override
     public boolean equiv(Type type) {

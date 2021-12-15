@@ -2,6 +2,7 @@ package type;
 
 import java.util.List;
 
+@Deprecated
 public class Signature extends Type {
 
     private List<String> paramList;

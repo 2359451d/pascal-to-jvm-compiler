@@ -1,9 +1,12 @@
 package type;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import utils.CustomToStringStyle;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class Proc extends Type{
+public class Proc extends Type {
 
     private List<Type> formalParams;
 
@@ -13,6 +16,7 @@ public class Proc extends Type{
 
     /**
      * If formalParams.size()==0, then proc has no formal params
+     *
      * @param formalParams
      */
     public Proc(List<Type> formalParams) {
@@ -30,8 +34,7 @@ public class Proc extends Type{
 
     @Override
     public String toString() {
-        return "Proc{\n" +
-                "formalParams=" + formalParams +
-                '}';
+        return ToStringBuilder.reflectionToString(this,
+                CustomToStringStyle.SHORT_PREFIX_MULTI_LINE_STYLE);
     }
 }

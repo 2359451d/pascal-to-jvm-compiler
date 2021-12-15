@@ -12,12 +12,12 @@ public class Primitive extends Type{
         this.type = type;
     }
 
-    @Override
-    public java.lang.String toString() {
-        return "Primitive{" +
-                "type='" + type + '\'' +
-                '}';
-    }
+    //@Override
+    //public java.lang.String toString() {
+    //    return "Primitive{" +
+    //            "type='" + type + '\'' +
+    //            '}';
+    //}
 
     @Override
     public boolean equiv(Type type) {

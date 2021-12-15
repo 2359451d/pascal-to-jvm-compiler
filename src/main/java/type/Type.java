@@ -1,5 +1,7 @@
 package type;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import type.error.Invalid;
 import type.error.Undefined;
 
@@ -22,7 +24,8 @@ public abstract class Type {
 
     public abstract boolean equiv(Type type);
 
-
-
-
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
 }
