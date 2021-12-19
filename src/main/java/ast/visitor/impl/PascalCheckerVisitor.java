@@ -9,12 +9,11 @@ import org.antlr.v4.runtime.misc.Interval;
 import runtime.RunTimeLibFactory;
 import type.*;
 import utils.ErrorMessage;
-import type.SymbolTable;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 

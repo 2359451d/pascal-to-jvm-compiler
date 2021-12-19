@@ -2,27 +2,15 @@ package utils.test.rules;
 
 import annotations.TestResourcePath;
 import ast.visitor.PascalCustomLexer;
-import ast.visitor.PascalLexer;
 import ast.visitor.PascalParser;
-import ast.visitor.listeners.CustomConsoleErrorListener;
-import com.sun.xml.internal.ws.util.StringUtils;
-import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.junit.rules.TestName;
 import org.junit.runner.Description;
-import org.junit.runners.model.MultipleFailureException;
 import org.junit.runners.model.Statement;
 import utils.ResourceHelper;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
-import java.lang.annotation.Annotation;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Custom Junit TestRule to setup the lexer & parser for the specific test method

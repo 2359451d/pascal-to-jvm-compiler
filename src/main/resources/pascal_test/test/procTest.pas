@@ -6,6 +6,7 @@
 program procTest;
 var
   a, b, c,  min: integer;
+  a :real;
 procedure findMin(x, y, z: integer; var m: integer);
 (* Finds the minimum of the 3 values *)
 begin

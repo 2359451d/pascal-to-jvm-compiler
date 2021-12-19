@@ -9,6 +9,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import java.io.IOException;
 import java.io.PrintStream;
 
+@Deprecated
 public class PascalParse {
     private static PrintStream out = System.out;
 
