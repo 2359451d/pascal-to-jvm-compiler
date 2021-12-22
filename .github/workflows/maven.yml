@@ -39,7 +39,7 @@ jobs:
           --platform=linux/amd64,linux/arm/v7,linux/arm64 \
           --output "type=image,push=true" \
           --file ./Dockerfile . \
-          --tag barlinbento/pascal-to-jvm-compiler:$(date +%s)"
+          --tag barlinbento/pascal-to-jvm-compiler:$(date +%s)
 
 #      - name: Build the Docker image
 #        run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
