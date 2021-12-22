@@ -32,6 +32,8 @@ WORKDIR /usr/local/project
 ADD ./target/pascal_jvm_compiler-jar-with-dependencies.jar pascal_jvm_compiler.jar
 ADD ./target/pascal_jvm_compiler.jar _pascal_jvm_compiler.jar
 COPY ./usage.sh usage.sh
+# modify permission
+RUN chmod +x usage.sh
 
 WORKDIR /usr/local/project/resources
 

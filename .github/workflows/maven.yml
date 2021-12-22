@@ -27,6 +27,11 @@ jobs:
       - name: Build with Maven (Test Included)
         run: mvn -B package --file pom.xml
 
+      - name: test JAR
+        run: |
+          tree
+          java -jar ./target/pascal_jvm_compiler-jar-with-dependencies.jar parse testArguments.pas
+
   #single job called build
   dockerhub-deploy:
     runs-on: ubuntu-latest
