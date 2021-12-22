@@ -11,7 +11,7 @@
 .idea
 
 # compiled components & output
-target
+target/*
 !target/pascal_jvm_compiler-jar-with-dependencies.jar
 !target/pascal_jvm_compiler.jar
 out
