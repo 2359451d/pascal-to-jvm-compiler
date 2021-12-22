@@ -18,25 +18,30 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
       - name: Set up JDK 11
         uses: actions/setup-java@v2
         with:
           java-version: '11'
           distribution: 'adopt'
           cache: maven
+
       - name: Build with Maven (Test Included)
         run: mvn -B package --file pom.xml
 
-      - name: test JAR
+      - name: Show Workspace Tree Before test
+        run: tree
+
+      - name: test JAR (Example source file)
         run: |
-          tree
-          java -jar ./target/pascal_jvm_compiler-jar-with-dependencies.jar parse testArguments.pas
+          java -jar ./target/pascal_jvm_compiler-jar-with-dependencies.jar check testArguments.pas
 
   #single job called build
   dockerhub-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
       - name: Set up Docker Buildx
         uses: crazy-max/ghaction-docker-buildx@v1
         with:
@@ -76,5 +81,5 @@ jobs:
           --platform=linux/amd64,linux/arm/v7,linux/arm64 \
           --output "type=image,push=true" \
           --file ./Dockerfile . \
-          --tag barlinbento/pascal-to-jvm-compiler:$(date +%s)
+          --tag barlinbento/pascal-to-jvm-compiler:latest
 

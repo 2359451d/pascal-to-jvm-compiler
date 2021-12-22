@@ -12,7 +12,8 @@ LABEL maintainer_email2="bentoremains@gmail.com"
 
 WORKDIR /usr/local/lib
 
-RUN apt-get update && apt-get -y install vim
+# Install vim-tiny
+RUN apt-get update && apt-get -y install vim-tiny
 
 RUN curl -O https://www.antlr.org/download/antlr-4.9.1-complete.jar
 #  add antlr runtime jar to container CLASSPATH
