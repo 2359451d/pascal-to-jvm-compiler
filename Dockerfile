@@ -1,5 +1,5 @@
 #FROM adoptopenjdk/openjdk8
-FROM eclipse-temurin:latest
+FROM eclipse-temurin:17
 
 # label information could be checked through command 'docker inspect' 
 LABEL version="1.0"
