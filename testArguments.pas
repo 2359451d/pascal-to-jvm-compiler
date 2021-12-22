@@ -1,0 +1,3 @@
+program testArguments;
+begin
+end.

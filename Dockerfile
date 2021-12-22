@@ -11,6 +11,9 @@ LABEL maintainer_email1="2359451d@student.gla.ac.uk"
 LABEL maintainer_email2="bentoremains@gmail.com"
 
 WORKDIR /usr/local/lib
+
+RUN apt-get update && apt-get -y install vim
+
 RUN curl -O https://www.antlr.org/download/antlr-4.9.1-complete.jar
 #  add antlr runtime jar to container CLASSPATH
 ENV CLASSPATH=/usr/local/lib/antlr-4.9.1-complete.jar:$CLASSPATH
@@ -24,10 +27,15 @@ RUN echo 'alias antlr4="java -Xmx500M -cp '/usr/local/lib/antlr-4.9-complete.jar
     && mkdir -p /usr/local/ast
 
 #WORKDIR /usr/local/grammar
-RUN mkdir -p /usr/local/project
+RUN mkdir -p /usr/local/project && mkdir -p /usr/local/project/resources
 WORKDIR /usr/local/project
 ADD ./target/pascal_jvm_compiler-jar-with-dependencies.jar pascal_jvm_compiler.jar
 ADD ./target/pascal_jvm_compiler.jar _pascal_jvm_compiler.jar
+COPY ./usage.sh usage.sh
 
-ENTRYPOINT ["/bin/bash","-c"]
-CMD ["echo 'PLEASE specify args'"]
+WORKDIR /usr/local/project/resources
+
+#ENTRYPOINT ["/bin/bash","-c", "java -jar pascal_jvm_compiler.jar"]
+ENTRYPOINT ["../usage.sh"]
+#ENTRYPOINT ["/bin/bash"]
+#CMD ["echo 'PLEASE specify args'"]
