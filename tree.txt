@@ -11,7 +11,7 @@
 ├── src
 │   ├── main
 │   │   ├── java
-│   │   │   ├── annotations
+│   │   │   ├── annotation
 │   │   │   │   └── TestResourcePath.java
 │   │   │   ├── ast
 │   │   │   │   └── visitor
@@ -58,10 +58,10 @@
 │   │   │   │   ├── error
 │   │   │   │   │   ├── Invalid.java
 │   │   │   │   │   └── Undefined.java
-│   │   │   │   └── utils
+│   │   │   │   └── util
 │   │   │   │       ├── TypeChecker.java
 │   │   │   │       └── TypeDeprecated.java
-│   │   │   └── utils
+│   │   │   └── util
 │   │   │       ├── BuiltIn.java
 │   │   │       ├── BuiltInUtils.java
 │   │   │       ├── ErrorMessage.java

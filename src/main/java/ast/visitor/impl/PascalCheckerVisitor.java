@@ -8,7 +8,7 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import runtime.RunTimeLibFactory;
 import type.*;
-import utils.ErrorMessage;
+import util.ErrorMessage;
 
 import java.util.ArrayList;
 import java.util.List;

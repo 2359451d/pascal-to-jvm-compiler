@@ -1,7 +1,7 @@
 package type;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import utils.CustomToStringStyle;
+import util.CustomToStringStyle;
 
 import java.util.ArrayList;
 import java.util.List;

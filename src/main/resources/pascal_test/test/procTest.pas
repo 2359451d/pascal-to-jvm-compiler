@@ -21,8 +21,8 @@ end; { end of procedure findMin }
 begin
   {writeln(' Enter three numbers: ');
   readln( a, b, c);}
-//  findMin(a,b,c, min); {Works}
-//  findMin(true, b, 10>0, 1); (*Not Work Procedure call *)
-//  findMin(1, b, c, max); (* Not work Procedure call *)
+  {findMin(a,b,c, min);} {Works}
+  findMin(true, b, 10>0, 1); (*Not Work Procedure call *)
+  {findMin(1, b, c, max); (* Not work Procedure call *)}
   {writeln(' Minimum: ', min);}
 end.

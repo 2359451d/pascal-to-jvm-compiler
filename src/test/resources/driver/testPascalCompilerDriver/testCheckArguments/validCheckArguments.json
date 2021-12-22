@@ -1,0 +1,4 @@
+{
+  "command": "check",
+  "path": "src/test/resources/driver/testPascalCompilerDriver/testCheckArguments/testArguments.pas"
+}

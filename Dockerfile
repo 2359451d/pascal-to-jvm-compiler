@@ -1,8 +1,10 @@
-FROM adoptopenjdk/openjdk8
+#FROM adoptopenjdk/openjdk8
+FROM eclipse-temurin:latest
 
 # label information could be checked through command 'docker inspect' 
 LABEL version="1.0"
-LABEL jdk_version='8'
+#LABEL jdk_version='8'
+LABEL jdk_version='17'
 LABEL antlr_version='4.9.1'
 LABEL author='2359451d'
 LABEL maintainer_email1="2359451d@student.gla.ac.uk"
@@ -21,6 +23,11 @@ RUN echo 'alias antlr4="java -Xmx500M -cp '/usr/local/lib/antlr-4.9-complete.jar
     && mkdir -p /usr/local/grammar \
     && mkdir -p /usr/local/ast
 
-WORKDIR /usr/local/grammar
+#WORKDIR /usr/local/grammar
+RUN mkdir -p /usr/local/project
+WORKDIR /usr/local/project
+ADD ./target/pascal_jvm_compiler-jar-with-dependencies.jar pascal_jvm_compiler.jar
+ADD ./target/pascal_jvm_compiler.jar _pascal_jvm_compiler.jar
+
 ENTRYPOINT ["/bin/bash","-c"]
 CMD ["echo 'PLEASE specify args'"]
