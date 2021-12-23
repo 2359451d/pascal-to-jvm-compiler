@@ -1,9 +1,9 @@
-program caseRepeat(input, output);
+program ;
 
 (*** Demonstrate the repeat and case statements.  ***)
 
 var
-  number: integer;
+  number: integer
 
 begin
   repeat

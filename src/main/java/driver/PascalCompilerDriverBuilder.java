@@ -91,8 +91,8 @@ public class PascalCompilerDriverBuilder extends CompilerDriverBuilder {
         checker.visit(tree);
         showContextualErrors();
 
-        PascalCheckerVisitor _checker = (PascalCheckerVisitor) checker;
-        if (_checker.getNumberOfContextualErrors() > 0) {
+        //PascalCheckerVisitor _checker = (PascalCheckerVisitor) checker;
+        if (contextualErrors > 0) {
             //throw new PascalCompilerException("Contextual analysis failed...");
             throw BuiltinException.CHECK_FAILED.getException();
         }
