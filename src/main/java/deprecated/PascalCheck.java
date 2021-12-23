@@ -1,7 +1,6 @@
-package driver.deprecated;
+package deprecated;
 
 import ast.visitor.PascalCustomLexer;
-import ast.visitor.PascalLexer;
 import ast.visitor.PascalParser;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;

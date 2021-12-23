@@ -1,4 +1,4 @@
-package driver.deprecated;
+package deprecated;
 
 import ast.visitor.PascalCustomLexer;
 import ast.visitor.PascalParser;

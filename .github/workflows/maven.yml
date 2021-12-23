@@ -26,8 +26,11 @@ jobs:
           distribution: 'adopt'
           cache: maven
 
-      - name: Build with Maven (Test Included)
-        run: mvn -B package --file pom.xml
+      - name: Build with Maven (Test skipped)
+        run: mvn -B package --file pom.xml -DskipTests=true
+
+      - name: Test with Maven
+        run: mvn test
 
       - name: Show Workspace Tree Before test
         run: tree
