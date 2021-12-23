@@ -1,6 +1,7 @@
 package driver;
 
 import annotation.TestResourcePath;
+import exception.BuiltinException;
 import exception.PascalCompilerException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -31,13 +32,13 @@ public class PascalCompilerDriverArgsUnitTest {
         });
     }
 
-    private static final PascalCompilerException invalidCommandException = new PascalCompilerException("Invalid command. Available Usage: parse, check");
-    private static final PascalCompilerException invalidPathException = new PascalCompilerException("Invalid file path");
+    //private static final PascalCompilerException invalidCommandException = new PascalCompilerException("Invalid command. Available Usage: parse, check");
+    //private static final PascalCompilerException invalidPathException = new PascalCompilerException("Invalid file path");
 
     private static Stream<Arguments> invalidArgumentsListProvider() {
         return Stream.of(
-                arguments("invalidCommand.json", invalidCommandException),
-                arguments("invalidPath.json", invalidPathException)
+                arguments("invalidCommand.json", BuiltinException.INVALID_COMMAND.getException()),
+                arguments("invalidPath.json", BuiltinException.INVALID_PATH.getException())
         );
     }
 

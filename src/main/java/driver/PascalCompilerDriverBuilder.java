@@ -5,6 +5,7 @@ import ast.visitor.PascalCustomLexer;
 import ast.visitor.PascalLexer;
 import ast.visitor.PascalParser;
 import ast.visitor.impl.PascalCheckerVisitor;
+import exception.BuiltinException;
 import exception.PascalCompilerException;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -28,19 +29,28 @@ public class PascalCompilerDriverBuilder extends CompilerDriverBuilder {
 
     private String fileName;
 
-    public PascalCompilerDriverBuilder(OutputStream outputStream) {
-        this.setOut(outputStream);
-    }
-
+    /**
+     * Create a new Driver Builder, with default standard output
+     * @param fileName - Source file
+     */
     public PascalCompilerDriverBuilder(String fileName) {
         this.fileName = fileName;
     }
 
+    /**
+     * Create a new Driver Builder with specific output
+     * @param outputStream - Specific output
+     * @param fileName - Source file
+     */
     public PascalCompilerDriverBuilder(OutputStream outputStream, String fileName) {
         this.setOut(outputStream);
         this.fileName = fileName;
     }
 
+    /**
+     * Print out information of source file & environment
+     * @param path - Source file
+     */
     private void printInformation(String path) {
         System.out.printf("Source file - %s\n", path);
         System.out.printf("Environment information - OS: %s, Arch: %s, Java version: %s\n",
@@ -62,8 +72,9 @@ public class PascalCompilerDriverBuilder extends CompilerDriverBuilder {
         tree = parser.program();
         showSyntacticErrors();
 
-        if (parser.getNumberOfSyntaxErrors() > 0) {
-            throw new PascalCompilerException("Syntactic analysis failed...");
+        if (syntaxErrors > 0 || tokenErrors > 0) {
+            //throw new PascalCompilerException("Syntactic analysis failed...");
+            throw BuiltinException.PARSE_FAILED.getException();
         }
 
         return this;
@@ -72,7 +83,8 @@ public class PascalCompilerDriverBuilder extends CompilerDriverBuilder {
     @Override
     public CompilerDriverBuilder check() throws PascalCompilerException, IOException {
         if (tokens == null || tree == null) {
-            throw new PascalCompilerException("Syntactic analysis not being executed yet...");
+            //throw new PascalCompilerException("Syntactic analysis not being executed yet...");
+            throw BuiltinException.PARSE_NOT_START.getException();
         }
 
         checker = new PascalCheckerVisitor(tokens);
@@ -81,7 +93,8 @@ public class PascalCompilerDriverBuilder extends CompilerDriverBuilder {
 
         PascalCheckerVisitor _checker = (PascalCheckerVisitor) checker;
         if (_checker.getNumberOfContextualErrors() > 0) {
-            throw new PascalCompilerException("Contextual analysis failed...");
+            //throw new PascalCompilerException("Contextual analysis failed...");
+            throw BuiltinException.CHECK_FAILED.getException();
         }
 
         return this;
@@ -89,11 +102,15 @@ public class PascalCompilerDriverBuilder extends CompilerDriverBuilder {
 
     private void println(String str) throws IOException {
         OutputStream out = getOut();
+
+        // if output is standard
         if (out instanceof PrintStream) {
             PrintStream outStd = new PrintStream(out);
             outStd.println(str);
             return;
         }
+
+        // when output is not PrintStream
         try {
             out.write(str.getBytes());
             out.write("\n".getBytes());
@@ -106,6 +123,7 @@ public class PascalCompilerDriverBuilder extends CompilerDriverBuilder {
 
     private void showSyntacticErrors() throws IOException {
         if (parser == null && checker == null) {
+            // REMARK: not a exception
             println("Compilation not start yet, nothing to be shown...");
             return;
         }

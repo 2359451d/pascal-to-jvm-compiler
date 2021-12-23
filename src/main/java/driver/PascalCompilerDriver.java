@@ -1,5 +1,6 @@
 package driver;
 
+import exception.BuiltinException;
 import exception.PascalCompilerException;
 import org.apache.commons.lang3.StringUtils;
 
@@ -18,11 +19,13 @@ public class PascalCompilerDriver {
         String path = args.length > 1 ? args[1] : null;
 
         if (StringUtils.isBlank(command) || !commandMap.contains(command)) {
-            throw new PascalCompilerException("Invalid command. Available Usage: parse, check");
+            //throw new PascalCompilerException("Invalid command. Available Usage: parse, check");
+            throw BuiltinException.INVALID_COMMAND.getException();
         }
 
         if (StringUtils.isBlank(path) || !path.endsWith(".pas")) {
-            throw new PascalCompilerException("Invalid file path");
+            //throw new PascalCompilerException("Invalid file path. Please specify valid path");
+            throw BuiltinException.INVALID_PATH.getException();
         }
 
         return Map.of("command", command, "path", path);
