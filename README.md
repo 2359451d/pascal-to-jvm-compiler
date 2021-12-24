@@ -1,6 +1,8 @@
-# L4-Source-Repo
+# Pascal to JVM compiler
 
-repo for level 4 project source code
+> A compiler for the classic programming language Pascal (or another language), using Java Virtual Machine code as the target language.
+
+# --
 
 submission details see
 
@@ -11,10 +13,10 @@ submission details see
 
 See
 
-* [issues](https://github.com/2359451d/L4-Source-Repo/issues) or 
+* [issues](https://github.com/2359451d/L4-Source-Repo/issues) or
 * [board](https://github.com/2359451d/L4-Source-Repo/projects/1)
 
-# Progress
+<!-- ## Progress
 
 Basic Progress:
 
@@ -46,7 +48,147 @@ Project Extension Progress:
 * docker & npm deployment
 * other possible extension?
   * AST visualisation
-  * etc.
+  * etc. -->
+
+# Readme
+
+<!-- Put a brief description of your code here. This should at least describe the file structure. -->
+
+temporary project structure see `tree.txt`. **DESCRIPTION TBC**
+
+## Build instructions
+
+<!-- **You must** include the instructions necessary to build and deploy this project successfully. If appropriate, also include
+instructions to run automated tests. -->
+
+Building steps (with Maven) are listed below. You may also run this project without building, using Jar or Docker.
+
+### Requirements
+
+<!-- List the all of the pre-requisites software required to set up your project (e.g. compilers, packages, libraries, OS, hardware) -->
+
+<!-- For example: -->
+
+<!-- * Python 3.7 -->
+<!-- * Packages: listed in `requirements.txt` -->
+<!-- * Tested on Windows 10 -->
+
+<!-- or another example: -->
+
+<!-- * Requires Raspberry Pi 3 -->
+<!-- * a Linux host machine with the `arm-none-eabi` toolchain (at least version `x.xx`) installed -->
+<!-- * a working LuaJIT installation > 2.1.0 -->
+
+* Java/JDK `11` (**Minimum**)
+* Maven `xxx`
+* Antlr `4.9.1`
+* Docker `xxx`
+* Test on linux/amd64, win10/amd64
+
+### Local Build with Maven
+
+TBC
+
+### Run Without Build - Java Jar
+
+File `target/pascal_jvm_compiler-jar-with-dependencies.jar` is ready to use which is exported using Maven with (**minimum**) JDK version of `11`
+
+To run the compiler in shell:
+
+* **Remark**: run the command below only where `jar` file exists or create a alias beforehand like `alias ptj="java -jar ./target/pascal-to-jvm-compiler-jar-with-dependencies.jar"`
+
+```bash
+# Usage:
+# Available command:
+#  - parse
+#  - check
+#  - compile
+java -jar pascal-to-jvm-compiler-jar-with-dependencies.jar <command> <path>
+```
+
+You may run a quick example using `./testArguments.pas` under the project root, to check whether it works or not:
+
+```bash
+# Parsing example Pascal source program
+# If works, you will see a syntactic analysis results with 0 errors
+java -jar pascal-to-jvm-compiler-jar-with-dependencies.jar parse ./testArguments.pas
+```
+
+If you have already created an alias, then directly run something like:
+
+```bash
+# Usage: [alias-name] <command> <path>
+ptj parse ./testArguments.pas
+```
+
+### Run Without Build - Docker Container
+
+[![DockerHub_url](https://img.shields.io/badge/DockerHub-pascal--to--jvm--compiler-blue.svg?style=flat-square&logo=docker&labelColor=grey)](https://hub.docker.com/r/barlinbento/pascal-to-jvm-compiler) - [link](https://hub.docker.com/r/barlinbento/pascal-to-jvm-compiler)
+
+Environment Information:
+
+* OpenJDK build - `eclipse-temurin:17`
+* Antlr 4.9.1
+
+Platforms are limited, supported platforms are listed below ([full available platforms see](https://github.com/docker/setup-qemu-action)):
+
+* `linux/amd64`
+* `linux/arm64`
+* `linux/arm/v7`
+* ...
+
+Make sure you have Docker installed.
+
+First pull the image from Dockerhub.
+
+```bash
+docker pull barlinbento/pascal-to-jvm-compiler:latest
+```
+
+Then you may run a new container each time to compile the source:
+
+* **Remark**: specify the host dir where your source files exist, the example below will take the current working directory. The volume must be mounted to `/usr/local/project/resources` (fixed in `Dockerfile`)
+
+```bash
+# docker run --rm -v <source-path>/:/usr/local/project/resources \
+#  pascal-to-jvm-compiler <command> <source-filename>
+
+docker run --rm -v $(pwd):/usr/local/project/resources \
+ pascal-to-jvm-compiler parse testArguments.pas
+```
+
+It is recommended to create an alias, **make sure you call the alias under the path where Pascal source programs exist, if choose `$(pwd)` as host path**
+
+```bash
+# Create an alias
+# Then usage: ptj <command> <path>
+alias ptj="docker run --rm -v $(pwd):/usr/local/project/resources pascal-to-jvm-compiler"
+
+# Then quick run the compiler
+ptj parse ./testArguments.pas
+```
+
+### Build steps
+
+<!-- List the steps required to build software.
+
+Hopefully something simple like `pip install -e .` or `make` or `cd build; cmake ..`. In
+some cases you may have much more involved setup required. -->
+
+TBC
+
+### Test steps
+
+<!-- List steps needed to show your software works. This might be running a test suite, or just starting the program; but something that could be used to verify your code is working correctly.
+
+Examples:
+
+* Run automated tests by running `pytest`
+* Start the software by running `bin/editor.exe` and opening the file `examples/example_01.bin` -->
+
+TBC
+
+# --------------DRAFT------------------
 
 # Regenerate Compiler Components (Lexer & Parser)
 
@@ -61,7 +203,7 @@ QUICK WAY: using antlr by docker, image env
 
 TBC
 
-Pull from [![DockerHub_url](https://img.shields.io/badge/DockerHub-antlr4.9.1--pascal-blue.svg?style=flat-square&logo=docker&labelColor=grey)](https://hub.docker.com/r/barlinbento/antlr4.9.1-pascal), make sure you are at the source  folder
+Pull from [![DockerHub_url](https://img.shields.io/badge/DockerHub-antlr4.9.1--pascal-blue.svg?style=flat-square&logo=docker&labelColor=grey)](https://hub.docker.com/r/barlinbento/antlr4.9.1-pascal), make sure you are at the source folder
 
 ```bash
 docker pull barlinbento/antlr4.9.1-pascal

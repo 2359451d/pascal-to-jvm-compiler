@@ -12,8 +12,8 @@
 
 # compiled components & output
 target/*
-!target/pascal_jvm_compiler-jar-with-dependencies.jar
-!target/pascal_jvm_compiler.jar
+!target/pascal-to-jvm-compiler-jar-with-dependencies.jar
+!target/pascal-to-jvm-compiler.jar
 out
 
 
