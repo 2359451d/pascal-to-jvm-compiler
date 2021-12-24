@@ -30,8 +30,8 @@ RUN echo 'alias antlr4="java -Xmx500M -cp '/usr/local/lib/antlr-4.9-complete.jar
 #WORKDIR /usr/local/grammar
 RUN mkdir -p /usr/local/project && mkdir -p /usr/local/project/resources
 WORKDIR /usr/local/project
-ADD ./target/pascal_jvm_compiler-jar-with-dependencies.jar pascal_jvm_compiler.jar
-ADD ./target/pascal_jvm_compiler.jar _pascal_jvm_compiler.jar
+ADD ./target/pascal-to-jvm-compiler-jar-with-dependencies.jar pascal-to-jvm-compiler.jar
+ADD ./target/pascal-to-jvm-compiler.jar _pascal-to-jvm-compiler.jar
 COPY ./usage.sh usage.sh
 # modify permission
 RUN chmod +x usage.sh

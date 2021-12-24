@@ -1,5 +1,7 @@
 # Pascal to JVM compiler
 
+[![Java CI with Maven, Docker (build & test & deploy)](https://github.com/2359451d/L4-Source-Repo/actions/workflows/maven.yml/badge.svg)](https://github.com/2359451d/L4-Source-Repo/actions/workflows/maven.yml)
+
 > A compiler for the classic programming language Pascal (or another language), using Java Virtual Machine code as the target language.
 
 # --
