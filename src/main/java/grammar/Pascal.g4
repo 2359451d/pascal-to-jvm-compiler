@@ -65,7 +65,9 @@ labelDeclarationPart
    ;
 
 label
-   : unsignedInteger
+    :
+    NUM_INT
+//   : unsignedInteger
    ;
 
 constantDefinitionPart
@@ -77,30 +79,37 @@ constantDefinition
    ;
 
 constantChr
-   : CHR LPAREN unsignedInteger RPAREN
+//   : CHR LPAREN unsignedInteger RPAREN
+    : CHR LPAREN NUM_INT RPAREN
    ;
 
+// id defined by constant-definition
+// one of values of an enumerated types
+// one of the standard id: false, true, maxint
 constant
-   : unsignedNumber
-   | sign unsignedNumber
-   | identifier
-   | sign identifier
-   | string
-   | constantChr
+   : unsignedNumber #unsignedNumberConst
+   | sign unsignedNumber #signedNumberConst
+   | identifier #constantIdentifier
+   | sign identifier #constantSignedIdentifier
+   | string #stringConst
+   | constantChr #chrConst // chr(int) , ordinal func
+   | bool_ #boolConst
+//   | TRUE #trueConst
+//   | FALSE #falseConst
    ;
 
 unsignedNumber
-   : unsignedInteger
-   | unsignedReal
+    :
+    type=(NUM_INT | NUM_REAL)
    ;
 
-unsignedInteger
-   : NUM_INT
-   ;
-
-unsignedReal
-   : NUM_REAL
-   ;
+//unsignedInteger
+//   : NUM_INT
+//   ;
+//
+//unsignedReal
+//   : NUM_REAL
+//   ;
 
 sign
    : PLUS
@@ -108,8 +117,8 @@ sign
    ;
 
 bool_
-   : TRUE
-   | FALSE
+   : TRUE # true
+   | FALSE # false
    ;
 
 string

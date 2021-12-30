@@ -4,12 +4,12 @@ public class ActualParam extends Param {
 
     private String label;
 
-    public ActualParam(Type type) {
+    public ActualParam(TypeDescriptor type) {
         setType(type);
         this.label = null;
     }
 
-    public ActualParam(Type type, String label) {
+    public ActualParam(TypeDescriptor type, String label) {
         setType(type);
         this.label = label;
     }
@@ -27,7 +27,7 @@ public class ActualParam extends Param {
     }
 
     @Override
-    public boolean equiv(Type type) {
+    public boolean equiv(TypeDescriptor type) {
         if (!(type instanceof ActualParam)) {
             return getType().equiv(type);
         }

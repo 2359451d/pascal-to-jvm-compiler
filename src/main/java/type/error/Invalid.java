@@ -1,6 +1,7 @@
 package type.error;
 
 import type.Type;
+import type.TypeDescriptor;
 
 /**
  * Used when the expression/value cannot be evaluated
@@ -10,7 +11,7 @@ public class Invalid extends Type {
     public Invalid() {
     }
 
-    public boolean equiv(Type that) {
+    public boolean equiv(TypeDescriptor that) {
         if (!(that instanceof Invalid)) return false;
         Invalid otherType = (Invalid) that;
 

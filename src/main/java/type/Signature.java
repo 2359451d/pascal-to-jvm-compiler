@@ -72,7 +72,7 @@ public class Signature extends Type {
     }
 
     @Override
-    public boolean equiv(Type type) {
+    public boolean equiv(TypeDescriptor type) {
         return false;
     }
 

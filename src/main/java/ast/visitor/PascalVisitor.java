@@ -71,11 +71,54 @@ public interface PascalVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitConstantChr(PascalParser.ConstantChrContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link PascalParser#constant}.
+	 * Visit a parse tree produced by the {@code unsignedNumberConst}
+	 * labeled alternative in {@link PascalParser#constant}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitConstant(PascalParser.ConstantContext ctx);
+	T visitUnsignedNumberConst(PascalParser.UnsignedNumberConstContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code signedNumberConst}
+	 * labeled alternative in {@link PascalParser#constant}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSignedNumberConst(PascalParser.SignedNumberConstContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code constantIdentifier}
+	 * labeled alternative in {@link PascalParser#constant}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitConstantIdentifier(PascalParser.ConstantIdentifierContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code constantSignedIdentifier}
+	 * labeled alternative in {@link PascalParser#constant}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitConstantSignedIdentifier(PascalParser.ConstantSignedIdentifierContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code stringConst}
+	 * labeled alternative in {@link PascalParser#constant}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitStringConst(PascalParser.StringConstContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code chrConst}
+	 * labeled alternative in {@link PascalParser#constant}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitChrConst(PascalParser.ChrConstContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code boolConst}
+	 * labeled alternative in {@link PascalParser#constant}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBoolConst(PascalParser.BoolConstContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PascalParser#unsignedNumber}.
 	 * @param ctx the parse tree
@@ -83,29 +126,25 @@ public interface PascalVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitUnsignedNumber(PascalParser.UnsignedNumberContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link PascalParser#unsignedInteger}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitUnsignedInteger(PascalParser.UnsignedIntegerContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link PascalParser#unsignedReal}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitUnsignedReal(PascalParser.UnsignedRealContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link PascalParser#sign}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitSign(PascalParser.SignContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link PascalParser#bool_}.
+	 * Visit a parse tree produced by the {@code true}
+	 * labeled alternative in {@link PascalParser#bool_}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitBool_(PascalParser.Bool_Context ctx);
+	T visitTrue(PascalParser.TrueContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code false}
+	 * labeled alternative in {@link PascalParser#bool_}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFalse(PascalParser.FalseContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PascalParser#string}.
 	 * @param ctx the parse tree

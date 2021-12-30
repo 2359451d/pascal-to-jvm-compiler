@@ -3,9 +3,9 @@ package runtime.proc;
 import runtime.RTLManager;
 import runtime.RunTimeLibFactory;
 import type.*;
+import type.primitive.Primitive;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -35,7 +35,7 @@ public class Write implements RTLManager {
         //add(Type.STR);
         //add(Type.REAL);
         //add(Type.VOID);
-        add(Str.class.getName());
+        add(StringLiteral.class.getName());
         add(File.class.getName());
     }};
 

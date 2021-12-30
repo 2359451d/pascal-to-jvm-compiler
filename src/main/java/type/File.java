@@ -2,12 +2,12 @@ package type;
 
 public class File extends Type {
 
-    private Type type;
+    private TypeDescriptor type;
 
     public File() {
     }
 
-    public File(Type type) {
+    public File(TypeDescriptor type) {
         this.type = type;
     }
 
@@ -19,7 +19,7 @@ public class File extends Type {
     }
 
     @Override
-    public boolean equiv(Type type) {
+    public boolean equiv(TypeDescriptor type) {
         if (!(type instanceof File)) return false;
         File fileType = (File) type;
         System.out.println("fileType.type.toString() = " + fileType.type.toString());

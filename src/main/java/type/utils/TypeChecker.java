@@ -1,6 +1,6 @@
 //package type.utils;
 //
-//import type.Primitive;
+//import type.primitive.Primitive;
 //import type.TypeCheck;
 //
 //public class TypeChecker {

@@ -1,13 +1,13 @@
 package type;
 
 public abstract class Param extends Type {
-    private Type type;
+    private TypeDescriptor type;
 
-    public Type getType() {
+    public TypeDescriptor getType() {
         return type;
     }
 
-    public void setType(Type type) {
+    public void setType(TypeDescriptor type) {
         this.type = type;
     }
 
@@ -17,8 +17,9 @@ public abstract class Param extends Type {
     //            CustomToStringStyle.SHORT_PREFIX_MULTI_LINE_STYLE);
     //}
 
+
     @Override
-    public boolean equiv(Type that) {
+    public boolean equiv(TypeDescriptor that) {
         //if (!(that instanceof Param)) return false;
         //if (this.) {
         //    return

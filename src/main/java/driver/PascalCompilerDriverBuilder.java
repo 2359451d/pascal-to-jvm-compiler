@@ -11,6 +11,7 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import type.Type;
+import type.TypeDescriptor;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -21,7 +22,7 @@ public class PascalCompilerDriverBuilder extends CompilerDriverBuilder {
     private PascalLexer lexer;
     private CommonTokenStream tokens; // token buffer
     private PascalParser parser;
-    private PascalBaseVisitor<Type> checker;
+    private PascalBaseVisitor<TypeDescriptor> checker;
     private ParseTree tree;
     private int syntaxErrors;
     private int tokenErrors;

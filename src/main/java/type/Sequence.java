@@ -4,9 +4,9 @@ import java.util.ArrayList;
 
 public class Sequence extends Type {
 
-    public ArrayList<Type> args;
+    public ArrayList<TypeDescriptor> args;
 
-    public Sequence(ArrayList<Type> seq) {
+    public Sequence(ArrayList<TypeDescriptor> seq) {
         args = seq;
     }
 
@@ -18,9 +18,9 @@ public class Sequence extends Type {
     }
 
     @Override
-    public boolean equiv(Type that) {
+    public boolean equiv(TypeDescriptor that) {
         if (that instanceof Sequence) {
-            ArrayList<Type> thatSequence = ((Sequence)that).args;
+            ArrayList<TypeDescriptor> thatSequence = ((Sequence)that).args;
             if (thatSequence.size() != args.size())
                 return false;
             for (int i = 0; i < thatSequence.size(); i++)

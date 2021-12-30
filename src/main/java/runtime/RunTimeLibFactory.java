@@ -5,6 +5,7 @@ package runtime;
 import runtime.proc.Write;
 import type.Type;
 import type.SymbolTable;
+import type.TypeDescriptor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,7 +28,7 @@ public class RunTimeLibFactory {
         new Write().addToFactory();
     }
 
-    public static void fillTable(SymbolTable<Type> symbolTable) {
+    public static void fillTable(SymbolTable<TypeDescriptor> symbolTable) {
         init();
         lib.forEach(symbolTable::put);
         symbolTable.displayCurrentScope();
