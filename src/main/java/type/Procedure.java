@@ -27,6 +27,10 @@ public class Procedure extends Type {
         return formalParams;
     }
 
+    public int getFormalParamsSize() {
+        return formalParams.size();
+    }
+
     @Override
     public boolean equiv(TypeDescriptor type) {
         return false;

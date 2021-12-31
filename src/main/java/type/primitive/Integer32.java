@@ -1,5 +1,6 @@
 package type.primitive;
 
+import org.junit.platform.commons.util.ToStringBuilder;
 import type.Type;
 import type.TypeDescriptor;
 
@@ -28,5 +29,10 @@ public class Integer32 extends Primitive{
     @Override
     public boolean equiv(TypeDescriptor type) {
         return super.equiv(type);
+    }
+
+    @Override
+    public String toString() {
+        return "integer32";
     }
 }

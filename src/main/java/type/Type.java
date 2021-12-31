@@ -20,9 +20,9 @@ public abstract class Type implements TypeDescriptor {
     public static final File FILE = new File();
 
     // error type
-    public static final Invalid INVALID_TYPE = new Invalid();
-    public static final Undefined UNDEFINED_TYPE = new Undefined();
-    public static final InvalidConstantType INVALID_CONSTANT_TYPE = new InvalidConstantType();
+    //public static final Invalid INVALID_TYPE = new Invalid();
+    //public static final Undefined UNDEFINED_TYPE = new Undefined();
+    //public static final InvalidConstantType INVALID_CONSTANT_TYPE = new InvalidConstantType();
 
     //public static final Str STRING = new Str();
 

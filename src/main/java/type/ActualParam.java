@@ -18,13 +18,13 @@ public class ActualParam extends Param {
         return label;
     }
 
-    @Override
-    public String toString() {
-        return "ActualParam{" +
-                "type=" + getType() +
-                ", label='" + label + '\'' +
-                '}';
-    }
+    //@Override
+    //public String toString() {
+    //    return "ActualParam{" +
+    //            "type=" + getType() +
+    //            ", label='" + label + '\'' +
+    //            '}';
+    //}
 
     @Override
     public boolean equiv(TypeDescriptor type) {
