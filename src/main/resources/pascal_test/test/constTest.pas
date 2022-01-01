@@ -19,7 +19,10 @@ const
   charConst = 'A'; {Remark, this would be recognized as StringLiteral}
   strConst = 'ABC';
 
-  notWorkIntConst = 2147483648;
+  minIntConst =-2147483648 ; {Works}
+  notWorkIntConst = 2147483648;{Overflows}
+  notWorkIntConst2 = -2147483649;{undeflow}
+  overflowConst =+2147483648 ;{overflows}
 
 
   {chrConst = chr(65);} {CHAR, Evaluated from chr() ,TBC}
@@ -27,10 +30,38 @@ const
 var
   flagVar: Boolean;
   int1: Integer;
+  strVar: string;
+  charVar: char;
 begin
+  charVar := strConst; {Illegal}
+  strVar := strConst;
+  strVar := charConst;
+
+
   int1 := intConst;
   flagVar := flagT;
-  int1 := 2147483648;{overflows}
+
+  {[-2147483648] and [2147483647]}
+  int1 := notWorkIntConst; {Illegal assignment [int1:=notWorkIntConst] with invalid constant right operand}
+  int1 := +notWorkIntConst; {Illegal assignment [int1:=+notWorkIntConst]}
+  int1 := -notWorkIntConst; {-2147483648 works, no overflow}
+
+  int1 := -2147483648;
+  int1 := 2147483648; {overflows}
   int1 := -2147483649; {underflows}
-{  flag := false; {Not allowed, Variable identifier expected}
+
+  flag := false; {Not allowed, Variable identifier expected, const reassignment}
+
+  int1 := -(-notWorkIntConst); {--2147483648 overflows, right: expr}
+  int1 := +(+notWorkIntConst); {overflows}
+
+  int1 := +(+(-notWorkIntConst)); {-, works}
+  int1 := -(+notWorkIntConst);{-+2147483648 works}
+
+  int1 := -(-2147483648); {overflows}
+  int1 := -(-(+2147483648)); {overflows}
+  int1 := -(+(-2147483648)); {overflows}
+  int1 := -(+2147483648); {works}
+
+
 end.

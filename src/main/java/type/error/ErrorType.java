@@ -11,7 +11,9 @@ public enum ErrorType implements TypeDescriptor {
     INVALID_CONSTANT_TYPE(101, "invalid constant type"),
     INVALID_FUNCTION_TYPE(102, "invalid function type"),
     INVALID_PROCEDURE_TYPE(103, "invalid procedure type"),
-    UNDEFINED_TYPE(200, "undefined type")
+    UNDEFINED_TYPE(200, "undefined type"),
+    INTEGER_OVERFLOW(300, "integer overflow"),
+    INTEGER_UNDERFLOW(301, "integer underflow")
 
     ;
 

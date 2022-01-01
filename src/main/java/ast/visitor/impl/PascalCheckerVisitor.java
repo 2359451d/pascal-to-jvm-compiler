@@ -4,6 +4,7 @@ import ast.visitor.PascalBaseVisitor;
 import ast.visitor.PascalParser;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -11,6 +12,7 @@ import runtime.RunTimeLibFactory;
 import type.*;
 import type.error.ErrorType;
 import type.primitive.Integer32;
+import type.primitive.IntegerBaseType;
 import util.ErrorMessage;
 
 import java.util.ArrayList;
@@ -29,6 +31,9 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     private CommonTokenStream tokens;
 
     private SymbolTable<TypeDescriptor> symbolTable = new SymbolTable<>();
+
+    // Max Builtin Integer Type (default - Integer32)
+    static final IntegerBaseType integerType = new Integer32();
 
     // Constructor
 
@@ -81,18 +86,34 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         return errorCount;
     }
 
-    private Integer32 getMaxInt(ParserRuleContext ctx) {
-        TypeDescriptor maxint = retrieve("maxint", ctx);
-        if (maxint instanceof Integer32) {
-            return (Integer32) maxint;
-        }
-        return null;
+    //private Integer32 getMaxInt(ParserRuleContext ctx) {
+    //    TypeDescriptor maxInt = retrieve("maxint", ctx);
+    //    if (maxInt instanceof Integer32) {
+    //        return (Integer32) maxInt;
+    //    }
+    //    return null;
+    //}
+
+    private boolean hasNoOverflow(Long number) {
+        return number <= integerType.MAX_VALUE;
+    }
+
+    private boolean hasNoUnderflow(Long number) {
+        return number >= integerType.MIN_VALUE;
+    }
+
+    private boolean hasNoOverflowOrUnderflow(Long number, boolean checkOverflow, boolean checkUnderflow) {
+        if (checkOverflow && checkUnderflow) {
+            return hasNoOverflow(number) && hasNoUnderflow(number);
+        } else if (checkOverflow) return hasNoOverflow(number);
+        return hasNoUnderflow(number);
     }
 
     private void predefine() {
         // Add predefined procedures to the type table.
         //BuiltInUtils.fillTable(symbolTable);
         symbolTable.put("maxint", new Integer32());
+
         RunTimeLibFactory.fillTable(symbolTable);
     }
 
@@ -191,12 +212,18 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     public TypeDescriptor visitConstantDefinition(PascalParser.ConstantDefinitionContext ctx) {
         System.out.println("*************Define new Const");
         System.out.println("ctx.getText() = " + ctx.getText());
-
         String id = ctx.identifier().getText();
         TypeDescriptor constantType = visit(ctx.constant());
-        if (!constantType.equiv(ErrorType.INVALID_CONSTANT_TYPE)) {
-            define(id, constantType, ctx);
-        }
+        //if (constantType.equiv(ErrorType.INTEGER_UNDERFLOW) ||
+        //        constantType.equiv(ErrorType.INTEGER_OVERFLOW)) {
+        //    reportError(ctx, "Illegal constant definition [%s] with right operand [%s] " +
+        //                    "which must be between [%d] and [%d]",
+        //            ctx.getText(), ctx.constant().getText(),
+        //            integerType.MIN_VALUE, integerType.MAX_VALUE
+        //    );
+        //}
+        // despite of the error, storing the right type
+        define(id, constantType, ctx);
         return null;
     }
 
@@ -216,24 +243,36 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     @Override
     public TypeDescriptor visitUnsignedNumberConst(PascalParser.UnsignedNumberConstContext ctx) {
-        switch (ctx.unsignedNumber().type.getType()) {
-            // check whether unsignedNumber(int) is less than maxint
-            case PascalParser.NUM_INT:
-                String unsignedInt = ctx.unsignedNumber().getText();
-                int unsignedIntValue = NumberUtils.toInt(unsignedInt, 0);
-                // overflows, 0 value derived from utils function
-                if (unsignedIntValue == 0 && unsignedInt.length() != 1) {
-                    //reportError(ctx,"Illegal constant definition [%s] with right operand [%s]" +
-                    //        "which must be between [%d] and [%d]",
-                    //
-                    //        );
-                    return ErrorType.INVALID_CONSTANT_TYPE;
-                }
-                break;
-            case PascalParser.NUM_REAL:
-                return Type.REAL;
+        TypeDescriptor unsignedNumber = visit(ctx.unsignedNumber());
+        if (unsignedNumber.equiv(Type.INTEGER)) {
+            Long numberValue = ((IntegerBaseType) unsignedNumber).getValue();
+            if (!hasNoOverflow(numberValue)) {
+                reportError(ctx, "Illegal constant definition [%s] with right operand [%s] " +
+                                "which must be between [%d] and [%d]",
+                        ctx.parent.getText(), ctx.getText(),
+                        integerType.MIN_VALUE, integerType.MAX_VALUE
+                );
+                //return ErrorType.INTEGER_OVERFLOW;
+            }
         }
-        return null;
+        return unsignedNumber;
+        //switch (ctx.unsignedNumber().type.getType()) {
+        //    // check whether unsignedNumber(int) is less than maxint
+        //    case PascalParser.NUM_INT:
+        //        TypeDescriptor number = visit(ctx.unsignedNumber());
+        //        Long numberValue = ((IntegerBaseType) number).getValue();
+        //        if (!hasNoOverflow(numberValue)) {
+        //            //reportError(ctx, "Illegal constant definition [%s] with right operand [%s] " +
+        //            //                "which must be between [%d] and [%d]",
+        //            //        ctx.parent.getText(), ctx.getText(),
+        //            //        integerType.MIN_VALUE, integerType.MAX_VALUE
+        //            //);
+        //            return ErrorType.INTEGER_OVERFLOW;
+        //        }
+        //        return visit(ctx.unsignedNumber());
+        //    case PascalParser.NUM_REAL:
+        //        return Type.REAL;
+        //}
     }
 
     /**
@@ -244,7 +283,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      * sign unsignedNumber #signedNumberConst
      * <p>
      * unsignedNumber
-     * : unsignedInteger
+     * : unsignedIntesger
      * | unsignedReal
      * ;
      *
@@ -253,36 +292,33 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     @Override
     public TypeDescriptor visitSignedNumberConst(PascalParser.SignedNumberConstContext ctx) {
-        //String monadicOperator = ctx.sign().getText();
         TypeDescriptor unsignedNumber = visit(ctx.unsignedNumber());
+        String monadicOperator = ctx.sign().getText();
         // Only check, if right operand is integer
         if (unsignedNumber.equiv(Type.INTEGER)) {
-            Double rightOperand = Double.valueOf(ctx.unsignedNumber().getText());
-            Integer32 maxInt = getMaxInt(ctx);
-            Integer maxIntMaxValue = maxInt.getMaxValue();
-            Integer maxIntMinValue = maxInt.getMinValue();
-
-            if (rightOperand <= maxIntMaxValue && rightOperand >= maxIntMinValue) return Type.INTEGER;
-            reportError(ctx, "Illegal constant definition [%s] with right operand [%s]" +
-                            "which must be between [%d] and [%d]",
-                    ctx.getParent().getText(), rightOperand, maxIntMinValue, maxIntMaxValue);
-            return ErrorType.INVALID_CONSTANT_TYPE;
-
-            //switch (monadicOperator) {
-            //    case "+":
-            //        if (rightOperand <= maxIntMaxValue) return Type.INTEGER;
-            //        else {
-            //            reportError(ctx, "Illegal constant definition [%s] with right operand [%s]" +
-            //                            "which must be between [%d] and [%d]",
-            //                    ctx.getParent().getText(), rightOperand, maxIntMinValue, maxIntMaxValue);
-            //            return Type.INVALID_CONSTANT_TYPE;
-            //        }
-            //        break;
-            //    case "-":
-            //        if (rightOperand > min)
-            //}
+            Long numberValue = ((IntegerBaseType) unsignedNumber).getValue();
+            switch (monadicOperator) {
+                case "-":
+                    numberValue = -numberValue;
+                    if (!hasNoUnderflow(numberValue)) {
+                        reportError(ctx, "Illegal constant definition [%s] with right operand [%s]" +
+                                        "which must be between [%d] and [%d]",
+                                ctx.getParent().getText(), numberValue, integerType.MIN_VALUE, integerType.MAX_VALUE);
+                        //return ErrorType.INTEGER_UNDERFLOW;
+                        break;
+                    }
+                case "+":
+                    if (!hasNoOverflow(numberValue)) {
+                        reportError(ctx, "Illegal constant definition [%s] with right operand [%s]" +
+                                        "which must be between [%d] and [%d]",
+                                ctx.getParent().getText(), numberValue, integerType.MIN_VALUE, integerType.MAX_VALUE);
+                        //return ErrorType.INTEGER_OVERFLOW;
+                        break;
+                    }
+            }
+            //return ErrorType.INVALID_CONSTANT_TYPE;
         }
-        return Type.REAL;
+        return unsignedNumber;
     }
 
     @Override
@@ -1061,13 +1097,14 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         String assignmentCtx = ctx.getText();
         System.out.println("ctx.getText() = " + assignmentCtx);
         TypeDescriptor rightType = visit(ctx.expression());
+        System.out.println("rightType = " + rightType);
         String id = ctx.variable().getText();
         TypeDescriptor leftType = retrieve(id, ctx);
 
         //Check whether value is assigned to function in non-function body
         if (leftType instanceof Function && (ctx.parent.parent.parent.parent.parent
                 .parent.parent) instanceof PascalParser.ProgramContext) {
-            reportError(ctx,"Illegal assignment [%s], assigning value to a function is not allowed here: %s ",
+            reportError(ctx, "Illegal assignment [%s], assigning value to a function is not allowed here: %s ",
                     assignmentCtx, leftType);
             return null;
         }
@@ -1087,11 +1124,13 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         }
 
         //TODO
-        if (rightType.equiv(ErrorType.INVALID_CONSTANT_TYPE)) {
-            Integer32 maxInt = getMaxInt(ctx);
+        if (rightType.equiv(ErrorType.INVALID_CONSTANT_TYPE) ||
+                rightType.equiv(ErrorType.INTEGER_OVERFLOW) ||
+                rightType.equiv(ErrorType.INTEGER_UNDERFLOW)
+        ) {
             reportError(ctx, "Illegal assignment [%s] with invalid constant right operand [%s] " +
                             "which must be between [%d] and [%d]",
-                    assignmentCtx, ctx.expression().getText(), maxInt.getMinValue(), maxInt.getMaxValue());
+                    assignmentCtx, ctx.expression().getText(), integerType.MIN_VALUE, integerType.MAX_VALUE);
             return null;
         }
 
@@ -1402,17 +1441,96 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     @Override
     public TypeDescriptor visitSignedFactor(PascalParser.SignedFactorContext ctx) {
-        TypeDescriptor type = visit(ctx.factor());
-        // involves monadic arithmetic expression, check the operand type
+        TypeDescriptor number = visit(ctx.factor());
+        System.out.println("visitSignedFactor = " + ctx.getText());
+        System.out.println("ctx.factor().getClass() = " + ctx.factor().getClass());
+
+        System.out.println("number type = " + number);
+        // involves monadic arithmetic expression, check the operand number
+        // i.e. signedFactor
         if (ctx.monadicOperator != null) {
             String monadicOp = ctx.monadicOperator.getText();
-            if (!type.equiv(Type.INTEGER) && !type.equiv(Type.REAL)) {
+
+            if (!number.equiv(Type.INTEGER) && !number.equiv(Type.REAL)) {
                 reportError(ctx, "Monadic arithmetic operator " + monadicOp +
-                        " cannot be applied on the operand: " + type);
+                        " cannot be applied on the operand: " + number);
+                //TODO suppress errors
                 return ErrorType.INVALID_TYPE;
+            } else if (number.equiv(Type.INTEGER)) {
+                System.out.println("ctx.factor().getText() = " + ctx.factor().getText());
+                System.out.println("signed number = " + number);
+                Long numberValue = ((IntegerBaseType) number).getValue();
+                RuleContext parentContext = ctx.parent.parent.parent.parent;
+
+                // update numberValue accords to the monadic operator
+                switch (monadicOp) {
+                    case "-":
+                        System.out.println("numberValue -> = " + numberValue);
+                        numberValue = -numberValue;
+                        System.out.println("-numberValue -> = " + numberValue);
+                        break;
+                        // if is the last constant node, gathering all the errors if any
+                        //if (!(parentContext instanceof PascalParser.FactorExprContext) &&
+                        //        !hasNoUnderflow(numberValue)) {
+                        //    System.out.println(" 溢出，Expr节点 ");
+                        //    return ErrorType.INTEGER_UNDERFLOW;
+                        //} else {
+                        //    // update value and return this node to be processed in the upper node
+                        //    ((IntegerBaseType) number).setValue(numberValue);
+                        //    System.out.println("pass to upper node = " + ((IntegerBaseType) number).getValue());
+                        //    System.out.println("number updated = " + number);
+                        //    return number;
+                        //}
+                        //if (!hasNoUnderflow(numberValue)) {
+                        //    return ErrorType.INTEGER_UNDERFLOW;
+                        //}
+                        //  overflow checking
+                    case "+":
+                        //if (!hasNoOverflow(numberValue)) {
+                        //    return ErrorType.INTEGER_OVERFLOW;
+                        //}
+                        break;
+
+
+                }
+
+                System.out.println("current numberValue = " + numberValue);
+                System.out.println("parentContextTT = " + parentContext.getClass());
+                // if is the last constant node, gathering all the errors if any
+                if (!(parentContext instanceof PascalParser.FactorExprContext)) {
+                    if (!hasNoOverflow(numberValue)) return ErrorType.INTEGER_OVERFLOW;
+                    if (!hasNoUnderflow(numberValue)) return ErrorType.INTEGER_UNDERFLOW;
+                    // no errors directly return number
+                    System.out.println("no errorrrr");
+                    return number;
+                } else {
+                    // update value(copy) and return this node to be processed in the upper node
+                    //((IntegerBaseType) number).setValue(numberValue);
+                    System.out.println("pass to upper node = " + ((IntegerBaseType) number).getValue());
+                    System.out.println("number updated = " + number);
+                    IntegerBaseType updatedNumber = new IntegerBaseType();
+                    updatedNumber.setValue(numberValue);
+                    return updatedNumber;
+                    //return copy;
+                }
+            }
+        } else {
+            // unsigned factor
+            if (number.equiv(Type.INTEGER)) {
+                // integer overflow checking
+                Long numberValue = null;
+                // if right operand is var
+                if (ctx.factor() instanceof PascalParser.FactorVarContext) {
+                    numberValue = ((IntegerBaseType) number).getValue();
+                } else numberValue = Long.valueOf(ctx.getText());
+                System.out.println("numberValue = " + numberValue);
+                if (!hasNoOverflowOrUnderflow(numberValue, true, false)) {
+                    // error reported in assignment node
+                    return ErrorType.INTEGER_OVERFLOW;
+                }
             }
         }
-        return type;
+        return number;
     }
 
     /**
@@ -1424,6 +1542,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     @Override
     public TypeDescriptor visitFactorVar(PascalParser.FactorVarContext ctx) {
+        System.out.println("retrieve(ctx.getText(),ctx) = " + retrieve(ctx.getText(), ctx));
         return retrieve(ctx.getText(), ctx);
     }
 
@@ -1462,7 +1581,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     public TypeDescriptor visitUnsignedNumber(PascalParser.UnsignedNumberContext ctx) {
         switch (ctx.type.getType()) {
             case PascalParser.NUM_INT:
-                return Type.INTEGER;
+                return Integer32.of(String.valueOf(ctx.NUM_INT()));
             case PascalParser.NUM_REAL:
                 return Type.REAL;
         }

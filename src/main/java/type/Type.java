@@ -6,11 +6,12 @@ import type.error.Invalid;
 import type.error.InvalidConstantType;
 import type.error.Undefined;
 import type.primitive.Integer32;
+import type.primitive.IntegerBaseType;
 import type.primitive.Primitive;
 
 public abstract class Type implements TypeDescriptor {
 
-    public static final Primitive INTEGER = new Integer32();
+    public static final Primitive INTEGER = new IntegerBaseType();
     public static final Primitive REAL = new Primitive("real");
     public static final Primitive CHARACTER = new Primitive("char");
     public static final Primitive BOOLEAN = new Primitive("bool");

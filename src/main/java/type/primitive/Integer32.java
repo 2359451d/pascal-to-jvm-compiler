@@ -1,7 +1,5 @@
 package type.primitive;
 
-import org.junit.platform.commons.util.ToStringBuilder;
-import type.Type;
 import type.TypeDescriptor;
 
 /**
@@ -9,21 +7,36 @@ import type.TypeDescriptor;
  * Takes up 32bit (4 bytes)
  * Refer to Free Pascal {$mode iso}, see more: https://wiki.freepascal.org/Mode_iso
  */
-public class Integer32 extends Primitive{
+public class Integer32 extends IntegerBaseType{
 
-    private final Integer maxValue = Integer.MAX_VALUE;
-    private final Integer minValue = Integer.MIN_VALUE;
+    public static final Integer MAX_VALUE = Integer.MAX_VALUE;
+    public static final Integer MIN_VALUE = Integer.MIN_VALUE;
+
+    // use Long type in case overflow/underflow
+    //private Long value;
 
     public Integer32() {
-        super("int");
+        super("int32");
     }
 
-    public Integer getMaxValue() {
-        return maxValue;
+    public Integer32(Long value) {
+        super("int32");
+        //this.value = value;
+        this.setValue(value);
     }
 
-    public Integer getMinValue() {
-        return minValue;
+    public Integer32(String value) {
+        super("int32");
+        //this.value = Long.valueOf(value);
+        this.setValue(Long.valueOf(value));
+    }
+
+    public static Integer32 of(Long value) {
+        return new Integer32(value);
+    }
+
+    public static Integer32 of(String value) {
+        return new Integer32(value);
     }
 
     @Override
