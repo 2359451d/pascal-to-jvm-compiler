@@ -1,6 +1,7 @@
-package type.primitive;
+package type.primitive.integer;
 
 import type.TypeDescriptor;
+import type.primitive.Primitive;
 
 public class IntegerBaseType extends Primitive {
 
@@ -17,6 +18,12 @@ public class IntegerBaseType extends Primitive {
 
     public IntegerBaseType(String type) {
         super(type);
+    }
+
+    public static IntegerBaseType copy(IntegerBaseType from) {
+        IntegerBaseType copy = new IntegerBaseType();
+        copy.setValue(from.getValue());
+        return copy;
     }
 
     public Long getValue() {

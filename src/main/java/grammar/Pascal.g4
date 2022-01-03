@@ -155,7 +155,7 @@ simpleType
    ;
 
 scalarType
-   : LPAREN identifierList RPAREN   # enumratedType
+   : LPAREN identifierList RPAREN   # enumeratedType
    ;
 
 subrangeType

@@ -1,6 +1,6 @@
 package type;
 
-public class File extends Type {
+public class File extends BaseType {
 
     private TypeDescriptor type;
 

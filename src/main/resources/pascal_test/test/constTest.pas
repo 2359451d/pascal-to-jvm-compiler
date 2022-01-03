@@ -40,6 +40,7 @@ begin
 
   int1 := intConst;
   flagVar := flagT;
+  flagVar := -(-true); {Illegal assignment [flagVar:=-(-true)], monadic operator}
 
   {[-2147483648] and [2147483647]}
   int1 := notWorkIntConst; {Illegal assignment [int1:=notWorkIntConst] with invalid constant right operand}
@@ -63,5 +64,5 @@ begin
   int1 := -(+(-2147483648)); {overflows}
   int1 := -(+2147483648); {works}
 
-
+  flagVar := 1 > notWorkIntConst; {Illegal assignment, right operand overflows}
 end.

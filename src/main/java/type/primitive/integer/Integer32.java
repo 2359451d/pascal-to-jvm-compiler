@@ -1,4 +1,4 @@
-package type.primitive;
+package type.primitive.integer;
 
 import type.TypeDescriptor;
 

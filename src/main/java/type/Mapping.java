@@ -1,6 +1,6 @@
 package type;
 
-public class Mapping extends Type{
+public class Mapping extends BaseType{
 
     public TypeDescriptor domain, result;
 
@@ -10,7 +10,7 @@ public class Mapping extends Type{
     }
 
     @Override
-    public boolean equiv (TypeDescriptor that) {
+    public boolean equiv(TypeDescriptor that) {
         if (that instanceof Mapping) {
             Mapping thatMapping =
                     (Mapping)that;

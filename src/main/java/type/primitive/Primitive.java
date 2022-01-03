@@ -1,37 +1,34 @@
 package type.primitive;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+import type.BaseType;
 import type.Type;
 import type.TypeDescriptor;
 
 /**
  * Primitive/Standard types of Pascal
- * Cover: Integer, Real, Character, Boolean
+ * Cover: Integer, FloatBaseType, Character, Boolean
  */
-public class Primitive extends Type {
+public class Primitive extends BaseType {
 
-    public String type;
+    private String type;
 
     public Primitive(String type) {
         this.type = type;
     }
-
-    //@Override
-    //public java.lang.String toString() {
-    //    return "Primitive{" +
-    //            "type='" + type + '\'' +
-    //            '}';
-    //}
 
     @Override
     public boolean equiv(TypeDescriptor type) {
         if (!(type instanceof Primitive)) return false;
         Primitive otherType = (Primitive) type;
 
-        //if (!this.type.equals(otherType.type) && this.type.equals("real")) {
-        //    // exception case of real type
-        //    System.out.println("this type is real");
-        //    return otherType.type.equals("int");
-        //}else
         return (this.type).equals(otherType.type);
+    }
+
+    @Override
+    public String toString() {
+        //include isConstant field which is excluded in BaseType class
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }

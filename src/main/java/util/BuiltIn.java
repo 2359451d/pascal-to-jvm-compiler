@@ -3,6 +3,7 @@ package util;
 import type.Mapping;
 import type.Sequence;
 import type.Type;
+import type.TypeDescriptor;
 
 import java.util.ArrayList;
 
@@ -13,9 +14,9 @@ public enum BuiltIn {
     WRITELN("writeLn", new Mapping(new Sequence(new ArrayList<>()), Type.VOID));
 
     private String id;
-    private Type type;
+    private TypeDescriptor type;
 
-    BuiltIn(String id, Type type) {
+    BuiltIn(String id, TypeDescriptor type) {
         this.id = id;
         this.type = type;
     }
@@ -24,7 +25,7 @@ public enum BuiltIn {
         return id;
     }
 
-    public Type getType() {
+    public TypeDescriptor getType() {
         return type;
     }
 }
