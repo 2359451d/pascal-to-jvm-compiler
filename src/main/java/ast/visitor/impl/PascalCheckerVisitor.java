@@ -369,7 +369,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         System.out.println("Define new enumerated type " + ctx.getText());
         List<PascalParser.IdentifierContext> identifierContextList = ctx.identifierList().identifier();
         Enumerated enumerated = new Enumerated();
-        HashMap<String, Integer> valueMap = new HashMap<>();
+        HashMap<String, Integer> valueMap = new LinkedHashMap<>();
         for (int i = 0; i < identifierContextList.size(); i++) {
             // store lower case, (simulating case insensitive)
             valueMap.put(identifierContextList.get(i).getText().toLowerCase(),
