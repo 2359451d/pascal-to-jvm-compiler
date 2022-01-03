@@ -44,4 +44,8 @@ public class TypeTable<T> implements Table<String, T>{
         });
     }
 
+    public boolean containsKey(String key) {
+        return table.containsKey(key.toLowerCase());
+    }
+
 }
