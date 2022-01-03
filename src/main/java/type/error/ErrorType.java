@@ -14,7 +14,8 @@ public enum ErrorType implements TypeDescriptor {
     UNDEFINED_TYPE(200, "undefined type"),
     INTEGER_OVERFLOW(300, "integer overflow"),
     INTEGER_UNDERFLOW(301, "integer underflow"),
-    INVALID_MONADIC_OPERATION(400, "invalid monadic operation")
+    INVALID_MONADIC_OPERATION(400, "invalid monadic operation"),
+    INVALID_EXPRESSION(500, "invalid expression")
     ;
 
     private int errorCode; // error code

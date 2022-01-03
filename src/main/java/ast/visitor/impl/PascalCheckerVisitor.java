@@ -14,7 +14,11 @@ import type.enumerated.EnumeratedType;
 import type.error.ErrorType;
 import type.param.ActualParam;
 import type.param.FormalParam;
+import type.primitive.Boolean;
+import type.primitive.Character;
 import type.primitive.Primitive;
+import type.primitive.floating.DefaultFloatType;
+import type.primitive.floating.FloatBaseType;
 import type.primitive.integer.Integer32;
 import type.primitive.integer.IntegerBaseType;
 import type.utils.SymbolTable;
@@ -407,16 +411,15 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     public TypeDescriptor visitPrimitiveType(PascalParser.PrimitiveTypeContext ctx) {
         switch (ctx.primitiveType.getType()) {
             case PascalParser.INTEGER:
-                //return Type.INTEGER;
                 return IntegerBaseType.copy(defaultIntegerType);
             case PascalParser.STRING:
                 return new StringLiteral();
             case PascalParser.CHAR:
-                return new Primitive("char");
+                return new Character();
             case PascalParser.BOOLEAN:
-                return new Primitive("bool");
+                return new Boolean();
             case PascalParser.REAL:
-                return new Primitive("real");
+                return DefaultFloatType.instance;
         }
         return super.visitPrimitiveType(ctx);
     }
@@ -442,7 +445,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             valueMap.put(id,
                     i);
             // insert each enumerated identifier into the symbol table
-            symbolTable.put(id, new EnumeratedIdentifier(id));
+            symbolTable.put(id, new EnumeratedIdentifier(enumeratedType, id));
         }
         enumeratedType.setValueMap(valueMap);
 
@@ -1162,11 +1165,27 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     public TypeDescriptor visitAssignmentStatement(PascalParser.AssignmentStatementContext ctx) {
         String assignmentCtx = ctx.getText();
         System.out.println("ctx.getText() = " + assignmentCtx);
+
         String id = ctx.variable().getText();
         String expression = ctx.expression().getText();
 
-        TypeDescriptor leftType = retrieve(id, ctx);
+        // suppress errors
+        TypeDescriptor leftType = retrieve(id, false, ctx);
         System.out.println("leftType = " + leftType);
+
+        if (leftType.equiv(ErrorType.UNDEFINED_TYPE) && !typeTable.containsKey(id)) {
+            reportError(ctx,"%s is undeclared", id);
+            return null;
+        }
+
+        // if left identifier is an defined type identifier or enumerated type identifier
+        // report errors
+        if (leftType instanceof EnumeratedIdentifier || typeTable.containsKey(id)) {
+            if (leftType.equiv(ErrorType.UNDEFINED_TYPE)) leftType = typeTable.get(id);
+            reportError(ctx, "Illegal assignment [%s]. Assigning value to identifier [%s - type: %s]\nis not allowed",
+                    ctx.getText(), id, leftType);
+            return null;
+        }
 
         // if expected enumerated type, suppress errors
         // i.e. skip visit expression node in trivial way
@@ -1185,10 +1204,8 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         TypeDescriptor rightType = visit(ctx.expression());
         System.out.println("rightType = " + rightType);
 
-        if (rightType.equiv(ErrorType.UNDEFINED_TYPE)) {
-            //reportError(ctx, "Illegal assignment [%s]. Right operand [%s] is not defined",
-            //        assignmentCtx, ctx.expression().getText());
-            // suppress errors in this node (error already reported when retrieving in the symbol table)
+        if (rightType.equiv(ErrorType.UNDEFINED_TYPE) || rightType.equiv(ErrorType.INVALID_EXPRESSION)) {
+            // suppress errors in this node (error already reported in other nodes)
             return null;
         }
 
@@ -1334,19 +1351,19 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      * @return
      */
     private boolean isSimpleType(TypeDescriptor type) {
-        return (type.equiv(Type.REAL) || isOrdinalType(type));
+        return (type instanceof FloatBaseType || isOrdinalType(type));
     }
 
     /**
-     * TODO: Enumerated types & Subrange NOT IMPLEMENTED
+     * TODO: Subrange NOT IMPLEMENTED
      * ordinal-type = new-ordinal-type(enumerated,subrange) | ordinal-type(int, boolean, char)
      *
      * @param type
      * @return
      */
     private boolean isOrdinalType(TypeDescriptor type) {
-        return (type.equiv(Type.INTEGER) || type.equiv(Type.CHARACTER)
-                || type.equiv(Type.BOOLEAN));
+        return (type instanceof IntegerBaseType || type instanceof Character
+                || type instanceof Boolean || type instanceof EnumeratedIdentifier);
     }
 
     /**
@@ -1360,31 +1377,38 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     @Override
     public TypeDescriptor visitExpression(PascalParser.ExpressionContext ctx) {
+        System.out.println("********Expression Starts********");
         TypeDescriptor lType = visit(ctx.simpleExpression());
         TypeDescriptor rType = null;
+
         if (ctx.e2 != null) {
             rType = visit(ctx.e2);
             String operator = ctx.relationalOperator.getText();
+            System.out.println("ctx.getText() = " + ctx.getText());
+            System.out.println("lType = " + lType);
+            System.out.println("rType = " + rType);
+
+            // suppress errors
+            if (rType.equiv(ErrorType.INVALID_EXPRESSION)) {
+                return rType;
+            }
 
             // check whether operands are simple types
             if (!(isSimpleType(lType))) {
                 reportError(ctx, String.format(
-                        "Relational operator [%s] cannot" +
-                                " be applied on left operand [%s] of expression [%s]: %s",
-                        operator, ctx.simpleExpression().getText(), ctx.getText(), lType));
+                        "Illegal expression [%s]: Relational operator [%s] cannot" +
+                                " be applied on left operand [%s - type: %s]",
+                        ctx.getText(), operator, ctx.simpleExpression().getText(), lType));
                 // suppress error
-                //return Type.BOOLEAN;
-                return new Primitive("bool");
-                //return ErrorType.INVALID_TYPE;
+                return ErrorType.INVALID_EXPRESSION;
             }
+
             if (!(isSimpleType(rType))) {
-                reportError(ctx, String.format("Relational operator [%s] cannot" +
-                                " be applied on right operand [%s] of expression [%s]: %s",
-                        operator, ctx.expression().getText(), ctx.getText(), rType));
+                reportError(ctx, String.format("Illegal expression [%s]: Relational operator [%s] cannot" +
+                                " be applied on right operand [%s - type: %s]",
+                        ctx.getText(), operator, ctx.e2.getText(), rType));
                 // suppress error
-                //return Type.BOOLEAN;
-                return new Primitive("bool");
-                //return ErrorType.INVALID_TYPE;
+                return ErrorType.INVALID_EXPRESSION;
             }
 
             // relational expression
@@ -1397,15 +1421,15 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                     //if (lType.equiv(Type.STRING_LITERAL) || rType.equiv(Type.STRING_LITERAL)) return Type.BOOLEAN;
                     if (lType.equiv(Type.STRING) || rType.equiv(Type.STRING)) return new Primitive("bool");
                 }
-                reportError(ctx, "Expression [" + ctx.getText() + "] types are incompatible! Type: " +
+                reportError(ctx, "Expression [" + ctx.getText() + "] types are incompatible! lType: " +
                         lType + " rType: " + rType);
-                return ErrorType.INVALID_TYPE;
+                return ErrorType.INVALID_EXPRESSION;
             }
 
         }
         // if looping statement, return bool otherwise return type of simpleExpression()
         //return rType != null ? Type.BOOLEAN : lType;
-        return rType != null ? new Primitive("bool") : lType;
+        return rType != null ? new Boolean() : lType;
     }
 
     /**
@@ -1774,11 +1798,12 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     @Override
     public TypeDescriptor visitTrue(PascalParser.TrueContext ctx) {
         //return Type.BOOLEAN;
-        return new Primitive("bool");
+        //return new Primitive("bool");
+        return new Boolean();
     }
 
     @Override
     public TypeDescriptor visitFalse(PascalParser.FalseContext ctx) {
-        return new Primitive("bool");
+        return new Boolean();
     }
 }
