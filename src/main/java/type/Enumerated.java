@@ -4,6 +4,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -20,7 +21,7 @@ import java.util.Map;
 public class Enumerated extends BaseType {
 
     // mapping identifier to a ordinal number
-    private Map<String, Integer> valueMap = new HashMap<>();
+    private Map<String, Integer> valueMap = new LinkedHashMap<>();
 
     public Map<String, Integer> getValueMap() {
         return valueMap;
