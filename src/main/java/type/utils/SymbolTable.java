@@ -2,11 +2,9 @@ package type.utils;
 
 import java.util.*;
 
-public class SymbolTable<A> {
+public class SymbolTable<A> implements Table<String, A> {
 
-    //private HashMap<String, A> globals, locals;
     private Deque<HashMap<String, A>> scope_stack;
-    //private HashMap<String, A> current_scope; // ref to hashmap var locals, used to control the stack(deque) iteration
 
     /**
      * Initialise the symbol table
@@ -25,7 +23,7 @@ public class SymbolTable<A> {
         // local part (if enabled, choose the most recent one) or to the global part
         // (otherwise). Return true if id is unique.
         //HashMap<String, A> scope =
-                //(current_scope != null ? current_scope : globals);
+        //(current_scope != null ? current_scope : globals);
         // get the most recent stack frame
         HashMap<String, A> scope = scope_stack.getLast();
         // if the identifier is not defined yet
@@ -48,8 +46,8 @@ public class SymbolTable<A> {
                 // (most recent first)
                 Iterator<HashMap<String, A>> scopeStackDescendingIterator = scope_stack.descendingIterator();
                 scopeStackDescendingIterator.next(); // skip current scope
-                while (scopeStackDescendingIterator.hasNext()){
-                    System.out.printf("No declaration in current scope - [depth %d], try to retrieve from former scope\n", scope_stack.size()-1);
+                while (scopeStackDescendingIterator.hasNext()) {
+                    System.out.printf("No declaration in current scope - [depth %d], try to retrieve from former scope\n", scope_stack.size() - 1);
                     scope = scopeStackDescendingIterator.next();
                     if (scope.containsKey(id)) return scope.get(id);
                 }
@@ -63,20 +61,10 @@ public class SymbolTable<A> {
         return scope_stack.getLast();
     }
 
-    //public A getLocal(String id) {
-    //    // Retrieve the attribute corresponding to id in the
-    //    // local part (most recent one) of this symbol table. Return the attribute,
-    //    // or null if id is not found.
-    //    if (current_scope != null)
-    //        return current_scope.get(id);
-    //    else
-    //        return null;
-    //}
-
     public void enterLocalScope() {
         // Enable the local part of this symbol table.
         // One new symbol table corresponds to one new scope
-        System.out.println("Enter new local scope, last depth = " + (scope_stack.size()-1));
+        System.out.println("Enter new local scope, last depth = " + (scope_stack.size() - 1));
         scope_stack.addLast(new HashMap<>());
     }
 
@@ -84,26 +72,18 @@ public class SymbolTable<A> {
         // Discard all entries in current scope of this symbol table.
         // i.e. pop out the topmost stack frame
         // or no effect if no more local scopes defined.
-        if (scope_stack.size() >1) scope_stack.removeLast();
+        if (scope_stack.size() > 1) scope_stack.removeLast();
     }
 
-    //public String toString() {
-    //    // Return a textual representation of this symbol table.
-    //    String s = "Globals: " + globals + "\n";
-    //    if (locals != null)
-    //        s += "Locals: " + locals + "\n";
-    //    return s;
-    //}
-
-    public void displayCurrentScope(){
+    public void displayCurrentScope() {
         // Display all the symbols of current scope (most recent)
         int size = scope_stack.size();
-        String isGlobal = size == 1? "global" : "local";
+        String isGlobal = size == 1 ? "global" : "local";
         System.out.println("\n===========");
-        System.out.printf("Symbols of current scope - %s - [depth %d] \n", isGlobal, size -1);
+        System.out.printf("Symbols of current scope - %s - [depth %d] \n", isGlobal, size - 1);
         HashMap<String, A> currentScope = scope_stack.getLast();
-        currentScope.forEach((id, type) ->{
-            System.out.println("id = " + id + " ,type = " +type);
+        currentScope.forEach((id, type) -> {
+            System.out.println("id = " + id + " ,type = " + type);
         });
         System.out.println("===========\n");
     }
@@ -116,10 +96,9 @@ public class SymbolTable<A> {
 
         while (scopeStackIterator.hasNext()) {
             scope = scopeStackIterator.next();
-            if (count==depth) break;
+            if (count == depth) break;
             count++;
         }
         return "Symbols of the scope with depth " + depth + ": " + scope + "\n";
     }
-
 }

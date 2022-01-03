@@ -84,7 +84,7 @@ constantChr
    ;
 
 // id defined by constant-definition
-// one of values of an enumerated types
+// one of values of an enumeratedType types
 // one of the standard id: false, true, maxint
 constant
    : unsignedNumber #unsignedNumberConst

@@ -1,9 +1,10 @@
-package type;
+package type.enumerated;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import type.BaseType;
+import type.TypeDescriptor;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -18,7 +19,9 @@ import java.util.Map;
  * Remark:
  * An enumeration data type is a finite list of named discrete values. Enumerations virtually give names to individual integer values, however, you cannot (directly) do arithmetic operations on it.
  */
-public class Enumerated extends BaseType {
+public class EnumeratedType extends BaseType {
+
+    private String typeName = null;
 
     // mapping identifier to a ordinal number
     private Map<String, Integer> valueMap = new LinkedHashMap<>();
@@ -31,10 +34,18 @@ public class Enumerated extends BaseType {
         this.valueMap = valueMap;
     }
 
+    public String getTypeName() {
+        return typeName;
+    }
+
+    public void setTypeName(String typeName) {
+        this.typeName = typeName;
+    }
+
     @Override
     public boolean equiv(TypeDescriptor type) {
-        if (!(type instanceof Enumerated)) return false;
-        Enumerated that = (Enumerated) type;
+        if (!(type instanceof EnumeratedType)) return false;
+        EnumeratedType that = (EnumeratedType) type;
         Map<String, Integer> thatValueMap = that.getValueMap();
         Map<String, Integer> thisValueMap = this.valueMap;
         for (String s : thatValueMap.keySet()) {
