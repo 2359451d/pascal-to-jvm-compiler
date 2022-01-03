@@ -3,7 +3,7 @@ package type;
 import java.util.List;
 
 @Deprecated
-public class Signature extends Type {
+public class Signature extends BaseType {
 
     private List<String> paramList;
     //private Set<Type> acceptableTypes;

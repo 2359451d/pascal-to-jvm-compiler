@@ -2,7 +2,7 @@ package type;
 
 import java.util.ArrayList;
 
-public class Sequence extends Type {
+public class Sequence extends BaseType {
 
     public ArrayList<TypeDescriptor> args;
 

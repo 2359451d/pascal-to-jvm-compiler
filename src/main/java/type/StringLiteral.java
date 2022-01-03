@@ -1,6 +1,7 @@
 package type;
 
-public class StringLiteral extends Type{
+public class StringLiteral extends BaseType{
+
     private String value;
 
     public StringLiteral() { }
@@ -11,6 +12,11 @@ public class StringLiteral extends Type{
 
     @Override
     public boolean equiv(TypeDescriptor type) {
+        // if constant, directly compare type
+        //if (type instanceof Constant) {
+        //    return ((Constant)type).getType() instanceof StringLiteral;
+        //}
+
         return (type instanceof StringLiteral) ;
     }
 

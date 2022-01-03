@@ -3,8 +3,7 @@ package runtime;
 // proc, func
 
 import runtime.proc.Write;
-import type.Type;
-import type.SymbolTable;
+import type.utils.SymbolTable;
 import type.TypeDescriptor;
 
 import java.util.HashMap;
@@ -14,7 +13,7 @@ public class RunTimeLibFactory {
 
     public static RunTimeLibFactory instance = new RunTimeLibFactory();
 
-    public static Map<String, Type> lib;
+    public static Map<String, TypeDescriptor> lib;
 
     private RunTimeLibFactory() {
         lib = new HashMap<>();

@@ -1,5 +1,11 @@
 package type;
 
+/**
+ * Base interface for BaseType, ErrorType, BuiltinType
+ * <p>
+ *     Usage: to uniform the return type of visitors
+ * </p>
+ */
 public interface TypeDescriptor {
-    public boolean equiv(TypeDescriptor type);
+    boolean equiv(TypeDescriptor type);
 }

@@ -188,12 +188,12 @@ public interface PascalVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitSimpleType(PascalParser.SimpleTypeContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code enumratedType}
+	 * Visit a parse tree produced by the {@code enumeratedType}
 	 * labeled alternative in {@link PascalParser#scalarType}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitEnumratedType(PascalParser.EnumratedTypeContext ctx);
+	T visitEnumeratedType(PascalParser.EnumeratedTypeContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PascalParser#subrangeType}.
 	 * @param ctx the parse tree

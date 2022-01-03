@@ -6,7 +6,7 @@ import util.CustomToStringStyle;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Procedure extends Type {
+public class Procedure extends BaseType {
 
     private List<TypeDescriptor> formalParams;
 

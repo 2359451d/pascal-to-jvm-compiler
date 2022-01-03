@@ -1547,16 +1547,16 @@ public class PascalParser extends Parser {
 			super.copyFrom(ctx);
 		}
 	}
-	public static class EnumratedTypeContext extends ScalarTypeContext {
+	public static class EnumeratedTypeContext extends ScalarTypeContext {
 		public TerminalNode LPAREN() { return getToken(PascalParser.LPAREN, 0); }
 		public IdentifierListContext identifierList() {
 			return getRuleContext(IdentifierListContext.class,0);
 		}
 		public TerminalNode RPAREN() { return getToken(PascalParser.RPAREN, 0); }
-		public EnumratedTypeContext(ScalarTypeContext ctx) { copyFrom(ctx); }
+		public EnumeratedTypeContext(ScalarTypeContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitEnumratedType(this);
+			if ( visitor instanceof PascalVisitor ) return ((PascalVisitor<? extends T>)visitor).visitEnumeratedType(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1565,7 +1565,7 @@ public class PascalParser extends Parser {
 		ScalarTypeContext _localctx = new ScalarTypeContext(_ctx, getState());
 		enterRule(_localctx, 42, RULE_scalarType);
 		try {
-			_localctx = new EnumratedTypeContext(_localctx);
+			_localctx = new EnumeratedTypeContext(_localctx);
 			enterOuterAlt(_localctx, 1);
 			{
 			setState(317);

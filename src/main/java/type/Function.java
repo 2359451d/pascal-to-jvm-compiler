@@ -5,7 +5,7 @@ import util.CustomToStringStyle;
 
 import java.util.List;
 
-public class Function extends Type {
+public class Function extends BaseType {
 
     private List<TypeDescriptor> formalParams;
 

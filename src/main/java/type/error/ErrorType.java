@@ -13,8 +13,8 @@ public enum ErrorType implements TypeDescriptor {
     INVALID_PROCEDURE_TYPE(103, "invalid procedure type"),
     UNDEFINED_TYPE(200, "undefined type"),
     INTEGER_OVERFLOW(300, "integer overflow"),
-    INTEGER_UNDERFLOW(301, "integer underflow")
-
+    INTEGER_UNDERFLOW(301, "integer underflow"),
+    INVALID_MONADIC_OPERATION(400, "invalid monadic operation")
     ;
 
     private int errorCode; // error code
