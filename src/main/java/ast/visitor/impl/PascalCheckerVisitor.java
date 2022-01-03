@@ -9,13 +9,17 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import runtime.RunTimeLibFactory;
 import type.*;
+import type.enumerated.EnumeratedIdentifier;
+import type.enumerated.EnumeratedType;
 import type.error.ErrorType;
 import type.param.ActualParam;
 import type.param.FormalParam;
+import type.primitive.Primitive;
 import type.primitive.integer.Integer32;
 import type.primitive.integer.IntegerBaseType;
-import type.primitive.Primitive;
 import type.utils.SymbolTable;
+import type.utils.Table;
+import type.utils.TypeTable;
 import util.ErrorMessage;
 
 import java.util.*;
@@ -29,6 +33,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     private CommonTokenStream tokens;
 
     private SymbolTable<TypeDescriptor> symbolTable = new SymbolTable<>();
+    private TypeTable<TypeDescriptor> typeTable = new TypeTable<>();
 
     // Max Builtin Integer Type (default - Integer32)
     static final IntegerBaseType defaultIntegerType = new Integer32();
@@ -108,21 +113,35 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     }
 
     private void define(String id, TypeDescriptor type,
-                        ParserRuleContext decl) {
-        // Add id with its type to the type table, checking
+                        ParserRuleContext ctx) {
+
+        Table<String, TypeDescriptor> table = null;
+        if (ctx instanceof PascalParser.TypeDefinitionContext) {
+            // new entry is inserted into the type table
+            table = typeTable;
+        } else table = symbolTable;
+
+        // Add id with its type to the type/symbol table, checking
         // that id is not already declared in the same scope.
         // IGNORE CASE
-        boolean ok = symbolTable.put(id.toLowerCase(), type);
+        boolean ok = table.put(id.toLowerCase(), type);
         if (!ok)
-            reportError(decl, id + " is redeclared");
+            reportError(ctx, id + " is redeclared");
     }
 
-    private TypeDescriptor retrieve(String id, boolean notSuppressError, ParserRuleContext occ) {
-        // Retrieve id's type from the type table.
+    private TypeDescriptor retrieve(String id, boolean notSuppressError,
+                                    ParserRuleContext ctx) {
+        Table<String,TypeDescriptor> table = null;
+
+        if (ctx instanceof PascalParser.TypeIdentifierContext) {
+            table = typeTable;
+        } else table = symbolTable;
+
+        // Retrieve id's type from the symbol table.
         // Case insensitive
-        TypeDescriptor type = symbolTable.get(id.toLowerCase());
+        TypeDescriptor type = table.get(id.toLowerCase());
         if (type == null) {
-            if (notSuppressError) reportError(occ, id + " is undeclared");
+            if (notSuppressError) reportError(ctx, id + " is undeclared");
             return ErrorType.UNDEFINED_TYPE;
         } else
             return type;
@@ -165,9 +184,56 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         return super.visitIdentifierList(ctx);
     }
 
+    /**
+     * Retrieve the type from the type table
+     * Return the type if defined, otherwise return null
+     *
+     * <p>
+     * typeIdentifier
+     *    : identifier                                 # typeId
+     *    | primitiveType=(CHAR | BOOLEAN | INTEGER | REAL | STRING)  # primitiveType
+     *    ;
+     * @param ctx
+     * @return
+     */
+    @Override
+    public TypeDescriptor visitTypeId(PascalParser.TypeIdContext ctx) {
+        String id = ctx.identifier().getText();
+        TypeDescriptor type = retrieve(id, true, ctx);
+        System.out.println("id = " + id);
+        System.out.println("type = " + type);
+        System.out.println("typeTable.get(id.toLowerCase()) = " + typeTable.get(id.toLowerCase()));
+        return type;
+    }
+
+    /**
+     * Each new defined type would be inserted into the type table
+     * <p>
+     *     typeName -> Type
+     * </p>
+     *
+     * <p>
+     * typeDefinition
+     *    : identifier EQUAL (type_ | functionType | procedureType)
+     *    ;
+     * @param ctx
+     * @return
+     */
+    @Override
+    public TypeDescriptor visitTypeDefinition(PascalParser.TypeDefinitionContext ctx) {
+        System.out.println("Defin new type");
+        String id = ctx.identifier().getText();
+        TypeDescriptor type = visit(ctx.type_());
+        define(id,type,ctx);
+        return null;
+    }
+
     @Override
     public TypeDescriptor visitVariableDeclaration(PascalParser.VariableDeclarationContext ctx) {
         System.out.println("Variable Decl Starts*************");
+
+        typeTable.showAllTheTypes();
+
         List<PascalParser.IdentifierContext> identifierContextList = ctx.identifierList().identifier();
         for (PascalParser.IdentifierContext identifierContext : identifierContextList) {
             String id = identifierContext.IDENT().getText();
@@ -368,16 +434,19 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     public TypeDescriptor visitEnumeratedType(PascalParser.EnumeratedTypeContext ctx) {
         System.out.println("Define new enumerated type " + ctx.getText());
         List<PascalParser.IdentifierContext> identifierContextList = ctx.identifierList().identifier();
-        Enumerated enumerated = new Enumerated();
+        EnumeratedType enumeratedType = new EnumeratedType();
         HashMap<String, Integer> valueMap = new LinkedHashMap<>();
         for (int i = 0; i < identifierContextList.size(); i++) {
             // store lower case, (simulating case insensitive)
-            valueMap.put(identifierContextList.get(i).getText().toLowerCase(),
+            String id = identifierContextList.get(i).getText().toLowerCase();
+            valueMap.put(id,
                     i);
+            // insert each enumerated identifier into the symbol table
+            symbolTable.put(id, new EnumeratedIdentifier(id));
         }
-        enumerated.setValueMap(valueMap);
+        enumeratedType.setValueMap(valueMap);
 
-        return enumerated;
+        return enumeratedType;
     }
 
     /**
@@ -1102,8 +1171,8 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         // if expected enumerated type, suppress errors
         // i.e. skip visit expression node in trivial way
         // check whether right identifier is valid in the predefined value Map
-        if (leftType instanceof Enumerated) {
-            Enumerated _leftType = (Enumerated) leftType;
+        if (leftType instanceof EnumeratedType) {
+            EnumeratedType _leftType = (EnumeratedType) leftType;
             Map<String, Integer> valueMap = _leftType.getValueMap();
             System.out.println("valueMap.containsKey(expression.toLowerCase()) = " + valueMap.containsKey(expression.toLowerCase()));
             if (!valueMap.containsKey(expression.toLowerCase())) {

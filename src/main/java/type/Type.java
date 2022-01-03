@@ -1,5 +1,6 @@
 package type;
 
+import type.enumerated.EnumeratedType;
 import type.primitive.Boolean;
 import type.primitive.Character;
 import type.primitive.Primitive;
@@ -19,7 +20,7 @@ public enum Type implements TypeDescriptor {
     STRING(new StringLiteral()),
     FILE(new File()),
     // FIXME not necessary? no sense to compare sth with raw enumerated type
-    ENUMERATED(new Enumerated());;
+    ENUMERATED(new EnumeratedType());;
 
 
     private BaseType type;
