@@ -44,8 +44,10 @@ public class Subrange extends BaseType {
      */
     @Override
     public boolean equiv(TypeDescriptor type) {
-        //if (hostType != type.getClass() && hostType!= EnumeratedType.class) return false;
-        return false;
+        if (!(type instanceof Subrange)) return false;
+        Subrange that = (Subrange) type;
+        return this.hostType == that.hostType && this.lowerBound.equiv(that.lowerBound)
+                && this.upperBound.equiv(that.upperBound);
     }
 
     //@Override

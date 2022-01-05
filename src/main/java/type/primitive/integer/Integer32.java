@@ -31,6 +31,14 @@ public class Integer32 extends IntegerBaseType{
         this.setValue(Long.valueOf(value));
     }
 
+    public Integer32(String value, boolean isConstant) {
+        super("int32");
+        //this.value = Long.valueOf(value);
+        this.setValue(Long.valueOf(value));
+        this.setConstant(isConstant);
+    }
+
+
     public static Integer32 of(Long value) {
         return new Integer32(value);
     }
@@ -44,8 +52,8 @@ public class Integer32 extends IntegerBaseType{
         return super.equiv(type);
     }
 
-    @Override
-    public String toString() {
-        return "integer32";
-    }
+    //@Override
+    //public String toString() {
+    //    return "integer32";
+    //}
 }
