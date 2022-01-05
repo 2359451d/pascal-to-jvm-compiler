@@ -1,11 +1,10 @@
 package type.enumerated;
 
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import type.BaseType;
 import type.TypeDescriptor;
-
-import java.lang.reflect.Field;
+import util.CustomToStringStyle;
 
 /**
  * Represents a single value of an existing enumerated type
@@ -47,14 +46,7 @@ public class EnumeratedIdentifier extends BaseType {
 
     @Override
     public String toString() {
-        ReflectionToStringBuilder reflectionToStringBuilder =
-                new ReflectionToStringBuilder(this,
-                        ToStringStyle.SHORT_PREFIX_STYLE) {
-                    @Override
-                    protected boolean accept(Field field) {
-                        return !field.getName().equals("isConstant");
-                    }
-                };
-        return reflectionToStringBuilder.toString();
+        //include isConstant field which is excluded in BaseType class
+        return ToStringBuilder.reflectionToString(this, CustomToStringStyle.SHORT_PREFIX_MULTI_LINE_STYLE);
     }
 }

@@ -56,9 +56,9 @@ public class EnumeratedType extends BaseType {
         return true;
     }
 
-    @Override
-    public String toString() {
-        //include isConstant field which is excluded in BaseType class
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
-    }
+    //@Override
+    //public String toString() {
+    //    //include isConstant field which is excluded in BaseType class
+    //    return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    //}
 }

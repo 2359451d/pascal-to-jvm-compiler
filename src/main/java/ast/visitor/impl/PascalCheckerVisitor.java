@@ -7,6 +7,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
+import org.apache.commons.lang3.StringUtils;
 import runtime.RunTimeLibFactory;
 import type.*;
 import type.enumerated.EnumeratedIdentifier;
@@ -145,7 +146,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         // Case insensitive
         TypeDescriptor type = table.get(id.toLowerCase());
         if (type == null) {
-            if (notSuppressError) reportError(ctx, id + " is undeclared");
+            if (notSuppressError) reportError(ctx, "Identifier %s is undeclared", id);
             return ErrorType.UNDEFINED_TYPE;
         } else
             return type;
@@ -203,7 +204,10 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     @Override
     public TypeDescriptor visitTypeId(PascalParser.TypeIdContext ctx) {
         String id = ctx.identifier().getText();
-        TypeDescriptor type = retrieve(id, true, ctx);
+        TypeDescriptor type = retrieve(id, false, ctx);
+        if (type.equiv(ErrorType.UNDEFINED_TYPE)) {
+            reportError(ctx,"Type %s is undeclared",id);
+        }
         System.out.println("id = " + id);
         System.out.println("type = " + type);
         System.out.println("typeTable.get(id.toLowerCase()) = " + typeTable.get(id.toLowerCase()));
@@ -468,8 +472,65 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     @Override
     public TypeDescriptor visitSubrangeType(PascalParser.SubrangeTypeContext ctx) {
-        //TODO subrange
-        return super.visitSubrangeType(ctx);
+        // choose type of the first constant as the host type
+        TypeDescriptor lowerBound = visit(ctx.constant(0));
+        TypeDescriptor upperBound = visit(ctx.constant(1));
+        // check whether lowerBound & upperBound is valid
+        ErrorType subrangeError = checkSubrangeDecl(lowerBound, upperBound, ctx);
+        if (null!= subrangeError) {
+            if (subrangeError.equiv(ErrorType.INVALID_SUBRANGE_TYPE)) {
+                reportError(ctx,"Invalid subrange bound type [%s]. \nLtype: %s,\nRtype:%s",
+                        ctx.getText(), lowerBound, upperBound);
+            }
+            if (subrangeError.equiv(ErrorType.INCOMPATIBLE_SUBRANGE_TYPE)) {
+                reportError(ctx,"Incompatible subrange bound [%s]. \nLtype: %s,\nRtype:%s",
+                        ctx.getText(), lowerBound, upperBound);
+            }
+            if (subrangeError.equiv(ErrorType.INVALID_SUBRANGE_BOUND)) {
+                reportError(ctx,"Invalid subrange bound [%s]. Lower bound value > Upper bound value",
+                        ctx.getText());
+            }
+        }
+
+        Subrange subrange = new Subrange(lowerBound, upperBound);
+        System.out.println("subrange.getHostType() = " + subrange.getHostType());
+        return subrange;
+    }
+
+    private ErrorType checkSubrangeDecl(TypeDescriptor lowerBound, TypeDescriptor upperBound, PascalParser.SubrangeTypeContext ctx) {
+        if (lowerBound.getClass() != upperBound.getClass()) return ErrorType.INCOMPATIBLE_SUBRANGE_TYPE;
+        if (lowerBound instanceof Boolean) {
+            boolean lowerValue = ((Boolean) lowerBound).getValue();
+            boolean upperValue = ((Boolean) upperBound).getValue();
+            return java.lang.Boolean.compare(lowerValue, upperValue) == 1? ErrorType.INVALID_SUBRANGE_BOUND : null;
+        }
+        if (lowerBound instanceof StringLiteral) {
+            String lowerValue = ((StringLiteral) lowerBound).getValue();
+            String upperValue = ((StringLiteral) upperBound).getValue();
+            //System.out.println("lowerValue = " + lowerValue);
+            //System.out.println("upperValue = " + upperValue);
+            //System.out.println("StringUtils.compare(lowerValue, upperValue) = " + StringUtils.compare(lowerValue, upperValue));
+            // only accepts character type(1 char + 2 marks) as subrange bound
+            if (lowerValue.length()>3 || upperValue.length()>3) return ErrorType.INVALID_SUBRANGE_TYPE;
+            if (StringUtils.compare(lowerValue,upperValue)>0) return ErrorType.INVALID_SUBRANGE_BOUND;
+        }
+
+        if (lowerBound instanceof IntegerBaseType) {
+            Long lowerValue = ((IntegerBaseType) lowerBound).getValue();
+            Long upperValue = ((IntegerBaseType) upperBound).getValue();
+            return lowerValue <= upperValue ? null : ErrorType.INVALID_SUBRANGE_BOUND;
+        }
+
+        if (lowerBound instanceof EnumeratedIdentifier) {
+            Map<String, Integer> valueMap = ((EnumeratedIdentifier) lowerBound).getBelongsTo().getValueMap();
+            String lowerValue = ((EnumeratedIdentifier) lowerBound).getValue();
+            String upperValue = ((EnumeratedIdentifier) upperBound).getValue();
+            // enumerated types are not of the same kind
+            if (!valueMap.containsKey(upperValue)) return ErrorType.INCOMPATIBLE_SUBRANGE_TYPE;
+            if (valueMap.get(lowerValue) > valueMap.get(upperValue)) return ErrorType.INVALID_SUBRANGE_BOUND;
+        }
+
+        return null;
     }
 
     @Override
@@ -1195,16 +1256,31 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             Map<String, Integer> valueMap = _leftType.getValueMap();
             System.out.println("valueMap.containsKey(expression.toLowerCase()) = " + valueMap.containsKey(expression.toLowerCase()));
             if (!valueMap.containsKey(expression.toLowerCase())) {
-                reportError(ctx,"Illegal enumerated type assignment [%s]. Right operand [%s] is not defined.\nExpected: [%s]",
+                TypeDescriptor typeDescriptor = symbolTable.get(expression.toLowerCase());
+                // if enumerated constant defined
+                if (typeDescriptor != null && typeDescriptor instanceof EnumeratedIdentifier) {
+                    EnumeratedIdentifier constant = (EnumeratedIdentifier) typeDescriptor;
+                    if (constant.isConstant() && valueMap.containsKey(constant.getValue())) return null;
+                }
+                if (typeDescriptor == null) {
+                    reportError(ctx,"Illegal enumerated type assignment [%s]. Right operand [%s] is not defined.\nExpected: [%s]",
                                 assignmentCtx, expression, valueMap.keySet());
+                }else reportError(ctx,"Illegal enumerated type assignment [%s]. Right operand [%s] is not valid.\nExpected: [%s]",
+                        assignmentCtx, expression, valueMap.keySet());
             }
             return null;
         }
 
         TypeDescriptor rightType = visit(ctx.expression());
-        System.out.println("rightType = " + rightType);
+        System.out.println("expression rightType = " + rightType);
 
-        if (rightType.equiv(ErrorType.UNDEFINED_TYPE) || rightType.equiv(ErrorType.INVALID_EXPRESSION)) {
+        if (rightType.equiv(ErrorType.UNDEFINED_TYPE)) {
+            reportError(ctx,"Illegal assignment [%s]. Right operand [%s] is not defined.",
+                    assignmentCtx, ctx.expression().getText());
+            return null;
+        }
+
+        if (rightType.equiv(ErrorType.INVALID_EXPRESSION)) {
             // suppress errors in this node (error already reported in other nodes)
             return null;
         }
@@ -1213,7 +1289,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         if (leftType instanceof BaseType) {
             boolean isConstant = ((BaseType) leftType).isConstant();
             if (isConstant) {
-                System.out.println("illegal leftType = " + leftType + " " +id);
                 reportError(ctx, "Illegal assignment [%s], constant value reassigning is not allowed",
                         assignmentCtx);
                 return null;
@@ -1221,9 +1296,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         }
 
         if (rightType.equiv(ErrorType.INVALID_MONADIC_OPERATION)) {
-            //reportError(ctx, "Monadic arithmetic operator " + monadicOp +
-            //        " cannot be applied on the operand: " + number);
-
             reportError(ctx,"Illegal assignment [%s], monadic operator cannot be applied on right operand: %s ",
                     assignmentCtx, expression);
             return null;
@@ -1265,6 +1337,12 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         if (rightType.equiv(ErrorType.INVALID_FUNCTION_TYPE)) {
             reportError(ctx, "Illegal assignment [%s]. Right operand [%s] is not a function",
                     assignmentCtx, expression);
+            return null;
+        }
+
+        if (leftType instanceof Subrange) {
+            if (isValidSubrange((Subrange) leftType, rightType, ctx)) return null;
+            reportError(ctx,"invalid subrange %s",assignmentCtx);
             return null;
         }
 
@@ -1324,6 +1402,57 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                     assignmentCtx, leftType.toString(), rightType.toString());
         }
         return null;
+    }
+
+    private boolean isValidSubrange(Subrange leftType, TypeDescriptor rightType, PascalParser.AssignmentStatementContext ctx) {
+        Class<? extends TypeDescriptor> hostType = leftType.getHostType();
+        TypeDescriptor lowerBound = leftType.getLowerBound();
+        TypeDescriptor upperBound = leftType.getUpperBound();
+
+        // check whether rightType is valid value of the enumerated subrange
+        if (hostType == EnumeratedType.class) {
+            // if right is not a enumerated value, directly return false
+            if (!(rightType instanceof EnumeratedIdentifier)) return false;
+            // perform further checking, whether right value is in the valueMap
+            EnumeratedIdentifier enumLowerBound = (EnumeratedIdentifier) lowerBound;
+            Map<String, Integer> valueMap = enumLowerBound.getBelongsTo().getValueMap();
+            String rightValue = ((EnumeratedIdentifier) rightType).getValue();
+            return valueMap.containsKey(rightValue.toLowerCase());
+        }
+
+        System.out.println("hostType = " + hostType);
+        System.out.println("rightType class = " + rightType);
+        System.out.println("rightType = " + rightType.getClass());
+        // check other ordinal types
+        if (rightType.getClass() == hostType) {
+            if (rightType instanceof Boolean) {
+                boolean rightValue = ((Boolean) rightType).getValue();
+                boolean lowerValue = ((Boolean) lowerBound).getValue();
+                boolean upperValue = ((Boolean) upperBound).getValue();
+                return rightValue == lowerValue || rightValue == upperValue;
+            }
+
+            if (rightType instanceof IntegerBaseType) {
+                Long rightValue = ((IntegerBaseType) rightType).getValue();
+                Long lowerValue = ((IntegerBaseType) lowerBound).getValue();
+                Long upperValue = ((IntegerBaseType) upperBound).getValue();
+                return rightValue >= lowerValue && rightValue <= upperValue;
+            }
+
+            // char subrange
+            if (rightType instanceof StringLiteral) {
+                String rightValue = ((StringLiteral) rightType).getValue();
+                String lowerValue = ((StringLiteral) lowerBound).getValue();
+                String upperValue = ((StringLiteral) upperBound).getValue();
+                //System.out.println("lowerValue = " + lowerValue);
+                //System.out.println("upperValue = " + upperValue);
+                //System.out.println("rightValue = " + rightValue);
+                //System.out.println("rightValue.compareTo(upperValue = " + rightValue.compareTo(upperValue));
+                //System.out.println("rightValue.compareTo(lowerValue) = " + rightValue.compareTo(lowerValue));
+                return rightValue.compareTo(lowerValue)>=0 && rightValue.compareTo(upperValue)<=0;
+            }
+        }
+        return false;
     }
 
     /**
@@ -1703,7 +1832,8 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     @Override
     public TypeDescriptor visitFactorVar(PascalParser.FactorVarContext ctx) {
-        return retrieve(ctx.getText(), ctx);
+        // suppress errors
+        return retrieve(ctx.getText(), false, ctx);
     }
 
     @Override
@@ -1785,25 +1915,16 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     //}
     @Override
     public TypeDescriptor visitString(PascalParser.StringContext ctx) {
-        return new StringLiteral();
-        //return Type.STRING_LITERAL;
+        return new StringLiteral(ctx.getText());
     }
-
-    //@Override
-    //public TypeDescriptor visitBool_(PascalParser.Bool_Context ctx) {
-    //    return Type.BOOLEAN;
-    //}
-
 
     @Override
     public TypeDescriptor visitTrue(PascalParser.TrueContext ctx) {
-        //return Type.BOOLEAN;
-        //return new Primitive("bool");
-        return new Boolean();
+        return new Boolean(true);
     }
 
     @Override
     public TypeDescriptor visitFalse(PascalParser.FalseContext ctx) {
-        return new Boolean();
+        return new Boolean(false);
     }
 }
