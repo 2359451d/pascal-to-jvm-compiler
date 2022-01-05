@@ -20,6 +20,7 @@ import type.primitive.Character;
 import type.primitive.Primitive;
 import type.primitive.floating.DefaultFloatType;
 import type.primitive.floating.FloatBaseType;
+import type.primitive.integer.DefaultIntegerType;
 import type.primitive.integer.Integer32;
 import type.primitive.integer.IntegerBaseType;
 import type.utils.SymbolTable;
@@ -136,7 +137,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
     private TypeDescriptor retrieve(String id, boolean notSuppressError,
                                     ParserRuleContext ctx) {
-        Table<String,TypeDescriptor> table = null;
+        Table<String, TypeDescriptor> table = null;
 
         if (ctx instanceof PascalParser.TypeIdentifierContext) {
             table = typeTable;
@@ -195,9 +196,10 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      *
      * <p>
      * typeIdentifier
-     *    : identifier                                 # typeId
-     *    | primitiveType=(CHAR | BOOLEAN | INTEGER | REAL | STRING)  # primitiveType
-     *    ;
+     * : identifier                                 # typeId
+     * | primitiveType=(CHAR | BOOLEAN | INTEGER | REAL | STRING)  # primitiveType
+     * ;
+     *
      * @param ctx
      * @return
      */
@@ -206,7 +208,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         String id = ctx.identifier().getText();
         TypeDescriptor type = retrieve(id, false, ctx);
         if (type.equiv(ErrorType.UNDEFINED_TYPE)) {
-            reportError(ctx,"Type %s is undeclared",id);
+            reportError(ctx, "Type %s is undeclared", id);
         }
         System.out.println("id = " + id);
         System.out.println("type = " + type);
@@ -217,13 +219,14 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     /**
      * Each new defined type would be inserted into the type table
      * <p>
-     *     typeName -> Type
+     * typeName -> Type
      * </p>
      *
      * <p>
      * typeDefinition
-     *    : identifier EQUAL (type_ | functionType | procedureType)
-     *    ;
+     * : identifier EQUAL (type_ | functionType | procedureType)
+     * ;
+     *
      * @param ctx
      * @return
      */
@@ -232,7 +235,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         System.out.println("Defin new type");
         String id = ctx.identifier().getText();
         TypeDescriptor type = visit(ctx.type_());
-        define(id,type,ctx);
+        define(id, type, ctx);
         return null;
     }
 
@@ -430,10 +433,11 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
     /**
      * Enumerated type, which is defined to be the Ordinal type
-     *
+     * <p>
      * scalarType
-     *    : LPAREN identifierList RPAREN   # enumeratedType
-     *    ;
+     * : LPAREN identifierList RPAREN   # enumeratedType
+     * ;
+     *
      * @param ctx
      * @return
      */
@@ -462,10 +466,10 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      * - int, char, bool,
      * <p>
      * - existing subrange/enum types
-     *
+     * <p>
      * subrangeType
-     *    : constant DOTDOT constant
-     *    ;
+     * : constant DOTDOT constant
+     * ;
      *
      * @param ctx
      * @return
@@ -477,17 +481,17 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         TypeDescriptor upperBound = visit(ctx.constant(1));
         // check whether lowerBound & upperBound is valid
         ErrorType subrangeError = checkSubrangeDecl(lowerBound, upperBound, ctx);
-        if (null!= subrangeError) {
+        if (null != subrangeError) {
             if (subrangeError.equiv(ErrorType.INVALID_SUBRANGE_TYPE)) {
-                reportError(ctx,"Invalid subrange bound type [%s]. \nLtype: %s,\nRtype:%s",
+                reportError(ctx, "Invalid subrange bound type [%s]. \nLtype: %s,\nRtype:%s",
                         ctx.getText(), lowerBound, upperBound);
             }
             if (subrangeError.equiv(ErrorType.INCOMPATIBLE_SUBRANGE_TYPE)) {
-                reportError(ctx,"Incompatible subrange bound [%s]. \nLtype: %s,\nRtype:%s",
+                reportError(ctx, "Incompatible subrange bound [%s]. \nLtype: %s,\nRtype:%s",
                         ctx.getText(), lowerBound, upperBound);
             }
             if (subrangeError.equiv(ErrorType.INVALID_SUBRANGE_BOUND)) {
-                reportError(ctx,"Invalid subrange bound [%s]. Lower bound value > Upper bound value",
+                reportError(ctx, "Invalid subrange bound [%s]. Lower bound value > Upper bound value",
                         ctx.getText());
             }
         }
@@ -502,7 +506,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         if (lowerBound instanceof Boolean) {
             boolean lowerValue = ((Boolean) lowerBound).getValue();
             boolean upperValue = ((Boolean) upperBound).getValue();
-            return java.lang.Boolean.compare(lowerValue, upperValue) == 1? ErrorType.INVALID_SUBRANGE_BOUND : null;
+            return java.lang.Boolean.compare(lowerValue, upperValue) == 1 ? ErrorType.INVALID_SUBRANGE_BOUND : null;
         }
         if (lowerBound instanceof StringLiteral) {
             String lowerValue = ((StringLiteral) lowerBound).getValue();
@@ -511,8 +515,8 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             //System.out.println("upperValue = " + upperValue);
             //System.out.println("StringUtils.compare(lowerValue, upperValue) = " + StringUtils.compare(lowerValue, upperValue));
             // only accepts character type(1 char + 2 marks) as subrange bound
-            if (lowerValue.length()>3 || upperValue.length()>3) return ErrorType.INVALID_SUBRANGE_TYPE;
-            if (StringUtils.compare(lowerValue,upperValue)>0) return ErrorType.INVALID_SUBRANGE_BOUND;
+            if (lowerValue.length() > 3 || upperValue.length() > 3) return ErrorType.INVALID_SUBRANGE_TYPE;
+            if (StringUtils.compare(lowerValue, upperValue) > 0) return ErrorType.INVALID_SUBRANGE_BOUND;
         }
 
         if (lowerBound instanceof IntegerBaseType) {
@@ -615,32 +619,32 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     //    }
 
 
-        // further checking, specifically for builtin overloading proc/func
-        //if (!acceptableSignatures.contains(signature)) {
-        //    for (int i = 0; i < paramList.size(); i++) {
-        //        Type actualParam = paramList.get(i);
-        //        for (Signature acceptableSignature : acceptableSignatures) {
-        //            List<Type> acceptableSignatureParamList = acceptableSignature.getParamList();
-        //            Set<Type> acceptableTypes = acceptableSignature.getAcceptableTypes();
-        //            if (typeOrderToBeChecked.contains(actualParam.getClass().getName())) {
-        //                System.out.println("TO be checked");
-        //                if (!acceptableSignatureParamList.get(i).equiv(actualParam)) {
-        //                    System.out.println("actualParam = " + actualParam);
-        //                    System.out.println("acceptableSignatureParamList.get(i) = " + acceptableSignatureParamList.get(i));
-        //                    reportError("signature " + signature
-        //                            + " is not supported", ctx);
-        //                }
-        //            } else if (!acceptableTypes.contains(actualParam)){
-        //                reportError("type " + actualParam +" in "+ "signature " + signature
-        //                        + " is not supported", ctx);
-        //            }
-        //        }
-        //    }
-        //for (Type actualParam : paramList) {
-        //}
-        //}
-        //
-        //System.out.println("=======checkAcceptableSignature ends=========");
+    // further checking, specifically for builtin overloading proc/func
+    //if (!acceptableSignatures.contains(signature)) {
+    //    for (int i = 0; i < paramList.size(); i++) {
+    //        Type actualParam = paramList.get(i);
+    //        for (Signature acceptableSignature : acceptableSignatures) {
+    //            List<Type> acceptableSignatureParamList = acceptableSignature.getParamList();
+    //            Set<Type> acceptableTypes = acceptableSignature.getAcceptableTypes();
+    //            if (typeOrderToBeChecked.contains(actualParam.getClass().getName())) {
+    //                System.out.println("TO be checked");
+    //                if (!acceptableSignatureParamList.get(i).equiv(actualParam)) {
+    //                    System.out.println("actualParam = " + actualParam);
+    //                    System.out.println("acceptableSignatureParamList.get(i) = " + acceptableSignatureParamList.get(i));
+    //                    reportError("signature " + signature
+    //                            + " is not supported", ctx);
+    //                }
+    //            } else if (!acceptableTypes.contains(actualParam)){
+    //                reportError("type " + actualParam +" in "+ "signature " + signature
+    //                        + " is not supported", ctx);
+    //            }
+    //        }
+    //    }
+    //for (Type actualParam : paramList) {
+    //}
+    //}
+    //
+    //System.out.println("=======checkAcceptableSignature ends=========");
     //
     //}
 
@@ -1235,7 +1239,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         System.out.println("leftType = " + leftType);
 
         if (leftType.equiv(ErrorType.UNDEFINED_TYPE) && !typeTable.containsKey(id)) {
-            reportError(ctx,"%s is undeclared", id);
+            reportError(ctx, "%s is undeclared", id);
             return null;
         }
 
@@ -1263,10 +1267,11 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                     if (constant.isConstant() && valueMap.containsKey(constant.getValue())) return null;
                 }
                 if (typeDescriptor == null) {
-                    reportError(ctx,"Illegal enumerated type assignment [%s]. Right operand [%s] is not defined.\nExpected: [%s]",
-                                assignmentCtx, expression, valueMap.keySet());
-                }else reportError(ctx,"Illegal enumerated type assignment [%s]. Right operand [%s] is not valid.\nExpected: [%s]",
-                        assignmentCtx, expression, valueMap.keySet());
+                    reportError(ctx, "Illegal enumerated type assignment [%s]. Right operand [%s] is not defined.\nExpected: [%s]",
+                            assignmentCtx, expression, valueMap.keySet());
+                } else
+                    reportError(ctx, "Illegal enumerated type assignment [%s]. Right operand [%s] is not valid.\nExpected: [%s]",
+                            assignmentCtx, expression, valueMap.keySet());
             }
             return null;
         }
@@ -1275,7 +1280,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         System.out.println("expression rightType = " + rightType);
 
         if (rightType.equiv(ErrorType.UNDEFINED_TYPE)) {
-            reportError(ctx,"Illegal assignment [%s]. Right operand [%s] is not defined.",
+            reportError(ctx, "Illegal assignment [%s]. Right operand [%s] is not defined.",
                     assignmentCtx, ctx.expression().getText());
             return null;
         }
@@ -1296,7 +1301,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         }
 
         if (rightType.equiv(ErrorType.INVALID_MONADIC_OPERATION)) {
-            reportError(ctx,"Illegal assignment [%s], monadic operator cannot be applied on right operand: %s ",
+            reportError(ctx, "Illegal assignment [%s], monadic operator cannot be applied on right operand: %s ",
                     assignmentCtx, expression);
             return null;
         }
@@ -1342,7 +1347,11 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
         if (leftType instanceof Subrange) {
             if (isValidSubrange((Subrange) leftType, rightType, ctx)) return null;
-            reportError(ctx,"invalid subrange %s",assignmentCtx);
+            // right expression evaluated to null, i.e. RUNTIME CHECK
+            if (rightType instanceof IntegerBaseType && ((IntegerBaseType) rightType).getValue() == null) {
+                return null;
+            }
+            reportError(ctx, "invalid subrange %s", assignmentCtx);
             return null;
         }
 
@@ -1436,6 +1445,9 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 Long rightValue = ((IntegerBaseType) rightType).getValue();
                 Long lowerValue = ((IntegerBaseType) lowerBound).getValue();
                 Long upperValue = ((IntegerBaseType) upperBound).getValue();
+                System.out.println("rightValue = " + rightValue);
+                System.out.println("lowerValue = " + lowerValue);
+                System.out.println("upperValue = " + upperValue);
                 return rightValue >= lowerValue && rightValue <= upperValue;
             }
 
@@ -1449,7 +1461,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 //System.out.println("rightValue = " + rightValue);
                 //System.out.println("rightValue.compareTo(upperValue = " + rightValue.compareTo(upperValue));
                 //System.out.println("rightValue.compareTo(lowerValue) = " + rightValue.compareTo(lowerValue));
-                return rightValue.compareTo(lowerValue)>=0 && rightValue.compareTo(upperValue)<=0;
+                return rightValue.compareTo(lowerValue) >= 0 && rightValue.compareTo(upperValue) <= 0;
             }
         }
         return false;
@@ -1484,13 +1496,18 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     }
 
     /**
-     * TODO: Subrange NOT IMPLEMENTED
      * ordinal-type = new-ordinal-type(enumerated,subrange) | ordinal-type(int, boolean, char)
      *
      * @param type
      * @return
      */
     private boolean isOrdinalType(TypeDescriptor type) {
+        System.out.println("type isordinal = " + type);
+        if (type instanceof Subrange) {
+            // if subrange type defined, already pass the bounds checking,
+            // choose the first bound as the host type instance
+            type = ((Subrange) type).getLowerBound();
+        }
         return (type instanceof IntegerBaseType || type instanceof Character
                 || type instanceof Boolean || type instanceof EnumeratedIdentifier);
     }
@@ -1542,13 +1559,21 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
             // relational expression
             if (!lType.equiv(rType)) {
-                if (lType.equiv(Type.REAL) || rType.equiv(Type.REAL)) {
+                if (lType instanceof FloatBaseType || rType instanceof FloatBaseType) {
                     //if (lType.equiv(Type.INTEGER) || rType.equiv(Type.INTEGER)) return Type.BOOLEAN;
-                    if (lType.equiv(Type.INTEGER) || rType.equiv(Type.INTEGER)) return new Primitive("bool");
+                    if (lType instanceof IntegerBaseType || rType instanceof IntegerBaseType) return new Boolean();
                 }
-                if (lType.equiv(Type.CHARACTER) || rType.equiv(Type.CHARACTER)) {
+                if (lType instanceof Character || rType instanceof Character) {
                     //if (lType.equiv(Type.STRING_LITERAL) || rType.equiv(Type.STRING_LITERAL)) return Type.BOOLEAN;
-                    if (lType.equiv(Type.STRING) || rType.equiv(Type.STRING)) return new Primitive("bool");
+                    if (lType instanceof StringLiteral || rType instanceof StringLiteral) return new Boolean();
+                }
+                if (lType instanceof Subrange) {
+                    Class<? extends TypeDescriptor> hostType = ((Subrange) lType).getHostType();
+                    if (hostType == rType.getClass()) return new Boolean();
+                }
+                if (rType instanceof Subrange) {
+                    Class<? extends TypeDescriptor> hostType = ((Subrange) rType).getHostType();
+                    if (hostType == lType.getClass()) return new Boolean();
                 }
                 reportError(ctx, "Expression [" + ctx.getText() + "] types are incompatible! lType: " +
                         lType + " rType: " + rType);
@@ -1584,25 +1609,56 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
             // if is Logical operator OR
             if (operator.equalsIgnoreCase("or")) {
+                // TODO subrange
+                if (lType instanceof Subrange) {
+                    return checkLogicalOpOperand(ctx, ((Subrange) lType).getLowerBound(), ctx.term().getText(), rType, ctx.simpleExpression().getText(), operator);
+                }
                 return checkLogicalOpOperand(ctx, lType, ctx.term().getText(), rType, ctx.simpleExpression().getText(), operator);
             }
 
             // if left operand is not int nor real
-            if (!lType.equiv(Type.INTEGER) && !lType.equiv(Type.REAL)) {
-                reportError(ctx, "Additive Operator " + operator +
+            if (!(lType instanceof IntegerBaseType) && !(lType instanceof FloatBaseType)) {
+                if (lType instanceof Subrange) {
+                    TypeDescriptor lowerBound = ((Subrange) lType).getLowerBound();
+                    if (!(lowerBound instanceof IntegerBaseType) && !(lowerBound instanceof FloatBaseType)) {
+                        reportError(ctx, "Additive Operator " + operator +
+                                " cannot be applied on the left operand: " + lType);
+                        return ErrorType.INVALID_TYPE;
+                    }
+                }else{
+                    reportError(ctx, "Additive Operator " + operator +
                         " cannot be applied on the left operand: " + lType);
-                return ErrorType.INVALID_TYPE;
+                    return ErrorType.INVALID_TYPE;
+                }
             }
             // if right operand is not int nor real
-            if (!rType.equiv(Type.INTEGER) && !rType.equiv(Type.REAL)) {
+            if (!(rType instanceof IntegerBaseType) && !(rType instanceof FloatBaseType)) {
                 reportError(ctx, "Additive Operator " + operator +
                         " cannot be applied on the right operand: " + rType);
                 return ErrorType.INVALID_TYPE;
             }
             //if (lType.equiv(Type.REAL) || rType.equiv(Type.REAL)) return Type.REAL;
             //else return Type.INTEGER;
-            if (lType.equiv(Type.REAL) || rType.equiv(Type.REAL)) return new Primitive("real");
-            else return IntegerBaseType.copy(defaultIntegerType);
+            if (lType instanceof FloatBaseType || rType instanceof FloatBaseType) {
+                return new FloatBaseType();
+                //}  else return IntegerBaseType.copy(defaultIntegerType);
+            } else {
+                System.out.println("ctx.getText() = " + ctx.getText());
+                System.out.println("lType = " + lType);
+                System.out.println("rType = " + rType);
+
+                if (!(lType instanceof Subrange) && !(rType instanceof Subrange)) {
+                    if (((IntegerBaseType) lType).isConstant() && ((IntegerBaseType) rType).isConstant()) {
+                        // only checks for constant & literal
+                        Long lValue = ((IntegerBaseType) lType).getValue();
+                        Long rValue = ((IntegerBaseType) rType).getValue();
+                        return DefaultIntegerType.of(lValue + rValue);
+                    }
+                }
+                //return DefaultIntegerType.of();
+                return IntegerBaseType.copy(defaultIntegerType);
+            }
+
         }
         // only 1 term
         return lType;
@@ -1610,7 +1666,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
     /**
      * TODO: RUNTIME INTEGER arithmetic operation overflow/underflow checking
-     *
+     * <p>
      * Represents:
      * 1. single signedFactor - return visitChildren
      * 2. var1 multiplicative operator var2 - check both operands
@@ -1757,22 +1813,21 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                         numberValue = -numberValue;
                         System.out.println("-numberValue -> = " + numberValue);
                         break;
-                        // if is the last constant node, gathering all the errors if any
-                        //if (!(parentContext instanceof PascalParser.FactorExprContext) &&
-                        //        !hasNoUnderflow(numberValue)) {
-                        //    System.out.println(" 溢出，Expr节点 ");
-                        //    return ErrorType.INTEGER_UNDERFLOW;
-                        //} else {
-                        //    // update value and return this node to be processed in the upper node
-                        //    ((IntegerBaseType) number).setValue(numberValue);
-                        //    System.out.println("pass to upper node = " + ((IntegerBaseType) number).getValue());
-                        //    System.out.println("number updated = " + number);
-                        //    return number;
-                        //}
-                        //if (!hasNoUnderflow(numberValue)) {
-                        //    return ErrorType.INTEGER_UNDERFLOW;
-                        //}
-                        //  overflow checking
+                    // if is the last constant node, gathering all the errors if any
+                    //if (!(parentContext instanceof PascalParser.FactorExprContext) &&
+                    //        !hasNoUnderflow(numberValue)) {
+                    //    return ErrorType.INTEGER_UNDERFLOW;
+                    //} else {
+                    //    // update value and return this node to be processed in the upper node
+                    //    ((IntegerBaseType) number).setValue(numberValue);
+                    //    System.out.println("pass to upper node = " + ((IntegerBaseType) number).getValue());
+                    //    System.out.println("number updated = " + number);
+                    //    return number;
+                    //}
+                    //if (!hasNoUnderflow(numberValue)) {
+                    //    return ErrorType.INTEGER_UNDERFLOW;
+                    //}
+                    //  overflow checking
                     case "+":
                         //if (!hasNoOverflow(numberValue)) {
                         //    return ErrorType.INTEGER_OVERFLOW;
@@ -1871,7 +1926,9 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     public TypeDescriptor visitUnsignedNumber(PascalParser.UnsignedNumberContext ctx) {
         switch (ctx.type.getType()) {
             case PascalParser.NUM_INT:
-                return Integer32.of(String.valueOf(ctx.NUM_INT()));
+                //return Integer32.of(String.valueOf(ctx.NUM_INT()));
+                // integer literal set to be constant
+                return DefaultIntegerType.of(String.valueOf(ctx.NUM_INT()), true);
             case PascalParser.NUM_REAL:
                 //return Type.REAL;
                 return new Primitive("real");

@@ -1,5 +1,7 @@
 package type.primitive.integer;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import type.TypeDescriptor;
 import type.primitive.Primitive;
 
@@ -10,7 +12,7 @@ public class IntegerBaseType extends Primitive {
     public static final Integer MIN_VALUE = Integer.MIN_VALUE;
 
     // use Long type in case overflow/underflow
-    private Long value;
+    private Long value=null;
 
     public IntegerBaseType() {
         super("int");
@@ -37,5 +39,10 @@ public class IntegerBaseType extends Primitive {
     @Override
     public boolean equiv(TypeDescriptor type) {
         return type instanceof IntegerBaseType;
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }

@@ -15,10 +15,15 @@ type
 
 const
   weatherConst = sunny;
+  intConst1=1;
+  intConst2=100;
 var
   weatherVar: weather;
 
   marks: 1 .. 100;
+  largeMark:1..101;
+  marksVar: intConst1..intConst2;
+
   grade: 'A' .. 'E';
   weatherSubrange: sunny..rainy;
   flag:  false..true;
@@ -40,6 +45,7 @@ var
   flagVar: Boolean;
   int1: Integer;
 begin
+  int1 := 1000;
   flag := false;
   flag2 := true; {range not valid}
 
@@ -71,5 +77,19 @@ begin
   tbNumber1 := '123';
   tbNumber2 := '10';
   tbNumber2 := '123';
+
+
+
+  flag:= marks=marksVar;
+  flag:=false;
+  flag:= true<flag;
+
+  marksVar:=100;
+  largeMark := intConst2+1;
+  largeMark := intConst2 + 2; {Compile time check, as intConst2 is constant}
+
+  marks:=100;
+  largeMark:= marks+1; {RUNTIME check, should not raise here}
+  largeMark:= marks + marks+1; {RUNTIME check, should not raise here}
 
 end.
