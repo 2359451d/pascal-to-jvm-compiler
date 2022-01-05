@@ -34,9 +34,9 @@ begin
 
   findMin(1,2,3); {if findMin redeclared as integer, then this is a invalid proc statemnt }
 
-  a := findMin(a,b,c,min);
-  a := test;
-  {findMin(true, b, 10>0, 1); (*Not Work Procedure call *)
-  findMin(1, b, c, max); (* Not work Proceure call *)}
+  a := findMin(a,b,c,min);{is not a function, returns no value}
+  a := test; {returns no result}
+  findMin(true, b, 10>0, 1); (*Not Work Procedure call *)
+  findMin(1, b, c, max); (* Not work Proceure call *)
   {writeln(' Minimum: ', min);}
 end.

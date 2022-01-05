@@ -21,7 +21,7 @@ begin
   cardsuit2 := clubs2;
   cardsuit2 := clubs3; {Not a valid id in acceptable enum value map}
 
-  c :=1;
+  c :=1; {c is undeclared}
   cardsuit := 1; {Illegal assignment [cardsuit:=1]. Assigning value to identifier is not allowed}
   clubs2 := 1; {Illegal assignment [clubs2:=1]. Assigning value to identifieris not allowed}
 
