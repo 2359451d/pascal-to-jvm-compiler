@@ -3,7 +3,6 @@ package type.primitive;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import type.BaseType;
-import type.Type;
 import type.TypeDescriptor;
 
 /**

@@ -10,6 +10,10 @@ public class StringLiteral extends BaseType{
         this.value = value;
     }
 
+    public String getValue() {
+        return value;
+    }
+
     @Override
     public boolean equiv(TypeDescriptor type) {
         // if constant, directly compare type
