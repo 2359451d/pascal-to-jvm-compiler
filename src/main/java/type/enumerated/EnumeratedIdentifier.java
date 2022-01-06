@@ -38,10 +38,14 @@ public class EnumeratedIdentifier extends BaseType {
 
     @Override
     public boolean equiv(TypeDescriptor type) {
-        if (!(type instanceof EnumeratedIdentifier)) return false;
+        if (!(type instanceof EnumeratedType) && !(type instanceof EnumeratedIdentifier)) return false;
+        if (type instanceof EnumeratedType) {
+            EnumeratedType that = (EnumeratedType) type;
+            return that.getValueMap().containsKey(this.value.toLowerCase());
+        }
         EnumeratedIdentifier that = (EnumeratedIdentifier) type;
         // check whether the enumerated identifier is of the same kind
-        return this.belongsTo.equiv(that.getBelongsTo());
+        return this.belongsTo.equiv(that.getBelongsTo()) && this.value.equals(that.value);
     }
 
     @Override

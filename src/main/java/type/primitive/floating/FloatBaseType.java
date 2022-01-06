@@ -1,6 +1,8 @@
 package type.primitive.floating;
 
+import type.TypeDescriptor;
 import type.primitive.Primitive;
+import type.primitive.integer.IntegerBaseType;
 
 public class FloatBaseType extends Primitive {
 
@@ -13,5 +15,10 @@ public class FloatBaseType extends Primitive {
 
     public FloatBaseType(String type) {
         super(type);
+    }
+
+    @Override
+    public boolean equiv(TypeDescriptor type) {
+        return type instanceof FloatBaseType || type instanceof IntegerBaseType;
     }
 }

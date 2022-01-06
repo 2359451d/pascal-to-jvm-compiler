@@ -454,7 +454,7 @@ ifStatement
    ;
 
 caseStatement
-   : CASE expression OF caseListElement (SEMI caseListElement)* (SEMI ELSE statements)? END
+   : CASE expression OF caseListElement (SEMI caseListElement)* (SEMI ELSE statements)? (SEMI)? END
    ;
 
 caseListElement
