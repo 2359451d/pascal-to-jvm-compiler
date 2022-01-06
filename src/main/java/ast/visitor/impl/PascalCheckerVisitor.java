@@ -1357,21 +1357,21 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
         if (!leftType.equiv(rightType)) {
             // exception case when left is real, it is acceptable though right is int
-            if (leftType.equiv(Type.REAL) && rightType.equiv(Type.INTEGER)) return null;
-            // exception case when left is character, and right is string literal(length must be 1)
-            if (leftType.equiv(Type.CHARACTER) && rightType.equiv(Type.STRING)) {
-                String content = expression.replace("'", "");
-                if (content.length() == 1) return null;
-            }
+            //if (leftType.equiv(Type.REAL) && rightType.equiv(Type.INTEGER)) return null;
+            //// exception case when left is character, and right is string literal(length must be 1)
+            //if (leftType.equiv(Type.CHARACTER) && rightType.equiv(Type.STRING)) {
+            //    String content = expression.replace("'", "");
+            //    if (content.length() == 1) return null;
+            //}
 
             // check result type of a Function
             // this assignment only allowed within Function body
             if (leftType instanceof Function) {
-
                 Function function = (Function) leftType;
                 TypeDescriptor resultType = function.getResultType();
                 if (!rightType.equiv(resultType)) {
 
+                    //TODO realint, charstr - func
                     // exception case when left is real, it is acceptable though right is int
                     if (resultType.equiv(Type.REAL) && rightType.equiv(Type.INTEGER)) return function;
                     // exception case when left is character, and right is string literal(length must be 1)
@@ -1481,6 +1481,79 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             reportError(ctx, "Invalid condition type of if statement [%s]", ctx.expression().getText());
         }
         ctx.statement().forEach(this::visit);
+        return null;
+    }
+
+    /**
+     * Case statement:
+     * <P>
+     *     Valid constant as expression:
+     *     - character(size 1 stringliteral)
+     *     - int
+     *     - boolean
+     *     - subrange
+     *     - enumerated types
+     * </P>
+     *
+     * <p>
+     *     ! Expression(selector) and all the constant labels must be of the same type
+     *     ! Duplicated labels are not allowed
+     * </p>
+     *
+     * caseStatement
+     *    : CASE expression OF caseListElement (SEMI caseListElement)* (SEMI ELSE statements)? (SEMI)? END
+     *    ;
+     *
+     * caseListElement
+     *    : constList COLON statement
+     *    ;
+     */
+    @Override
+    public TypeDescriptor visitCaseStatement(PascalParser.CaseStatementContext ctx) {
+        System.out.println("***********CASE STATEMENT STARTS");
+        System.out.println("ctx.getText() = " + ctx.getText());
+        TypeDescriptor expression = visit(ctx.expression());
+        System.out.println("case expression = " + expression);
+
+        // pure string as the case expression is not standard
+        if (expression instanceof StringLiteral) {
+            reportError(ctx, "Invalid case expression type: %s",
+                    expression);
+            return null;
+        }
+
+        HashSet<String> checkDuplicates = new HashSet<>();
+        List<PascalParser.CaseListElementContext> caseListElementContexts = ctx.caseListElement();
+        for (PascalParser.CaseListElementContext caseListElementContext : caseListElementContexts) {
+            List<PascalParser.ConstantContext> constantList = caseListElementContext.constList().constant();
+            for (PascalParser.ConstantContext eachConstant : constantList) {
+                TypeDescriptor each = visit(eachConstant);
+                System.out.println("each vs expression = " + each + " "+expression);
+                System.out.println("expression.equiv(each) = " + expression.equiv(each));
+
+                // check type compatibility
+                if (expression instanceof Subrange) {
+                    Class<? extends TypeDescriptor> hostType = ((Subrange) expression).getHostType();
+                    if (each.getClass() != hostType) {
+                        reportError(eachConstant, "Constant and case type does not match.\nExpected: %s\nActual: %s",
+                                expression, each);
+                    }
+                } else if (!expression.equiv(each)) {
+                    reportError(eachConstant, "Constant and case type does not match.\nExpected: %s\nActual: %s",
+                            expression, each);
+                }
+
+                // check duplicates (case insensitive)
+                if (checkDuplicates.contains(eachConstant.getText().toLowerCase())) {
+                    reportError(eachConstant, "duplicates case labels %s", eachConstant.getText());
+                } else {
+                    checkDuplicates.add(eachConstant.getText().toLowerCase());
+                }
+            }
+            visit(caseListElementContext.statement());
+        }
+
+        System.out.println("***********CASE STATEMENT ENDS");
         return null;
     }
 

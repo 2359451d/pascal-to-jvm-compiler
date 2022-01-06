@@ -44,7 +44,12 @@ public class EnumeratedType extends BaseType {
 
     @Override
     public boolean equiv(TypeDescriptor type) {
-        if (!(type instanceof EnumeratedType)) return false;
+        if (!(type instanceof EnumeratedType) && !(type instanceof EnumeratedIdentifier)) return false;
+        if (type instanceof EnumeratedIdentifier) {
+            EnumeratedIdentifier that = (EnumeratedIdentifier) type;
+            return this.valueMap.containsKey(that.getValue().toLowerCase());
+        }
+
         EnumeratedType that = (EnumeratedType) type;
         Map<String, Integer> thatValueMap = that.getValueMap();
         Map<String, Integer> thisValueMap = this.valueMap;
