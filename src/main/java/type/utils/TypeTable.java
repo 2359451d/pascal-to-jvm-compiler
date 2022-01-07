@@ -44,8 +44,8 @@ public class TypeTable<T> implements Table<String, T>{
         });
     }
 
-    public boolean containsKey(String key) {
-        return table.containsKey(key.toLowerCase());
+    @Override
+    public boolean contains(String id) {
+        return table.containsKey(id.toLowerCase());
     }
-
 }

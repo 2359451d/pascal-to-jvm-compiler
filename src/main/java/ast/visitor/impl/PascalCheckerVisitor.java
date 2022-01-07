@@ -120,18 +120,24 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
     private void define(String id, TypeDescriptor type,
                         ParserRuleContext ctx) {
-
+        Table<String, TypeDescriptor> otherTable = null;
         Table<String, TypeDescriptor> table = null;
         if (ctx instanceof PascalParser.TypeDefinitionContext) {
             // new entry is inserted into the type table
             table = typeTable;
-        } else table = symbolTable;
-
+            otherTable = symbolTable;
+        } else {
+            table = symbolTable;
+            otherTable = typeTable;
+        }
         // Add id with its type to the type/symbol table, checking
         // that id is not already declared in the same scope.
         // IGNORE CASE
-        boolean ok = table.put(id.toLowerCase(), type);
-        if (!ok)
+        boolean isDuplicatedInOtherTable = otherTable.contains(id.toLowerCase());
+        boolean putSuccessfully = false;
+        if (!isDuplicatedInOtherTable) putSuccessfully = table.put(id.toLowerCase(), type);
+
+        if (isDuplicatedInOtherTable || !putSuccessfully)
             reportError(ctx, id + " is redeclared");
     }
 
@@ -289,9 +295,14 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         System.out.println("*************Define new Const");
         System.out.println("ctx.getText() = " + ctx.getText());
         String id = ctx.identifier().getText();
-        BaseType constantType = (BaseType) visit(ctx.constant());
-        constantType.setConstant(true);
-        define(id, constantType, ctx);
+        TypeDescriptor type = visit(ctx.constant());
+        //System.out.println("constant type = " + type);
+        // suppress errors if constant type is ErrorType
+        if (!(type instanceof ErrorType)) {
+            BaseType constantType = (BaseType) type;
+            constantType.setConstant(true);
+            define(id, constantType, ctx);
+        }
         return null;
     }
 
@@ -1238,14 +1249,14 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         TypeDescriptor leftType = retrieve(id, false, ctx);
         System.out.println("leftType = " + leftType);
 
-        if (leftType.equiv(ErrorType.UNDEFINED_TYPE) && !typeTable.containsKey(id)) {
+        if (leftType.equiv(ErrorType.UNDEFINED_TYPE) && !typeTable.contains(id)) {
             reportError(ctx, "%s is undeclared", id);
             return null;
         }
 
         // if left identifier is an defined type identifier or enumerated type identifier
         // report errors
-        if (leftType instanceof EnumeratedIdentifier || typeTable.containsKey(id)) {
+        if (leftType instanceof EnumeratedIdentifier || typeTable.contains(id)) {
             if (leftType.equiv(ErrorType.UNDEFINED_TYPE)) leftType = typeTable.get(id);
             reportError(ctx, "Illegal assignment [%s]. Assigning value to identifier [%s - type: %s]\nis not allowed",
                     ctx.getText(), id, leftType);
@@ -1487,26 +1498,26 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     /**
      * Case statement:
      * <P>
-     *     Valid constant as expression:
-     *     - character(size 1 stringliteral)
-     *     - int
-     *     - boolean
-     *     - subrange
-     *     - enumerated types
+     * Valid constant as expression:
+     * - character(size 1 stringliteral)
+     * - int
+     * - boolean
+     * - subrange
+     * - enumerated types
      * </P>
      *
      * <p>
-     *     ! Expression(selector) and all the constant labels must be of the same type
-     *     ! Duplicated labels are not allowed
+     * ! Expression(selector) and all the constant labels must be of the same type
+     * ! Duplicated labels are not allowed
      * </p>
-     *
+     * <p>
      * caseStatement
-     *    : CASE expression OF caseListElement (SEMI caseListElement)* (SEMI ELSE statements)? (SEMI)? END
-     *    ;
-     *
+     * : CASE expression OF caseListElement (SEMI caseListElement)* (SEMI ELSE statements)? (SEMI)? END
+     * ;
+     * <p>
      * caseListElement
-     *    : constList COLON statement
-     *    ;
+     * : constList COLON statement
+     * ;
      */
     @Override
     public TypeDescriptor visitCaseStatement(PascalParser.CaseStatementContext ctx) {
@@ -1528,7 +1539,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             List<PascalParser.ConstantContext> constantList = caseListElementContext.constList().constant();
             for (PascalParser.ConstantContext eachConstant : constantList) {
                 TypeDescriptor each = visit(eachConstant);
-                System.out.println("each vs expression = " + each + " "+expression);
+                System.out.println("each vs expression = " + each + " " + expression);
                 System.out.println("expression.equiv(each) = " + expression.equiv(each));
 
                 // check type compatibility
@@ -1698,9 +1709,9 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                                 " cannot be applied on the left operand: " + lType);
                         return ErrorType.INVALID_TYPE;
                     }
-                }else{
+                } else {
                     reportError(ctx, "Additive Operator " + operator +
-                        " cannot be applied on the left operand: " + lType);
+                            " cannot be applied on the left operand: " + lType);
                     return ErrorType.INVALID_TYPE;
                 }
             }

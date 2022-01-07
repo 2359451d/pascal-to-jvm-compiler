@@ -57,6 +57,16 @@ public class SymbolTable<A> implements Table<String, A> {
         return null;
     }
 
+    /**
+     * ! Case sensitive
+     * @param id
+     * @return
+     */
+    @Override
+    public boolean contains(String id) {
+        return this.get(id) != null;
+    }
+
     public Map<String, A> getAllVarInCurrentScope() {
         return scope_stack.getLast();
     }
