@@ -15,6 +15,7 @@ import type.enumerated.EnumeratedType;
 import type.error.ErrorType;
 import type.param.ActualParam;
 import type.param.FormalParam;
+import type.param.Param;
 import type.primitive.Boolean;
 import type.primitive.Character;
 import type.primitive.Primitive;
@@ -1488,8 +1489,10 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     @Override
     public TypeDescriptor visitIfStatement(PascalParser.IfStatementContext ctx) {
         TypeDescriptor type = visit(ctx.expression());
-        if (!type.equiv(Type.BOOLEAN)) {
-            reportError(ctx, "Invalid condition type of if statement [%s]", ctx.expression().getText());
+        System.out.println("if expression type = " + type);
+        if (!(type instanceof Boolean)) {
+            reportError(ctx, "Invalid condition type of if statement [%s].\nExpected: %s,\nActual: %s",
+                    ctx.expression().getText(), Type.BOOLEAN, type);
         }
         ctx.statement().forEach(this::visit);
         return null;
@@ -1591,6 +1594,10 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             // if subrange type defined, already pass the bounds checking,
             // choose the first bound as the host type instance
             type = ((Subrange) type).getLowerBound();
+        } else if (type instanceof Param) {
+            // if checked operand is a formal parameter,
+            // check the inner type
+            type = ((Param) type).getType();
         }
         return (type instanceof IntegerBaseType || type instanceof Character
                 || type instanceof Boolean || type instanceof EnumeratedIdentifier);
@@ -1651,6 +1658,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                     //if (lType.equiv(Type.STRING_LITERAL) || rType.equiv(Type.STRING_LITERAL)) return Type.BOOLEAN;
                     if (lType instanceof StringLiteral || rType instanceof StringLiteral) return new Boolean();
                 }
+                // FIXME: nested type classes, might be refactored
                 if (lType instanceof Subrange) {
                     Class<? extends TypeDescriptor> hostType = ((Subrange) lType).getHostType();
                     if (hostType == rType.getClass()) return new Boolean();
@@ -1659,6 +1667,15 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                     Class<? extends TypeDescriptor> hostType = ((Subrange) rType).getHostType();
                     if (hostType == lType.getClass()) return new Boolean();
                 }
+                if (lType instanceof Param) {
+                    TypeDescriptor type = ((Param) lType).getType();
+                    if (type.equiv(rType)) return new Boolean();
+                }
+                if (rType instanceof Param) {
+                    TypeDescriptor type = ((Param) rType).getType();
+                    if (type.equiv(lType)) return new Boolean();
+                }
+
                 reportError(ctx, "Expression [" + ctx.getText() + "] types are incompatible! lType: " +
                         lType + " rType: " + rType);
                 return ErrorType.INVALID_EXPRESSION;
