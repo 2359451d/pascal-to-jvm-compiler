@@ -130,7 +130,9 @@ typeDefinitionPart
    ;
 
 typeDefinition
-   : identifier EQUAL (type_ | functionType | procedureType)
+//   : identifier EQUAL (type_ | functionType | procedureType)
+// func, proc type definition is not standard
+   : identifier EQUAL type_
    ;
 
 functionType

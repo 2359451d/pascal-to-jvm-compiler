@@ -4,8 +4,6 @@
  * Date: 2021/12/12
  *)
 program funcTest;
-Type
-  FuncType = Function: Integer;
 var
   a: Integer;
   b: Real;
@@ -14,9 +12,11 @@ Function AddOne(x:Integer) : Integer;
 begin
   A := A+1;
   AddOne := A;
+  if A>x then
+    a :=a+1;
 end;
 
-Var F : FuncType;
+Var
   N : Real;
 
 begin
