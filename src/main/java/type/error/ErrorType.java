@@ -18,7 +18,9 @@ public enum ErrorType implements TypeDescriptor {
     INTEGER_OVERFLOW(300, "integer overflow"),
     INTEGER_UNDERFLOW(301, "integer underflow"),
     INVALID_MONADIC_OPERATION(400, "invalid monadic operation"),
-    INVALID_EXPRESSION(500, "invalid expression")
+    INVALID_EXPRESSION(500, "invalid expression"),
+    INVALID_ARRAY_SCRIPTING(600, "invalid array scripting"),
+    INVALID_ARRAY_TYPE(601, "invalid array type")
     ;
 
     private int errorCode; // error code

@@ -47,6 +47,7 @@ public class EnumeratedType extends BaseType {
         if (!(type instanceof EnumeratedType) && !(type instanceof EnumeratedIdentifier)) return false;
         if (type instanceof EnumeratedIdentifier) {
             EnumeratedIdentifier that = (EnumeratedIdentifier) type;
+            System.out.println("this.valueMap = " + this.valueMap);
             return this.valueMap.containsKey(that.getValue().toLowerCase());
         }
 

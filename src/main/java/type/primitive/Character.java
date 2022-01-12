@@ -4,8 +4,15 @@ import type.StringLiteral;
 import type.TypeDescriptor;
 
 public class Character extends Primitive{
+    private String value;
+
     public Character() {
         super("char");
+    }
+
+    public Character(String value) {
+        super("char");
+        this.value = value;
     }
 
     @Override

@@ -38,6 +38,12 @@ public class IntegerBaseType extends Primitive {
 
     @Override
     public boolean equiv(TypeDescriptor type) {
+        //if (! (type instanceof IntegerBaseType)) return false;
+        //Long thatValue = ((IntegerBaseType) type).getValue();
+        //if (this.value != null && thatValue != null) {
+        //    return this.value.equals(thatValue);
+        //}
+        //return false;
         return type instanceof IntegerBaseType;
     }
 

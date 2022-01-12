@@ -447,6 +447,18 @@ public interface PascalVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitVariable(PascalParser.VariableContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link PascalParser#variableHead}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitVariableHead(PascalParser.VariableHeadContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link PascalParser#arrayScripting}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitArrayScripting(PascalParser.ArrayScriptingContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link PascalParser#expression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
