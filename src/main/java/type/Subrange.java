@@ -2,6 +2,11 @@ package type;
 
 import type.enumerated.EnumeratedIdentifier;
 import type.enumerated.EnumeratedType;
+import type.primitive.Boolean;
+import type.primitive.Character;
+import type.primitive.integer.IntegerBaseType;
+
+import java.util.Map;
 
 public class Subrange extends BaseType {
 
@@ -45,6 +50,7 @@ public class Subrange extends BaseType {
     @Override
     public boolean equiv(TypeDescriptor type) {
         if (!(type instanceof Subrange)) return false;
+
         Subrange that = (Subrange) type;
         return this.hostType == that.hostType && this.lowerBound.equiv(that.lowerBound)
                 && this.upperBound.equiv(that.upperBound);

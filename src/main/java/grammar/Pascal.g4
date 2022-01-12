@@ -323,7 +323,23 @@ assignmentStatement
    ;
 
 variable
-   : (AT identifier | identifier) (LBRACK expression (COMMA expression)* RBRACK | LBRACK2 expression (COMMA expression)* RBRACK2 | DOT identifier | POINTER)*
+   : variableHead
+   (
+   arrayScripting
+   | DOT identifier
+   | POINTER
+   )*
+//   (LBRACK expression (COMMA expression)* RBRACK // array scripting
+//   | LBRACK2 expression (COMMA expression)* RBRACK2 // array scripting
+   ;
+
+variableHead
+   : (AT identifier | identifier)
+   ;
+
+arrayScripting
+  : LBRACK expression (COMMA expression)* RBRACK // array scripting
+   | LBRACK2 expression (COMMA expression)* RBRACK2 // array scripting
    ;
 
 expression
