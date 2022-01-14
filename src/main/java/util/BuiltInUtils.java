@@ -7,7 +7,7 @@ import java.util.Arrays;
 
 public class BuiltInUtils {
 
-    public static void fillTable(SymbolTable<TypeDescriptor> symbolTable) {
+    public static void fillTable(SymbolTable<Object,TypeDescriptor> symbolTable) {
         Arrays.stream(BuiltIn.values()).forEach(each ->
                 symbolTable.put(each.getId(), each.getType())
         );

@@ -27,10 +27,10 @@ import type.structured.ArrayType;
 import type.structured.StructuredBaseType;
 import type.utils.SymbolTable;
 import type.utils.Table;
+import type.utils.TableManager;
 import type.utils.TypeTable;
 import util.ErrorMessage;
 
-import java.lang.reflect.Array;
 import java.util.*;
 
 public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
@@ -41,8 +41,13 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
     private CommonTokenStream tokens;
 
-    private SymbolTable<TypeDescriptor> symbolTable = new SymbolTable<>();
-    private TypeTable<TypeDescriptor> typeTable = new TypeTable<>();
+    /**
+     * Table & Table Manager fields
+     */
+    private Table<Object, TypeDescriptor> symbolTable = new SymbolTable<>();
+    private Table<Object, TypeDescriptor> typeTable = new TypeTable<>();
+    private TableManager<Object, TypeDescriptor> tableManager = TableManager.getInstance(); // quick reference
+
 
     // Max Builtin Integer Type (default - Integer32)
     static final IntegerBaseType defaultIntegerType = new Integer32();
@@ -117,29 +122,32 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     private void predefine() {
         // Add predefined procedures to the type table.
         //BuiltInUtils.fillTable(symbolTable);
-        symbolTable.put("maxint", new Integer32());
+        symbolTable.put("maxint", DefaultIntegerType.of((long) Integer.MAX_VALUE, true));
 
-        RunTimeLibFactory.fillTable(symbolTable);
+        //Table table = tableManager.selectTable(null);
+        //System.out.println("table? = " + table);
+        //tableManager.addTable(null,new SymbolTable<>());
+
+        //RunTimeLibFactory.fillTable(symbolTable);
     }
 
     private void define(String id, TypeDescriptor type,
                         ParserRuleContext ctx) {
-        Table<String, TypeDescriptor> otherTable = null;
-        Table<String, TypeDescriptor> table = null;
-        if (ctx instanceof PascalParser.TypeDefinitionContext) {
-            // new entry is inserted into the type table
-            table = typeTable;
-            otherTable = symbolTable;
-        } else {
-            table = symbolTable;
-            otherTable = typeTable;
-        }
-        // Add id with its type to the type/symbol table, checking
-        // that id is not already declared in the same scope.
+        //select the specific selectedTable with corresponding usage context
+        Table<Object, TypeDescriptor> selectedTable = tableManager.selectTable(ctx.getClass());
+        System.out.println("selectedTable = " + selectedTable);
+
+        // Add id with its type to the selectedTable
+        // Checking whether id is already declared in the same scope.
         // IGNORE CASE
-        boolean isDuplicatedInOtherTable = otherTable.contains(id.toLowerCase());
+        boolean isDuplicatedInOtherTable = false;
+        Map<Class<? extends ParserRuleContext>, Table<Object, TypeDescriptor>> otherTables = tableManager.selectAllTablesExcludedToClass(ctx.getClass());
+        for (Table<Object, TypeDescriptor> eachTable : otherTables.values()) {
+            if (eachTable.contains(id.toLowerCase())) isDuplicatedInOtherTable = true;
+        }
+
         boolean putSuccessfully = false;
-        if (!isDuplicatedInOtherTable) putSuccessfully = table.put(id.toLowerCase(), type);
+        if (!isDuplicatedInOtherTable) putSuccessfully = selectedTable.put(id.toLowerCase(), type);
 
         if (isDuplicatedInOtherTable || !putSuccessfully)
             reportError(ctx, id + " is redeclared");
@@ -147,20 +155,23 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
     private TypeDescriptor retrieve(String id, boolean notSuppressError,
                                     ParserRuleContext ctx) {
-        Table<String, TypeDescriptor> table = null;
+        Table<Object, TypeDescriptor> selectedTable = tableManager.selectTable(ctx.getClass());
+        System.out.println("selectedTable = " + selectedTable);
 
-        if (ctx instanceof PascalParser.TypeIdentifierContext) {
-            table = typeTable;
-        } else table = symbolTable;
-
-        // Retrieve id's type from the symbol table.
+        // Retrieve id's type from all the defined table.
         // Case insensitive
-        TypeDescriptor type = table.get(id.toLowerCase());
+        TypeDescriptor type = selectedTable.get(id.toLowerCase());
+
         if (type == null) {
+            Map<Class<? extends ParserRuleContext>, Table<Object, TypeDescriptor>> tablesExcludedToClass = tableManager.selectAllTablesExcludedToClass(ctx.getClass());
+            for (Table<Object, TypeDescriptor> eachTable : tablesExcludedToClass.values()) {
+                type = eachTable.get(id.toLowerCase());
+                if (type!=null) return type;
+            }
             if (notSuppressError) reportError(ctx, "Identifier %s is undeclared", id);
             return ErrorType.UNDEFINED_TYPE;
-        } else
-            return type;
+        }
+        return type;
     }
 
     private TypeDescriptor retrieve(String id, ParserRuleContext occ) {
@@ -171,15 +182,24 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     @Override
     public TypeDescriptor visitProgram(PascalParser.ProgramContext ctx) {
         predefine();
-        return super.visitProgram(ctx);
+        visit(ctx.block());
+        return null;
     }
 
+    /**
+     * block
+     *    : (labelDeclarationPart | constantDefinitionPart | typeDefinitionPart | variableDeclarationPart | procedureAndFunctionDeclarationPart | usesUnitsPart | IMPLEMENTATION)* compoundStatement
+     *    ;
+     * @param ctx
+     * @return
+     */
     @Override
     public TypeDescriptor visitBlock(PascalParser.BlockContext ctx) {
         System.out.println("Block Starts*************************");
-        symbolTable.displayCurrentScope();
+        tableManager.displayAllTablesCurrentScope();
         visitChildren(ctx);
         System.out.println("Block Ends*************************");
+        tableManager.displayAllTablesCurrentScope();
         return null;
     }
 
@@ -251,9 +271,10 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
     @Override
     public TypeDescriptor visitVariableDeclaration(PascalParser.VariableDeclarationContext ctx) {
-        System.out.println("Variable Decl Starts*************");
+        System.out.println("Vaeriable Decl Starts*************");
+        System.out.println("var decl ctx.getText() = " + ctx.getText());
 
-        typeTable.showAllTheTypes();
+        tableManager.displayAllTablesCurrentScope();
 
         List<PascalParser.IdentifierContext> identifierContextList = ctx.identifierList().identifier();
         for (PascalParser.IdentifierContext identifierContext : identifierContextList) {
@@ -261,7 +282,8 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             TypeDescriptor type = visit(ctx.type_());
             define(id, type, ctx);
         }
-        symbolTable.displayCurrentScope();
+        //symbolTable.displayCurrentScope();
+        tableManager.displayAllTablesCurrentScope();
         System.out.println("Variable Decl ends\n*************");
         return null;
     }
@@ -635,110 +657,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         return new File(type);
     }
 
-    //private void checkAcceptableType(Set<String> acceptableTypes, Signature signature,
-    //                                 ParserRuleContext ctx) {
-    //    System.out.println("=======checkAcceptableTypes starts=========");
-    //    System.out.println("acceptableTypes = " + acceptableTypes);
-    //    System.out.println("actualSignature given = " + signature);
-    //    List<String> paramList = signature.getParamList();
-    //    for (String param : paramList) {
-    //        //System.out.println("current param = " + param);
-    //        if (!acceptableTypes.contains(param)) {
-    //            reportError(ctx, "type: " + param
-    //                    + " is not supported");
-    //        }
-    //    }
-    //    System.out.println("=======checkAcceptableTypes ends=========");
-    //}
 
-    //@Deprecated
-    //private void checkAcceptableSignature(SignatureSet signatureSet, SignatureSet signature,
-    //                                      ParserRuleContext ctx) {
-    //    System.out.println("=======checkAcceptableSignature starts=========");
-    //    System.out.println("actualSignature given = " + signature);
-    //    Set<String> typeOrderToBeChecked = signatureSet.getTypeOrderToBeChecked();
-    //    System.out.println("typeOrderToBeChecked = " + typeOrderToBeChecked);
-    //    Set<Signature> acceptableSignatures = signatureSet.getAcceptableSignatures();
-    //    System.out.println("acceptableSignatures = " + acceptableSignatures);
-    //
-    //    ArrayList<Signature> actualSignatures = new ArrayList<>(signature.getAcceptableSignatures());
-    //    Signature actualSignature = actualSignatures.get(0);
-    //    List<String> paramList = actualSignature.getParamList();
-    //    System.out.println("paramList = " + paramList);
-    //
-    //    // trim the signature (as there are variable number of params)
-    //    List<String> trimmedParamList = paramList.stream().distinct().collect(Collectors.toList());
-    //    Signature trimmedSignature = new Signature(trimmedParamList);
-    //    //System.out.println("trimmedParamList = " + trimmedParamList);
-    //    System.out.println("trimmedSignature = " + trimmedSignature);
-    //
-    //    if (!acceptableSignatures.contains(trimmedSignature)) {
-    //        Set<String> acceptableTypes = signatureSet.getAcceptableTypes();
-    //        System.out.println("acceptableTypes = " + acceptableTypes);
-    //        Set<String> coveredTypes = signature.getAcceptableTypes();
-    //        System.out.println("acceptableTypes1 = " + coveredTypes);
-    //        boolean orderCheck = false;
-    //        for (String s : coveredTypes) {
-    //            if (acceptableTypes.contains(s)) {
-    //                orderCheck = true;
-    //                break;
-    //            }
-    //        }
-    //
-    //        if (orderCheck) {
-    //            boolean notDeclared = true;
-    //            for (int i = 0; i < trimmedParamList.size(); i++) {
-    //                String actualParam = trimmedParamList.get(i);
-    //                for (Signature acceptableSignature : acceptableSignatures) {
-    //                    List<String> acceptableSignatureParamList = acceptableSignature.getParamList();
-    //                    if (typeOrderToBeChecked.contains(actualParam) && !acceptableSignatureParamList.get(i).equals(actualParam)) {
-    //                        reportError(ctx, "signature " + signature
-    //                                + " is not supported");
-    //                    }
-    //                    //} else if (!typeOrderToBeChecked.contains(actualParam)){
-    //                    //    if (trimmedParamList.size() <= acceptableSignatureParamList.size()) {
-    //                    //
-    //                    //    }
-    //                    //}
-    //                }
-    //            }
-    //        } else {
-    //            for (String coveredType : signature.getAcceptableTypes()) {
-    //                if (!acceptableTypes.contains(coveredType))
-    //                    reportError(ctx, "signature " + signature + " is not supported");
-    //            }
-    //        }
-    //    }
-
-
-    // further checking, specifically for builtin overloading proc/func
-    //if (!acceptableSignatures.contains(signature)) {
-    //    for (int i = 0; i < paramList.size(); i++) {
-    //        Type actualParam = paramList.get(i);
-    //        for (Signature acceptableSignature : acceptableSignatures) {
-    //            List<Type> acceptableSignatureParamList = acceptableSignature.getParamList();
-    //            Set<Type> acceptableTypes = acceptableSignature.getAcceptableTypes();
-    //            if (typeOrderToBeChecked.contains(actualParam.getClass().getName())) {
-    //                System.out.println("TO be checked");
-    //                if (!acceptableSignatureParamList.get(i).equiv(actualParam)) {
-    //                    System.out.println("actualParam = " + actualParam);
-    //                    System.out.println("acceptableSignatureParamList.get(i) = " + acceptableSignatureParamList.get(i));
-    //                    reportError("signature " + signature
-    //                            + " is not supported", ctx);
-    //                }
-    //            } else if (!acceptableTypes.contains(actualParam)){
-    //                reportError("type " + actualParam +" in "+ "signature " + signature
-    //                        + " is not supported", ctx);
-    //            }
-    //        }
-    //    }
-    //for (Type actualParam : paramList) {
-    //}
-    //}
-    //
-    //System.out.println("=======checkAcceptableSignature ends=========");
-    //
-    //}
 
     /**
      * formalParameterSection
@@ -803,7 +722,9 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         ArrayList<TypeDescriptor> params = new ArrayList<>();
 
         System.out.println("PROC DECL Starts*************************");
-        symbolTable.enterLocalScope();
+        //symbolTable.enterLocalScope();
+        //typeTable.enterLocalScope();
+        tableManager.allTablesEnterNewScope();
 
         // if the procedure has formal parameters
         if (ctx.formalParameterList() != null) {
@@ -813,19 +734,24 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 visit(paramSection);
             }
             // all formal params set up
-            Map<String, TypeDescriptor> allParams = symbolTable.getAllVarInCurrentScope();
+            Map<Object, TypeDescriptor> allParams = symbolTable.getAllVarInCurrentScope();
             allParams.forEach((k, v) -> params.add(v));
         }
         define(id, new Procedure(params), ctx);
         System.out.println("Define Proc signature");
-        symbolTable.displayCurrentScope();
+
+        tableManager.displayAllTablesCurrentScope();
+        //symbolTable.displayCurrentScope();
         System.out.println("id = " + id);
         System.out.println("symbolTable.get(id) = " + symbolTable.get(id));
         visit(ctx.block()); // scope & type checking in current proc scope
-        symbolTable.exitLocalScope(); // back to last scope
+        //symbolTable.exitLocalScope(); // back to last scope
+        //typeTable.exitLocalScope();
+        tableManager.allTablesExitNewScope();
         define(id, new Procedure(params), ctx);
         System.out.println("PROC DECL ENDS*************************");
-        symbolTable.displayCurrentScope();
+        //symbolTable.displayCurrentScope();
+        tableManager.displayAllTablesCurrentScope();
         return null;
     }
 
@@ -833,18 +759,19 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      * Check whether a Function has result assignment or not
      * Report errors if the result assignment statement is missing
      *
-     * @param ctx - function rule context
+     * @param type - function return type
      * @return boolean - true if function has result assignment, otherwise return false
      */
-    private boolean functionHasResultAssignment(PascalParser.FunctionDeclarationContext ctx) {
-        List<PascalParser.StatementContext> statementContextList = ctx.block().compoundStatement().statements().statement();
-        boolean functionHasResultAssignment = false;
-        for (PascalParser.StatementContext statementContext : statementContextList) {
-            if (visit(statementContext) instanceof Function) {
-                functionHasResultAssignment = true;
-            }
-        }
-        return functionHasResultAssignment;
+    private boolean functionHasResultAssignment(TypeDescriptor type) {
+        //List<PascalParser.StatementContext> statementContextList = ctx.block().compoundStatement().statements().statement();
+        //boolean functionHasResultAssignment = false;
+        //for (PascalParser.StatementContext statementContext : statementContextList) {
+        //    if (visit(statementContext) instanceof Function) {
+        //        functionHasResultAssignment = true;
+        //    }
+        //}
+        //return functionHasbResultAssignment;
+        return type instanceof Function;
     }
 
     /**
@@ -862,7 +789,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         ArrayList<TypeDescriptor> params = new ArrayList<>();
 
         System.out.println("Func DECL Starts*************************");
-        symbolTable.enterLocalScope();
+        tableManager.allTablesEnterNewScope();
 
         // if the procedure has formal parameters
         if (ctx.formalParameterList() != null) {
@@ -872,25 +799,25 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 visit(paramSection);
             }
             // all formal params set up
-            Map<String, TypeDescriptor> allParams = symbolTable.getAllVarInCurrentScope();
+            Map<Object, TypeDescriptor> allParams = symbolTable.getAllVarInCurrentScope();
             allParams.forEach((k, v) -> params.add(v));
         }
         Function function = new Function(params, resultType);
         define(id, function, ctx);
         System.out.println("Define Func signature");
-        symbolTable.displayCurrentScope();
-        System.out.println("id = " + id);
-        System.out.println("symbolTable.get(id) = " + symbolTable.get(id));
-        visit(ctx.block()); // scope & type checking in current func scope
-        if (!functionHasResultAssignment(ctx)) {
+
+        //tableManager.displayAllTablesCurrentScope();
+
+        //System.out.println("Visit Func Block");
+        TypeDescriptor returnType = visit(ctx.block());// scope & type checking in current func scope
+
+        if (!functionHasResultAssignment(resultType)) {
             reportError(ctx, "Missing result assignment in Function: %s", function);
         }
 
-        symbolTable.exitLocalScope(); // back to last scope
-        define(id, new Function(params, resultType), ctx);
+        tableManager.allTablesExitNewScope();
+        define(id, function, ctx);
         System.out.println("FUNC DECL ENDS*************************");
-        symbolTable.displayCurrentScope();
-
         return null;
     }
 
@@ -1061,10 +988,9 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     public TypeDescriptor visitFunctionDesignator(PascalParser.FunctionDesignatorContext ctx) {
         System.out.println("*******************FUNC CALL");
         String id = ctx.identifier().getText();
-        System.out.println("id = " + id);
         TypeDescriptor signature = retrieve(id, ctx);
-        symbolTable.displayCurrentScope();
-        //System.out.println("retrieve = " + retrieve);
+
+        tableManager.displayAllTablesCurrentScope();
 
         // Only report while function id is defined but is used with other type: proc .etc
         if (!(signature.equiv(ErrorType.UNDEFINED_TYPE)) && !(signature instanceof Function)) {
@@ -1080,33 +1006,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             if (errorMessage.hasErrors()) {
                 reportError(ctx, errorMessage.getMessageSequence());
             }
-
-            //// type checking
-            //SignatureSet signatureSet = (SignatureSet) signature;
-            //Set<String> acceptableTypes = signatureSet.getAcceptableTypes();
-            ////System.out.println("acceptableTypes = " + acceptableTypes);
-            ////Type expectedParamSeq = type.domain;
-            //
-            //// check actual_params == definition in the symbol table
-            //SignatureSet actualSignatureSet = (SignatureSet) visit(ctx.parameterList());
-            ////System.out.println("actualSignature = " + actualSignature);
-            //
-            //// first checking whether the actual params given are supported or not
-            ////checkAcceptableType(acceptableTypes, actualSignature, ctx);
-            //// then check whether there are limitations on params order & number or not
-            //checkAcceptableSignature(signatureSet, actualSignatureSet, ctx);
-            //
-            //
-            ////Set<String> set = new HashSet<>();
-            ////set.add(s.getClass().getName());
-            ////System.out.println("set = " + set);
-            ////System.out.println(set.contains(Str.class.getName()));
-            //
-            ////Type actualParamSeq = visit(ctx.parameterList());
-            ////if (!actualParamSeq.equiv(expectedParamSeq)) {
-            ////    reportError("type is " + actualParamSeq
-            ////            + ", should be " + expectedParamSeq, ctx);
-            ////}
         }
         System.out.println("*******************Function CALL ENDS");
         return ((Function) signature).getResultType();
@@ -1487,9 +1386,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         String assignmentCtx = ctx.getText();
         System.out.println("ctx.getText() = " + assignmentCtx);
 
-        //String id = ctx.variable().getText();
         String id = ctx.variable().variableHead().getText();
-        System.out.println("assignment id = " + id);
         String expression = ctx.expression().getText();
 
         // suppress errors
@@ -1497,8 +1394,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
         if (leftType instanceof ArrayType) {
             // check whether involving array scripting
-            //int arrayIndexCount = arrayIndexCount(ctx.variable());
-            //leftType = getArrayContent(arrayIndexCount, (ArrayType) leftType);
             leftType = visit(ctx.variable());
         }
         System.out.println("leftType = " + leftType);
@@ -1903,14 +1798,15 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     @Override
     public TypeDescriptor visitExpression(PascalParser.ExpressionContext ctx) {
+        System.out.println();
         System.out.println("********Expression Starts********");
+        System.out.println("expression ctx.getText() = " + ctx.getText());
         TypeDescriptor lType = visit(ctx.simpleExpression());
         TypeDescriptor rType = null;
 
         if (ctx.e2 != null) {
             rType = visit(ctx.e2);
             String operator = ctx.relationalOperator.getText();
-            System.out.println("ctx.getText() = " + ctx.getText());
             System.out.println("lType = " + lType);
             System.out.println("rType = " + rType);
 
@@ -1972,7 +1868,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
         }
         // if looping statement, return bool otherwise return type of simpleExpression()
-        //return rType != null ? Type.BOOLEAN : lType;
         return rType != null ? new Boolean() : lType;
     }
 
@@ -1988,6 +1883,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     @Override
     public TypeDescriptor visitSimpleExpression(PascalParser.SimpleExpressionContext ctx) {
+        System.out.println("simple expr ctx.getText() = " + ctx.getText());
         TypeDescriptor lType = visit(ctx.term());
         TypeDescriptor rType;
 
@@ -2016,6 +1912,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                         return ErrorType.INVALID_TYPE;
                     }
                 } else {
+                    System.out.println("simpleExpression ctx.getText() = " + ctx.getText());
                     reportError(ctx, "Additive Operator " + operator +
                             " cannot be applied on the left operand: " + lType);
                     return ErrorType.INVALID_TYPE;

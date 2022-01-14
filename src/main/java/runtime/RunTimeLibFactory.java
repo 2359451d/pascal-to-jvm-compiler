@@ -27,7 +27,7 @@ public class RunTimeLibFactory {
         new Write().addToFactory();
     }
 
-    public static void fillTable(SymbolTable<TypeDescriptor> symbolTable) {
+    public static void fillTable(SymbolTable<Object, TypeDescriptor> symbolTable) {
         init();
         lib.forEach(symbolTable::put);
         symbolTable.displayCurrentScope();
