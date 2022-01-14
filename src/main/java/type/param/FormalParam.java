@@ -7,7 +7,7 @@ public class FormalParam extends Param {
     private String label;
 
     public FormalParam(TypeDescriptor type, String label) {
-        this.setType(type);
+        this.setHostType(type);
         this.label = label;
     }
 
@@ -22,10 +22,10 @@ public class FormalParam extends Param {
     @Override
     public boolean equiv(TypeDescriptor type) {
         if (!(type instanceof FormalParam)) {
-            return this.getType().equiv(type);
+            return this.getHostType().equiv(type);
         }
         FormalParam that = (FormalParam) type;
-        if (!this.getType().equiv(that.getType())) return false;
+        if (!this.getHostType().equiv(that.getHostType())) return false;
 
         String thisLabel = this.label == null ? "" : this.label;
         String thatLabel = that.label == null ? "" : that.label;
