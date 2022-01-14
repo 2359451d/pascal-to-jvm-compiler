@@ -1,18 +1,18 @@
 package type.param;
 
-import type.BaseType;
 import type.TypeDescriptor;
+import type.nestedType.NestedBaseType;
 
-public abstract class Param extends BaseType {
-    private TypeDescriptor type;
-
-    public TypeDescriptor getType() {
-        return type;
-    }
-
-    public void setType(TypeDescriptor type) {
-        this.type = type;
-    }
+public abstract class Param extends NestedBaseType {
+    //private TypeDescriptor type;
+    //
+    //public TypeDescriptor getType() {
+    //    return type;
+    //}
+    //
+    //public void setType(TypeDescriptor type) {
+    //    this.type = type;
+    //}
 
     //@Override
     //public String toString() {
@@ -27,6 +27,6 @@ public abstract class Param extends BaseType {
         //if (this.) {
         //    return
         //}
-        return (that instanceof Param) && (this.type.equiv(((Param) that).type));
+        return (that instanceof Param) && (this.getHostType().equiv(((Param) that).getHostType()));
     }
 }

@@ -2,17 +2,20 @@ package ast.visitor.impl;
 
 import ast.visitor.PascalBaseVisitor;
 import ast.visitor.PascalParser;
+import driver.PascalCompilerDriver;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.xpath.XPath;
 import org.apache.commons.lang3.StringUtils;
-import runtime.RunTimeLibFactory;
 import type.*;
 import type.enumerated.EnumeratedIdentifier;
 import type.enumerated.EnumeratedType;
 import type.error.ErrorType;
+import type.nestedType.NestedBaseType;
 import type.param.ActualParam;
 import type.param.FormalParam;
 import type.param.Param;
@@ -166,7 +169,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             Map<Class<? extends ParserRuleContext>, Table<Object, TypeDescriptor>> tablesExcludedToClass = tableManager.selectAllTablesExcludedToClass(ctx.getClass());
             for (Table<Object, TypeDescriptor> eachTable : tablesExcludedToClass.values()) {
                 type = eachTable.get(id.toLowerCase());
-                if (type!=null) return type;
+                if (type != null) return type;
             }
             if (notSuppressError) reportError(ctx, "Identifier %s is undeclared", id);
             return ErrorType.UNDEFINED_TYPE;
@@ -188,8 +191,9 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
     /**
      * block
-     *    : (labelDeclarationPart | constantDefinitionPart | typeDefinitionPart | variableDeclarationPart | procedureAndFunctionDeclarationPart | usesUnitsPart | IMPLEMENTATION)* compoundStatement
-     *    ;
+     * : (labelDeclarationPart | constantDefinitionPart | typeDefinitionPart | variableDeclarationPart | procedureAndFunctionDeclarationPart | usesUnitsPart | IMPLEMENTATION)* compoundStatement
+     * ;
+     *
      * @param ctx
      * @return
      */
@@ -658,7 +662,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     }
 
 
-
     /**
      * formalParameterSection
      * : parameterGroup  #noLabelParam
@@ -762,16 +765,22 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      * @param type - function return type
      * @return boolean - true if function has result assignment, otherwise return false
      */
-    private boolean functionHasResultAssignment(TypeDescriptor type) {
-        //List<PascalParser.StatementContext> statementContextList = ctx.block().compoundStatement().statements().statement();
-        //boolean functionHasResultAssignment = false;
-        //for (PascalParser.StatementContext statementContext : statementContextList) {
-        //    if (visit(statementContext) instanceof Function) {
-        //        functionHasResultAssignment = true;
-        //    }
-        //}
-        //return functionHasbResultAssignment;
-        return type instanceof Function;
+    private boolean functionHasResultAssignment(PascalParser.StatementsContext ctx, String functionId) {
+        //FIXME
+        List<PascalParser.StatementContext> statement = ctx.statement();
+        for (PascalParser.StatementContext statementContext : statement) {
+            PascalParser.UnlabelledStatementContext unlabelledStatementContext = statementContext.unlabelledStatement();
+            PascalParser.SimpleStatementContext simpleStatementContext = unlabelledStatementContext.simpleStatement();
+            if (simpleStatementContext != null) {
+                PascalParser.AssignmentStatementContext assignmentStatement = simpleStatementContext.assignmentStatement();
+                if (assignmentStatement != null) {
+                    if (assignmentStatement.variable().getText().equals(functionId)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -810,8 +819,9 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
         //System.out.println("Visit Func Block");
         TypeDescriptor returnType = visit(ctx.block());// scope & type checking in current func scope
+        System.out.println("returnType = " + returnType);
 
-        if (!functionHasResultAssignment(resultType)) {
+        if (!functionHasResultAssignment(ctx.block().compoundStatement().statements(), id)) {
             reportError(ctx, "Missing result assignment in Function: %s", function);
         }
 
@@ -830,9 +840,9 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      * @return
      */
     private boolean checkFormalAndActual(FormalParam formalParam, ActualParam actualParam) {
-        if (formalParam.getLabel() == null) return formalParam.getType().equiv(actualParam.getType());
+        if (formalParam.getLabel() == null) return formalParam.getHostType().equiv(actualParam.getHostType());
         if (!(formalParam.getLabel().equals(actualParam.getLabel()))) return false;
-        return formalParam.getType().equiv(actualParam.getType());
+        return formalParam.getHostType().equiv(actualParam.getHostType());
     }
 
     /**
@@ -1296,13 +1306,13 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             // index order follow "parenthesis first, expression(inside the parenthesis) next"
             // FIXME Nested type ,must extract the host type for further checking
             if (arrayType instanceof ArrayType
-                || arrayType instanceof FormalParam) {
+                    || arrayType instanceof FormalParam) {
                 ArrayType _arrayType = null;
 
                 if (arrayType instanceof ArrayType) _arrayType = (ArrayType) arrayType;
                 if (arrayType instanceof FormalParam) {
-                    if (((FormalParam) arrayType).getType() instanceof ArrayType) {
-                        _arrayType = (ArrayType) ((FormalParam) arrayType).getType();
+                    if (((FormalParam) arrayType).getHostType() instanceof ArrayType) {
+                        _arrayType = (ArrayType) ((FormalParam) arrayType).getHostType();
                     } else {
                         reportError(ctx, "Invalid array scripting operation [%s]. [%s] is not an array type.\nActual: %s",
                                 _parent.getText(), id, arrayType);
@@ -1539,7 +1549,8 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             if (rightType instanceof IntegerBaseType && ((IntegerBaseType) rightType).getValue() == null) {
                 return null;
             }
-            reportError(ctx, "invalid subrange %s", assignmentCtx);
+            reportError(ctx, "invalid subrange [%s],\nExpected: %s,\nActual: %s",
+                    assignmentCtx, leftType, rightType);
             return null;
         }
 
@@ -1781,7 +1792,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         } else if (type instanceof Param) {
             // if checked operand is a formal parameter,
             // check the inner type
-            type = ((Param) type).getType();
+            type = ((Param) type).getHostType();
         }
         return (type instanceof IntegerBaseType || type instanceof Character
                 || type instanceof Boolean || type instanceof EnumeratedIdentifier);
@@ -1853,11 +1864,11 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                     if (hostType == lType.getClass()) return new Boolean();
                 }
                 if (lType instanceof Param) {
-                    TypeDescriptor type = ((Param) lType).getType();
+                    TypeDescriptor type = ((Param) lType).getHostType();
                     if (type.equiv(rType)) return new Boolean();
                 }
                 if (rType instanceof Param) {
-                    TypeDescriptor type = ((Param) rType).getType();
+                    TypeDescriptor type = ((Param) rType).getHostType();
                     if (type.equiv(lType)) return new Boolean();
                 }
 
@@ -1904,6 +1915,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
             // if left operand is not int nor real
             if (!(lType instanceof IntegerBaseType) && !(lType instanceof FloatBaseType)) {
+                // TODO Nested Type Refactor
                 if (lType instanceof Subrange) {
                     TypeDescriptor lowerBound = ((Subrange) lType).getLowerBound();
                     if (!(lowerBound instanceof IntegerBaseType) && !(lowerBound instanceof FloatBaseType)) {
@@ -1911,8 +1923,14 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                                 " cannot be applied on the left operand: " + lType);
                         return ErrorType.INVALID_TYPE;
                     }
+                } else if (lType instanceof NestedBaseType) {
+                    TypeDescriptor hostType = ((NestedBaseType) lType).getHostType();
+                    if (!(hostType instanceof IntegerBaseType) && !(hostType instanceof FloatBaseType)) {
+                        reportError(ctx, "Additive Operator " + operator +
+                                " cannot be applied on the left operand: " + lType);
+                        return ErrorType.INVALID_TYPE;
+                    }
                 } else {
-                    System.out.println("simpleExpression ctx.getText() = " + ctx.getText());
                     reportError(ctx, "Additive Operator " + operator +
                             " cannot be applied on the left operand: " + lType);
                     return ErrorType.INVALID_TYPE;
@@ -1920,10 +1938,28 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             }
             // if right operand is not int nor real
             if (!(rType instanceof IntegerBaseType) && !(rType instanceof FloatBaseType)) {
-                reportError(ctx, "Additive Operator " + operator +
-                        " cannot be applied on the right operand: " + rType);
-                return ErrorType.INVALID_TYPE;
+                // TODO Nested Type Refactor
+                if (rType instanceof Subrange) {
+                    TypeDescriptor lowerBound = ((Subrange) rType).getLowerBound();
+                    if (!(lowerBound instanceof IntegerBaseType) && !(lowerBound instanceof FloatBaseType)) {
+                        reportError(ctx, "Additive Operator " + operator +
+                                " cannot be applied on the right operand: " + rType);
+                        return ErrorType.INVALID_TYPE;
+                    }
+                } else if (rType instanceof NestedBaseType) {
+                    TypeDescriptor hostType = ((NestedBaseType) rType).getHostType();
+                    if (!(hostType instanceof IntegerBaseType) && !(hostType instanceof FloatBaseType)) {
+                        reportError(ctx, "Additive Operator " + operator +
+                                " cannot be applied on the right operand: " + rType);
+                        return ErrorType.INVALID_TYPE;
+                    }
+                } else {
+                    reportError(ctx, "Additive Operator " + operator +
+                            " cannot be applied on the right operand: " + rType);
+                    return ErrorType.INVALID_TYPE;
+                }
             }
+
             //if (lType.equiv(Type.REAL) || rType.equiv(Type.REAL)) return Type.REAL;
             //else return Type.INTEGER;
             if (lType instanceof FloatBaseType || rType instanceof FloatBaseType) {
@@ -1934,7 +1970,10 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 System.out.println("lType = " + lType);
                 System.out.println("rType = " + rType);
 
-                if (!(lType instanceof Subrange) && !(rType instanceof Subrange)) {
+                // subrange, params evaluation would be evaluated at the runtime
+                if (!(lType instanceof Subrange) && !(rType instanceof Subrange)
+                  && !(lType instanceof NestedBaseType) && !(rType instanceof NestedBaseType)
+                ) {
                     if (((IntegerBaseType) lType).isConstant() && ((IntegerBaseType) rType).isConstant()) {
                         // only checks for constant & literal
                         Long lValue = ((IntegerBaseType) lType).getValue();
