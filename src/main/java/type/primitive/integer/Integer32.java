@@ -31,6 +31,12 @@ public class Integer32 extends IntegerBaseType{
         this.setValue(Long.valueOf(value));
     }
 
+    public Integer32(Long value, boolean isConstant) {
+        this();
+        this.setValue(value);
+        this.setConstant(isConstant);
+    }
+
     public Integer32(String value, boolean isConstant) {
         super("int32");
         //this.value = Long.valueOf(value);
