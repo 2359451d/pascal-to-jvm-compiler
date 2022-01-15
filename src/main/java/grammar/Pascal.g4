@@ -129,9 +129,9 @@ typeDefinitionPart
    : TYPE (typeDefinition SEMI) +
    ;
 
+// ! func, proc type definition is not standard
 typeDefinition
 //   : identifier EQUAL (type_ | functionType | procedureType)
-// func, proc type definition is not standard
    : identifier EQUAL type_
    ;
 
@@ -277,9 +277,20 @@ formalParameterList
 formalParameterSection
    : parameterGroup  #noLabelParam
    | VAR parameterGroup #varLabelParam
-   | FUNCTION parameterGroup #funcParam
-   | PROCEDURE parameterGroup #procParam
+   | functionHeading #funcParam
+   | procedureHeading #procParam
+//   | FUNCTION parameterGroup #funcParam
+//   | PROCEDURE parameterGroup #procParam
    ;
+
+functionHeading
+   : FUNCTION identifier (formalParameterList)? COLON resultType
+   ;
+
+procedureHeading
+   : PROCEDURE identifier (formalParameterList)?
+   ;
+
 
 parameterGroup
    : identifierList COLON typeIdentifier
@@ -292,6 +303,7 @@ identifierList
 constList
    : constant (COMMA constant)*
    ;
+
 
 functionDeclaration
    : FUNCTION identifier (formalParameterList)? COLON resultType SEMI block

@@ -7,6 +7,7 @@
 program nestedProcTest;
 var
   intVar:Integer;
+ realVar:Real;
   subrangeVar:1..10;
 
 procedure sum;
@@ -22,7 +23,7 @@ procedure sum;
       flag: Boolean;
     begin
       flag:= left<right;
-      add:= left+right;
+      add:= 1.0; {Illegal assignment: [add:=1.0], expected: integer}
     end;
   begin
     left:=1;
@@ -35,4 +36,5 @@ begin
   sum;
   subrangeVar:=1;
   intVar:= 1 + subrangeVar;
+  realVar:= intVar;
 end.
