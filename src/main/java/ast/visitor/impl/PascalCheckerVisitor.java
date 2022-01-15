@@ -830,14 +830,13 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     }
 
     /**
-     * Check whether a Function has result assignment or not (should be the last node in the block)
+     * Check whether a Function has result assignment or not
      * Report errors if the result assignment statement is missing
      *
      * ! Enhancement could be using XPath .etc to find specific node type in the tree
      *
      * @return boolean - true if function has result assignment, otherwise return false
      */
-    @Deprecated
     private boolean functionHasResultAssignment(PascalParser.StatementsContext ctx, String functionId) {
         List<PascalParser.StatementContext> statement = ctx.statement();
         for (PascalParser.StatementContext statementContext : statement) {
@@ -856,15 +855,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     }
 
     /**
-     * Global tracking whether the selectedFunction has return assignment
-     */
-    private boolean functionHasReturnAssignment;
-    /**
-     * Select id of current functionDeclaration node
-     */
-    private String selectedFunction = null;
-
-    /**
      * functionDeclaration
      * : FUNCTION identifier (formalParameterList)? COLON resultType SEMI block
      * ;
@@ -874,11 +864,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     @Override
     public TypeDescriptor visitFunctionDeclaration(PascalParser.FunctionDeclarationContext ctx) {
-        // initialise for each declared Function
-        functionHasReturnAssignment = false;
-
         String id = ctx.identifier().getText();
-        selectedFunction = id;
         TypeDescriptor resultType = visit(ctx.resultType());
         ArrayList<TypeDescriptor> params = new ArrayList<>();
 
@@ -908,11 +894,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         TypeDescriptor returnType = visit(ctx.block());// scope & type checking in current func scope
         System.out.println("returnType = " + returnType);
 
-        //if (!functionHasResultAssignment(ctx.block().compoundStatement().statements(), id)) {
-        //    reportError(ctx, "Missing result assignment in Function: %s", function);
-        //}
-
-        if (!functionHasReturnAssignment) {
+        if (!functionHasResultAssignment(ctx.block().compoundStatement().statements(), id)) {
             reportError(ctx, "Missing result assignment in Function: %s", function);
         }
 
@@ -1461,14 +1443,8 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         String id = ctx.variable().variableHead().getText();
         String expression = ctx.expression().getText();
 
-
         // suppress errors
         TypeDescriptor leftType = retrieve(id, false, ctx);
-
-        if (leftType instanceof Function &&
-                id.toLowerCase().equals(selectedFunction.toLowerCase())) {
-            functionHasReturnAssignment = true;
-        }
 
         if (leftType instanceof ArrayType) {
             // check whether involving array scripting
@@ -1847,10 +1823,10 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             // if subrange type defined, already pass the bounds checking,
             // choose the first bound as the host type instance
             type = ((Subrange) type).getLowerBound();
-        } else if (type instanceof NestedBaseType) {
+        } else if (type instanceof Param) {
             // if checked operand is a formal parameter,
             // check the inner type
-            type = ((NestedBaseType) type).getHostType();
+            type = ((Param) type).getHostType();
         }
         return (type instanceof IntegerBaseType || type instanceof Character
                 || type instanceof Boolean || type instanceof EnumeratedIdentifier);
