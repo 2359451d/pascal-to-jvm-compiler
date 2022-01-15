@@ -1,4 +1,4 @@
-package type.param;
+package type.nestedType.param;
 
 import type.TypeDescriptor;
 import type.nestedType.NestedBaseType;

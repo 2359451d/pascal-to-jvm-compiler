@@ -29,9 +29,24 @@ public class Function extends BaseType {
         return resultType;
     }
 
+    /**
+     * Compare whether two Function types are equal
+     * Usage: compare when Function itself as parameters to Procedure/Function
+     *
+     * @param type
+     * @return
+     */
     @Override
     public boolean equiv(TypeDescriptor type) {
-        return false;
+        if (!(type instanceof Function)) return false;
+        Function that = (Function) type;
+        if (this.resultType!=that.getResultType()) return false;
+        if (this.formalParams.size()!=that.formalParams.size()) return false;
+
+        for (int i = 0; i < this.formalParams.size(); i++) {
+            if (!this.formalParams.get(i).equiv(that.formalParams.get(i))) return false;
+        }
+        return true;
     }
 
     @Override

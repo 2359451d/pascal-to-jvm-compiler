@@ -387,6 +387,18 @@ public interface PascalVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitProcParam(PascalParser.ProcParamContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link PascalParser#functionHeading}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFunctionHeading(PascalParser.FunctionHeadingContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link PascalParser#procedureHeading}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitProcedureHeading(PascalParser.ProcedureHeadingContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link PascalParser#parameterGroup}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
