@@ -15,7 +15,7 @@ import type.error.ErrorType;
 import type.nestedType.NestedBaseType;
 import type.nestedType.param.ActualParam;
 import type.nestedType.param.FormalParam;
-import type.nestedType.param.Param;
+import type.param.Param;
 import type.primitive.Boolean;
 import type.primitive.Character;
 import type.primitive.floating.DefaultFloatType;
