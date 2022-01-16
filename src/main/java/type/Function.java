@@ -1,13 +1,10 @@
 package type;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import util.CustomToStringStyle;
+import type.procOrFunc.ProcFuncBaseType;
 
 import java.util.List;
 
-public class Function extends BaseType {
-
-    private List<TypeDescriptor> formalParams;
+public class Function extends ProcFuncBaseType {
 
     private TypeDescriptor resultType;
 
@@ -38,20 +35,10 @@ public class Function extends BaseType {
      */
     @Override
     public boolean equiv(TypeDescriptor type) {
+        super.equiv(type);
         if (!(type instanceof Function)) return false;
         Function that = (Function) type;
-        if (this.resultType!=that.getResultType()) return false;
-        if (this.formalParams.size()!=that.formalParams.size()) return false;
-
-        for (int i = 0; i < this.formalParams.size(); i++) {
-            if (!this.formalParams.get(i).equiv(that.formalParams.get(i))) return false;
-        }
-        return true;
+        return this.resultType == that.getResultType();
     }
 
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this,
-                CustomToStringStyle.SHORT_PREFIX_MULTI_LINE_STYLE);
-    }
 }

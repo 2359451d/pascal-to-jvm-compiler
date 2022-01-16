@@ -1,14 +1,11 @@
 package type;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import util.CustomToStringStyle;
+import type.procOrFunc.ProcFuncBaseType;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Procedure extends BaseType {
-
-    private List<TypeDescriptor> formalParams;
+public class Procedure extends ProcFuncBaseType {
 
     public Procedure() {
         this.formalParams = new ArrayList<>();
@@ -23,22 +20,17 @@ public class Procedure extends BaseType {
         this.formalParams = formalParams;
     }
 
-    public List<TypeDescriptor> getFormalParams() {
-        return formalParams;
-    }
-
-    public int getFormalParamsSize() {
-        return formalParams.size();
-    }
-
+    /**
+     * Compare whether two Procedure types are equal
+     * Usage: compare when Procedure itself as parameters to Procedure/Function
+     *
+     * @param type
+     * @return
+     */
     @Override
     public boolean equiv(TypeDescriptor type) {
-        return false;
+        return super.equiv(type);
     }
 
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this,
-                CustomToStringStyle.SHORT_PREFIX_MULTI_LINE_STYLE);
-    }
+
 }
