@@ -4,6 +4,25 @@ import type.TypeDescriptor;
 import type.nestedType.NestedBaseType;
 
 public abstract class Param extends NestedBaseType {
+    private String name = null;
+    private String label = null;
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
     //private TypeDescriptor type;
     //
     //public TypeDescriptor getType() {

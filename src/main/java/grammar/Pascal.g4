@@ -266,8 +266,14 @@ procedureOrFunctionDeclaration
    | functionDeclaration
    ;
 
+directive
+   : FORWARD
+   ;
+
 procedureDeclaration
-   : PROCEDURE identifier (formalParameterList)? SEMI block
+   : procedureHeading SEMI directive #procedurePrototypeDecl
+   | PROCEDURE identifier SEMI block #procedureImpl
+   | PROCEDURE identifier (formalParameterList)? SEMI block #procedureDecl
    ;
 
 formalParameterList
@@ -306,7 +312,9 @@ constList
 
 
 functionDeclaration
-   : FUNCTION identifier (formalParameterList)? COLON resultType SEMI block
+   : functionHeading SEMI directive #functionPrototypeDecl
+   | FUNCTION identifier SEMI block #functionImpl
+   | FUNCTION identifier (formalParameterList)? COLON resultType SEMI block #functionDecl
    ;
 
 resultType
@@ -1023,6 +1031,11 @@ TRUE
 
 FALSE
    : F A L S E
+   ;
+
+// directives
+FORWARD
+   : F O R W A R D
    ;
 
 

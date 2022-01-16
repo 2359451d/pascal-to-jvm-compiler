@@ -4,21 +4,26 @@ import type.TypeDescriptor;
 
 public class ActualParam extends Param {
 
-    private String label;
+    //private String label;
 
     public ActualParam(TypeDescriptor type) {
         setHostType(type);
-        this.label = null;
     }
 
     public ActualParam(TypeDescriptor type, String label) {
         setHostType(type);
-        this.label = label;
+        setLabel(label);
     }
 
-    public String getLabel() {
-        return label;
+    public ActualParam(TypeDescriptor type, String name, String label) {
+        setHostType(type);
+        setName(name);
+        setLabel(label);
     }
+
+    //public String getLabel() {
+    //    return label;
+    //}
 
     @Override
     public boolean equiv(TypeDescriptor type) {
@@ -26,6 +31,6 @@ public class ActualParam extends Param {
             return getHostType().equiv(type);
         }
         ActualParam that = (ActualParam) type;
-        return getHostType().equiv(that.getHostType()) && this.label.equals(that.label);
+        return getHostType().equiv(that.getHostType()) && this.getLabel().equals(that.getLabel());
     }
 }

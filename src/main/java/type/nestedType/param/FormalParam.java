@@ -4,20 +4,26 @@ import type.TypeDescriptor;
 
 public class FormalParam extends Param {
 
-    private String label;
+    //private String label;
 
     public FormalParam(TypeDescriptor type, String label) {
-        this.setHostType(type);
-        this.label = label;
+        setHostType(type);
+        setLabel(label);
     }
 
-    public String getLabel() {
-        return label;
+    public FormalParam(TypeDescriptor type, String name, String label) {
+        setHostType(type);
+        setName(name);
+        setLabel(label);
     }
 
-    public void setLabel(String label) {
-        this.label = label;
-    }
+    //public String getLabel() {
+    //    return label;
+    //}
+
+    //public void setLabel(String label) {
+    //    this.label = label;
+    //}
 
     @Override
     public boolean equiv(TypeDescriptor type) {
@@ -27,8 +33,8 @@ public class FormalParam extends Param {
         FormalParam that = (FormalParam) type;
         if (!this.getHostType().equiv(that.getHostType())) return false;
 
-        String thisLabel = this.label == null ? "" : this.label;
-        String thatLabel = that.label == null ? "" : that.label;
+        String thisLabel = this.getLabel() == null ? "" : this.getLabel();
+        String thatLabel = that.getLabel() == null ? "" : that.getLabel();
         if (thisLabel.equals("proc") || thisLabel.equals("func") ||
                 thatLabel.equals("proc")
                 || thatLabel.equals("func")) {

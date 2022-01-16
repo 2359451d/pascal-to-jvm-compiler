@@ -347,11 +347,32 @@ public interface PascalVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitProcedureOrFunctionDeclaration(PascalParser.ProcedureOrFunctionDeclarationContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link PascalParser#procedureDeclaration}.
+	 * Visit a parse tree produced by {@link PascalParser#directive}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitProcedureDeclaration(PascalParser.ProcedureDeclarationContext ctx);
+	T visitDirective(PascalParser.DirectiveContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code procedurePrototypeDecl}
+	 * labeled alternative in {@link PascalParser#procedureDeclaration}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitProcedurePrototypeDecl(PascalParser.ProcedurePrototypeDeclContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code procedureImpl}
+	 * labeled alternative in {@link PascalParser#procedureDeclaration}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitProcedureImpl(PascalParser.ProcedureImplContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code procedureDecl}
+	 * labeled alternative in {@link PascalParser#procedureDeclaration}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitProcedureDecl(PascalParser.ProcedureDeclContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PascalParser#formalParameterList}.
 	 * @param ctx the parse tree
@@ -417,11 +438,26 @@ public interface PascalVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitConstList(PascalParser.ConstListContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link PascalParser#functionDeclaration}.
+	 * Visit a parse tree produced by the {@code functionPrototypeDecl}
+	 * labeled alternative in {@link PascalParser#functionDeclaration}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitFunctionDeclaration(PascalParser.FunctionDeclarationContext ctx);
+	T visitFunctionPrototypeDecl(PascalParser.FunctionPrototypeDeclContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code functionImpl}
+	 * labeled alternative in {@link PascalParser#functionDeclaration}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFunctionImpl(PascalParser.FunctionImplContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code functionDecl}
+	 * labeled alternative in {@link PascalParser#functionDeclaration}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFunctionDecl(PascalParser.FunctionDeclContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PascalParser#resultType}.
 	 * @param ctx the parse tree
