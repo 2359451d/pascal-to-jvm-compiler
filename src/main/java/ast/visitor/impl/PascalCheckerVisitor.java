@@ -2346,6 +2346,65 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     }
 
     /**
+     * With statement gives quick operation to record type
+     * Nested scopes are allowed where the variables are tried from last to first
+     * Till the field reference is found, Otherwise raise compile time errors
+     * <p>
+     * withStatement
+     * : WITH recordVariableList DO statement
+     * ;
+     *
+     * @param ctx
+     * @return
+     */
+    @Override
+    public TypeDescriptor visitWithStatement(PascalParser.WithStatementContext ctx) {
+        TypeDescriptor variableNum = visit(ctx.recordVariableList());
+        long num = 0;
+        if (variableNum instanceof IntegerBaseType) {
+            num = ((IntegerBaseType) variableNum).getValue();
+        }
+        visit(ctx.statement());
+        for (int i = 0; i < num; i++) {
+           symbolTable.exitLocalScope();
+        }
+        return null;
+    }
+
+    /**
+     * Open scope for each variable, putting all the fields into current scope
+     * <p>
+     * recordVariableList
+     * : variable (COMMA variable)*
+     * ;
+     *
+     * @param ctx
+     * @return
+     */
+    @Override
+    public TypeDescriptor visitRecordVariableList(PascalParser.RecordVariableListContext ctx) {
+        int withStatementVaraibleNum = 0;
+
+        List<PascalParser.VariableContext> variableContexts = ctx.variable();
+        for (PascalParser.VariableContext variableContext : variableContexts) {
+            TypeDescriptor type = visit(variableContext);
+            if (!(type instanceof RecordType)) {
+                reportError(ctx, "Invalid record type [%s]: %s", variableContext.getText(), type);
+                continue;
+            }
+
+            Map<String, TypeDescriptor> fieldsMap = ((RecordType) type).getFieldsMap();
+            // open new scope
+            symbolTable.enterLocalScope();
+            fieldsMap.forEach((k, v) -> {
+                symbolTable.put(k, v);
+            });
+            withStatementVaraibleNum++;
+        }
+        return new Integer32((long) withStatementVaraibleNum);
+    }
+
+    /**
      * simple-type = ordinal-type | real-type
      * ordinal-type = enumerated-type | subrange-type | ordinal-type(int, boolean, char)
      *
