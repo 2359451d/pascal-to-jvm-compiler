@@ -1700,12 +1700,13 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         List<PascalParser.ExpressionContext> expression = ctx.expression();
         System.out.println("arraylists structuredTypeToBeCheckNext = " + structuredTypeToBeCheckNext);
         if (structuredTypeToBeCheckNext instanceof ArrayType
-            || structuredTypeToBeCheckNext instanceof FormalParam) {
+                || structuredTypeToBeCheckNext instanceof FormalParam) {
 
             for (PascalParser.ExpressionContext eachExpr : expression) {
                 ArrayType _arrayType = null;
 
-                if (structuredTypeToBeCheckNext instanceof ArrayType) _arrayType = (ArrayType) structuredTypeToBeCheckNext;
+                if (structuredTypeToBeCheckNext instanceof ArrayType)
+                    _arrayType = (ArrayType) structuredTypeToBeCheckNext;
                 if (structuredTypeToBeCheckNext instanceof FormalParam) {
                     if (((FormalParam) structuredTypeToBeCheckNext).getHostType() instanceof ArrayType) {
                         _arrayType = (ArrayType) ((FormalParam) structuredTypeToBeCheckNext).getHostType();
@@ -1764,11 +1765,10 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             }
             return structuredTypeToBeCheckNext;
         }
-        reportError(ctx,"Illegal array scripting operation [%s] on the type: %s",
-                ctx.parent.getText(),structuredTypeToBeCheckNext);
+        reportError(ctx, "Illegal array scripting operation [%s] on the type: %s",
+                ctx.parent.getText(), structuredTypeToBeCheckNext);
         return ErrorType.INVALID_ARRAY_TYPE;
     }
-
 
 
     //@Override
@@ -1919,6 +1919,42 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         return recordFieldDesignatorValid;
     }
 
+    private ErrorMessage isValidStringAssignment(ArrayType left, StringLiteral right, String ctx) {
+        StringBuilder stringBuilder = new StringBuilder();
+        ErrorMessage errorMessage = new ErrorMessage(stringBuilder);
+        TypeDescriptor componentType = (left).getComponentType();
+        if (left.isPacked() && componentType instanceof Character) {
+            TypeDescriptor type = left.getIndexList().get(0);
+            if (type instanceof Subrange) {
+                TypeDescriptor lowerBound = ((Subrange) type).getLowerBound();
+                TypeDescriptor upperBound = ((Subrange) type).getUpperBound();
+                // calculate the expected string length
+                Long expectedLength = null;
+                if (lowerBound instanceof IntegerBaseType && upperBound instanceof IntegerBaseType) {
+                    Long lowerValue = ((IntegerBaseType) lowerBound).getValue();
+                    Long upperValue = ((IntegerBaseType) upperBound).getValue();
+                    if (lowerValue != 1) {
+                        stringBuilder.append(String.format("Illegal assignment [%s] with incompatible types.\nExpected(lType): %s,\nActual(rType): %s",
+                                ctx, left, right));
+                        return errorMessage;// valid string type index must start from 1}
+                    }
+                    expectedLength = upperValue - lowerValue + 1;
+                    // check whether right operand is a string type with the same length
+                    int actualLength = right.getValue().replace("'", "").length();
+                    System.out.println("expectedLength = " + expectedLength);
+                    System.out.println("actualLength = " + actualLength);
+                    if (expectedLength.intValue() != actualLength) {
+                        stringBuilder.append(String.format("Illegal string assignment [%s] with incompatible length.\nExpected: %s,\nActual: %s",
+                                ctx, expectedLength, actualLength));
+                    }
+                }
+            }
+        } else {
+            stringBuilder.append(String.format("Illegal assignment [%s] with incompatible types.\nExpected(lType): %s,\nActual(rType): %s",
+                    ctx, left, right));
+        }
+        return errorMessage;
+    }
 
     @Override
     public TypeDescriptor visitAssignmentStatement(PascalParser.AssignmentStatementContext ctx) {
@@ -2081,6 +2117,14 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             }
             reportError(ctx, "invalid subrange [%s],\nExpected: %s,\nActual: %s",
                     assignmentCtx, _leftType, rightType);
+            return null;
+        }
+
+        // check when left is a [packed] character array [index start from 1] where expected a string type
+        // direct string type assignment where the string must has the same length
+        if (_leftType instanceof ArrayType && rightType instanceof StringLiteral) {
+            ErrorMessage validStringAssignment = isValidStringAssignment((ArrayType) _leftType, (StringLiteral) rightType, assignmentCtx);
+            if (validStringAssignment.hasErrors()) reportError(ctx, validStringAssignment.toString());
             return null;
         }
 
@@ -2742,6 +2786,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
     /**
      * FIXME always return the new array type with the first index element removed...
+     *
      * @param arrayIndexCount
      * @param arrayType
      * @return
@@ -2751,7 +2796,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         List<TypeDescriptor> indexList = arrayType.getIndexList();
         int indexListSize = indexList.size();
         System.out.println("indexListSize = " + indexListSize);
-        if (arrayIndexCount == indexListSize-1) {
+        if (arrayIndexCount == indexListSize - 1) {
             return componentType;
         }
         //concatenate and return the new array type
