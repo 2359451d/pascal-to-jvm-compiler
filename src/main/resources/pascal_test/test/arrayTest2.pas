@@ -32,7 +32,8 @@ begin
   total:=0;
   for i :=1 to 10 do
     total := total + a[i];
-  sum:= total
+  a[1]:=100;
+  sum:= total;
 end;
 
 begin

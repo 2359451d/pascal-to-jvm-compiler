@@ -4,6 +4,7 @@ import runtime.RTLManager;
 import runtime.RunTimeLibFactory;
 import type.*;
 import type.primitive.Primitive;
+import type.structured.File;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -20,7 +20,9 @@ public enum ErrorType implements TypeDescriptor {
     INVALID_MONADIC_OPERATION(400, "invalid monadic operation"),
     INVALID_EXPRESSION(500, "invalid expression"),
     INVALID_ARRAY_SCRIPTING(600, "invalid array scripting"),
-    INVALID_ARRAY_TYPE(601, "invalid array type")
+    INVALID_ARRAY_TYPE(601, "invalid array type"),
+    INVALID_RECORD_FIELD(700, "invalid record field"),
+
     ;
 
     private int errorCode; // error code

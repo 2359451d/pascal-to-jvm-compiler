@@ -52,10 +52,10 @@ public class ArrayType extends StructuredBaseType {
         ArrayType that = (ArrayType) type;
         TypeDescriptor thatComponentType = that.getComponentType();
         List<TypeDescriptor> thatIndexList = that.getIndexList();
-        boolean thatPacked = that.isPacked();
+        boolean thatPacked = that.isPacked;
 
         if (this.componentType.getClass() != thatComponentType.getClass()
-                && this.isPacked() == thatPacked) return false;
+                && this.isPacked == thatPacked) return false;
 
         if (this.indexList.size() != thatIndexList.size()) return false;
 

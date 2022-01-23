@@ -507,6 +507,12 @@ public interface PascalVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitArrayScripting(PascalParser.ArrayScriptingContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link PascalParser#fieldDesignator}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFieldDesignator(PascalParser.FieldDesignatorContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link PascalParser#expression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

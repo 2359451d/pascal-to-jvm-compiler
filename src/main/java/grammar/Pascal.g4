@@ -207,8 +207,8 @@ recordType
    ;
 
 fieldList
-   : fixedPart (SEMI variantPart)?
-   | variantPart
+   : fixedPart (SEMI variantPart)? (SEMI)?
+   | variantPart (SEMI)?
    ;
 
 fixedPart
@@ -346,7 +346,7 @@ variable
    : variableHead
    (
    arrayScripting
-   | DOT identifier
+   | fieldDesignator
    | POINTER
    )*
 //   (LBRACK expression (COMMA expression)* RBRACK // array scripting
@@ -361,6 +361,11 @@ arrayScripting
   : LBRACK expression (COMMA expression)* RBRACK // array scripting
    | LBRACK2 expression (COMMA expression)* RBRACK2 // array scripting
    ;
+
+fieldDesignator
+  : DOT identifier
+  ;
+
 
 expression
    : simpleExpression (relationalOperator=(EQUAL| NOT_EQUAL| LT| LE| GE| GT| IN)

@@ -6,6 +6,7 @@ import type.primitive.Character;
 import type.primitive.Primitive;
 import type.primitive.floating.DefaultFloatType;
 import type.primitive.integer.DefaultIntegerType;
+import type.structured.File;
 
 /**
  * Provide existing types (static) for type checking or other usage.
