@@ -19,7 +19,7 @@ public abstract class Table<K, T extends TypeDescriptor> {
 
     private TableManager<K, T> tableManager = TableManager.getInstance(); // quick reference
 
-    private Deque<HashMap<K,T>> scope_stack;
+    private Deque<Map<K,T>> scope_stack;
 
     /**
      * Table name
@@ -39,7 +39,7 @@ public abstract class Table<K, T extends TypeDescriptor> {
      */
     public Table() {
         scope_stack = new LinkedList<>();
-        scope_stack.addLast(new HashMap<>());
+        scope_stack.addLast(new LinkedHashMap<>());
         // add a new table instance into the TableContainer
         tableManager.addTable(context, this);
         tableManager.showAllTables();
@@ -51,7 +51,7 @@ public abstract class Table<K, T extends TypeDescriptor> {
      */
     public Table(String tableName) {
         scope_stack = new LinkedList<>();
-        scope_stack.addLast(new HashMap<>());
+        scope_stack.addLast(new LinkedHashMap<>());
         this.tableName = tableName;
         // add a new table instance into the TableContainer
         tableManager.addTable(context, this);
@@ -65,7 +65,7 @@ public abstract class Table<K, T extends TypeDescriptor> {
      */
     public Table(String tableName, Class<? extends ParserRuleContext> ctx) {
         scope_stack = new LinkedList<>();
-        scope_stack.addLast(new HashMap<>());
+        scope_stack.addLast(new LinkedHashMap<>());
         this.tableName = tableName;
         this.context = ctx;
         // add a new table instance into the TableContainer
@@ -86,7 +86,7 @@ public abstract class Table<K, T extends TypeDescriptor> {
      * @return
      */
     public boolean put(K id, T attr) {
-        HashMap<K,T> scope = getScope_stack().getLast();
+        Map<K,T> scope = getScope_stack().getLast();
         // if the identifier is not defined yet
         if (scope.get(id) == null) {
             scope.put(id, attr);
@@ -98,14 +98,14 @@ public abstract class Table<K, T extends TypeDescriptor> {
     public T get(K id) {
         // try to retrieve the identifier in current (local, most recent) scope
         if (!getScope_stack().isEmpty()) {
-            HashMap<K,T> scope = getScope_stack().getLast();
+            Map<K,T> scope = getScope_stack().getLast();
             if (scope.containsKey(id)) {
                 // retrieve the identifier in the most recent scope
                 return scope.get(id);
             } else {
                 // try to retrieve the id in previous declared scopes from a reverse order
                 // (most recent first)
-                Iterator<HashMap<K,T>> scopeStackDescendingIterator = getScope_stack().descendingIterator();
+                Iterator<Map<K,T>> scopeStackDescendingIterator = getScope_stack().descendingIterator();
                 scopeStackDescendingIterator.next(); // skip current scope
                 while (scopeStackDescendingIterator.hasNext()) {
                     //System.out.printf("No declaration in current scope - [depth %d], try to retrieve from former scope\n", getScope_stack().size() - 1);
@@ -141,7 +141,7 @@ public abstract class Table<K, T extends TypeDescriptor> {
     public void enterLocalScope() {
         // One new table entry (a map) corresponds to one new scope
         System.out.println("Enter new local scope, last depth = " + (getScope_stack().size() - 1));
-        getScope_stack().addLast(new HashMap<>());
+        getScope_stack().addLast(new LinkedHashMap<>());
     }
 
     /**
@@ -161,14 +161,14 @@ public abstract class Table<K, T extends TypeDescriptor> {
         System.out.println("\n===========");
         System.out.printf("Table name: [%s] - Symbols of current scope - %s - [depth %d] \n",
                 tableName, isGlobal, size - 1);
-        HashMap<K, T> currentScope = getScope_stack().getLast();
+        Map<K, T> currentScope = getScope_stack().getLast();
         currentScope.forEach((id, type) -> {
             System.out.println("id = " + id + " ,type = " + type);
         });
         System.out.println("===========\n");
     }
 
-    public Deque<HashMap<K,T>> getScope_stack() {
+    public Deque<Map<K,T>> getScope_stack() {
         return scope_stack;
     }
 

@@ -1,6 +1,6 @@
-package type;
+package type.procOrFunc;
 
-import type.procOrFunc.ProcFuncBaseType;
+import type.TypeDescriptor;
 
 import java.util.List;
 

@@ -8,6 +8,7 @@ import java.lang.reflect.Field;
 public abstract class BaseType implements TypeDescriptor {
 
     private boolean isConstant = false;
+    //private boolean isPackedElement = false;
 
     public boolean isConstant() {
         return isConstant;
@@ -16,6 +17,14 @@ public abstract class BaseType implements TypeDescriptor {
     public void setConstant(boolean constant) {
         isConstant = constant;
     }
+
+    //public boolean isPackedElement() {
+    //    return isPackedElement;
+    //}
+
+    //public void setPackedElement(boolean packedElement) {
+    //    isPackedElement = packedElement;
+    //}
 
     /**
      * Using ToStringStyle.SHORT_PREFIX_STYLE as default printed formatter
@@ -32,7 +41,7 @@ public abstract class BaseType implements TypeDescriptor {
                         ToStringStyle.SHORT_PREFIX_STYLE) {
             @Override
             protected boolean accept(Field field) {
-                return !field.getName().equals("isConstant");
+                return !field.getName().equals("isConstant") && !field.getName().equals("isPackedElement");
             }
         };
         return reflectionToStringBuilder.toString();
