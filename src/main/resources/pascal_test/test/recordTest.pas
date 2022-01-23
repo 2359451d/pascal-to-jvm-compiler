@@ -17,7 +17,7 @@ type
     nestedArr: array [1..10, 1..10] of Integer;
   end;
 
-procedure printRecord(recordVar: Books);
+procedure printRecord(recordVar: Books;var boolVar:Boolean; var intVar: Integer);
 begin
   recordVar.author:= 'changed';
   {WriteLn('Book author: ', recordVar.author);}
@@ -26,6 +26,9 @@ end;
 var
   Book1, Book2: Books; (* Declare Book1 and Book2 of type Books *)
   intVar: Integer;
+  intArr: packed array [1..10] of Integer;
+  boolArr:array [1..10] of Boolean;
+  charArr: packed array [1..10] of Char;
 
 begin
   (* book 1 specification *)
@@ -40,7 +43,7 @@ begin
   Book1.Page.pageNum := 110;
   Book1.Page.pageNum := 110.0; {invalid type, expected int, actual real}
 
-  printRecord(Book1);
+  printRecord(Book1, boolArr[1],Book1.book_id );
 
   (* book 2 specification *)
   Book2.title := 'Telecom Billing'; {length cannot match}

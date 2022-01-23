@@ -1,5 +1,6 @@
-package type;
+package type.procOrFunc;
 
+import type.TypeDescriptor;
 import type.procOrFunc.ProcFuncBaseType;
 
 import java.util.ArrayList;
