@@ -4,6 +4,7 @@ import exception.PascalCompilerException;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 
 public abstract class CompilerDriverBuilder {
 
@@ -13,6 +14,8 @@ public abstract class CompilerDriverBuilder {
     public abstract CompilerDriverBuilder parse() throws IOException, PascalCompilerException;
 
     public abstract CompilerDriverBuilder check() throws PascalCompilerException, IOException;
+
+    public abstract CompilerDriverBuilder run() throws PascalCompilerException, IOException, InvocationTargetException, NoSuchMethodException, IllegalAccessException;
 
     public void setOut(OutputStream out) {
         this.out = out;

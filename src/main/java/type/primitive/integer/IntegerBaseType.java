@@ -2,24 +2,31 @@ package type.primitive.integer;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.objectweb.asm.Type;
 import type.TypeDescriptor;
 import type.primitive.Primitive;
 
-public class IntegerBaseType extends Primitive {
+public class IntegerBaseType extends Primitive<Long> {
 
     // default size - Integer32 (4B)
     public static final Integer MAX_VALUE = Integer.MAX_VALUE;
     public static final Integer MIN_VALUE = Integer.MIN_VALUE;
 
     // use Long type in case overflow/underflow
-    private Long value=null;
+    //private Long value=null;
 
     public IntegerBaseType() {
         super("int");
+        this.value = 0L;
     }
 
     public IntegerBaseType(String type) {
         super(type);
+        this.value = 0L;
+    }
+
+    public IntegerBaseType(String type, Long value) {
+        super(type, value);
     }
 
     public static IntegerBaseType copy(IntegerBaseType from) {
@@ -28,12 +35,23 @@ public class IntegerBaseType extends Primitive {
         return copy;
     }
 
-    public Long getValue() {
-        return value;
-    }
+    //public Long getValue() {
+    //    return value;
+    //}
+    //
+    //public void setValue(Long value) {
+    //    this.value = value;
+    //}
 
-    public void setValue(Long value) {
-        this.value = value;
+    //@Override
+    //public String getDescriptor() {
+    //    return Type.getDescriptor(int.class);
+    //}
+
+
+    @Override
+    public Class<?> getDescriptorClass() {
+        return int.class;
     }
 
     @Override

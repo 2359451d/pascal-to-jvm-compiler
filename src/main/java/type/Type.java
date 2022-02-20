@@ -9,7 +9,7 @@ import type.primitive.integer.DefaultIntegerType;
 import type.structured.File;
 
 /**
- * Provide existing types (static) for type checking or other usage.
+ * Provide existing types (static) for set up the signatures of runtime procedures/functions.
  */
 public enum Type implements TypeDescriptor {
 
@@ -20,8 +20,10 @@ public enum Type implements TypeDescriptor {
     VOID(new Primitive("void")),
     STRING(new StringLiteral()),
     FILE(new File()),
-    // FIXME not necessary? no sense to compare sth with raw enumerated type
-    ENUMERATED(new EnumeratedType());;
+
+    ;
+    //// FIXME not necessary? no sense to compare sth with raw enumerated type
+    //ENUMERATED(new EnumeratedType());;
 
 
     private BaseType type;

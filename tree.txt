@@ -58,10 +58,10 @@
 │   │   │   │   ├── error
 │   │   │   │   │   ├── Invalid.java
 │   │   │   │   │   └── Undefined.java
-│   │   │   │   └── util
+│   │   │   │   └── utils
 │   │   │   │       ├── TypeChecker.java
 │   │   │   │       └── TypeDeprecated.java
-│   │   │   └── util
+│   │   │   └── utils
 │   │   │       ├── BuiltIn.java
 │   │   │       ├── BuiltInUtils.java
 │   │   │       ├── ErrorMessage.java

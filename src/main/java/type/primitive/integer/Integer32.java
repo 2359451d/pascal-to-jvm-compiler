@@ -9,8 +9,8 @@ import type.TypeDescriptor;
  */
 public class Integer32 extends IntegerBaseType{
 
-    public static final Integer MAX_VALUE = Integer.MAX_VALUE;
-    public static final Integer MIN_VALUE = Integer.MIN_VALUE;
+    public static final Long MAX_VALUE = Long.MAX_VALUE;
+    public static final Long MIN_VALUE = Long.MIN_VALUE;
 
     // use Long type in case overflow/underflow
     //private Long value;
@@ -20,29 +20,37 @@ public class Integer32 extends IntegerBaseType{
     }
 
     public Integer32(Long value) {
-        super("int32");
+        super("int32",value);
         //this.value = value;
-        this.setValue(value);
     }
 
     public Integer32(String value) {
-        super("int32");
+        super("int32", Long.valueOf(value));
         //this.value = Long.valueOf(value);
-        this.setValue(Long.valueOf(value));
+        //this.setValue(Long.valueOf(value));
     }
 
     public Integer32(Long value, boolean isConstant) {
-        this();
-        this.setValue(value);
-        this.setConstant(isConstant);
+        //this();
+        //this.setValue(value);
+        //this.setConstant(isConstant);
+        this(value);
+        this.isConstant = isConstant;
     }
 
     public Integer32(String value, boolean isConstant) {
-        super("int32");
-        //this.value = Long.valueOf(value);
-        this.setValue(Long.valueOf(value));
-        this.setConstant(isConstant);
+        this(Long.valueOf(value), isConstant);
+
+        //super("int32");
+        ////this.value = Long.valueOf(value);
+        //this.setValue(Long.valueOf(value));
+        //this.setConstant(isConstant);
     }
+
+    //public Integer32(boolean isConstant) {
+    //    super("int32");
+    //    this.setConstant(isConstant);
+    //}
 
 
     public static Integer32 of(Long value) {

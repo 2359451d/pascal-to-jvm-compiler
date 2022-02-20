@@ -7,8 +7,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.platform.commons.util.StringUtils;
-import util.test.TestUtils;
-import util.test.extension.TestLoggerExtension;
+import utils.test.TestUtils;
+import utils.test.extension.TestLoggerExtension;
 
 import java.io.File;
 import java.util.Arrays;

@@ -5,6 +5,7 @@ import ast.visitor.PascalCustomLexer;
 import ast.visitor.PascalLexer;
 import ast.visitor.PascalParser;
 import ast.visitor.impl.PascalCheckerVisitor;
+import ast.visitor.impl.PascalEncoderVisitor;
 import exception.BuiltinException;
 import exception.PascalCompilerException;
 import org.antlr.v4.runtime.CharStreams;
@@ -16,6 +17,8 @@ import type.TypeDescriptor;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Path;
 
 public class PascalCompilerDriverBuilder extends CompilerDriverBuilder {
 
@@ -23,6 +26,7 @@ public class PascalCompilerDriverBuilder extends CompilerDriverBuilder {
     private CommonTokenStream tokens; // token buffer
     private PascalParser parser;
     private PascalBaseVisitor<TypeDescriptor> checker;
+    private PascalEncoderVisitor runner;
     private ParseTree tree;
     private int syntaxErrors;
     private int tokenErrors;
@@ -100,6 +104,24 @@ public class PascalCompilerDriverBuilder extends CompilerDriverBuilder {
 
         return this;
     }
+
+    @Override
+    public CompilerDriverBuilder run() throws PascalCompilerException, IOException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        if (tokens == null || tree == null) {
+            //throw new PascalCompilerException("Syntactic analysis not being executed yet...");
+            throw BuiltinException.PARSE_NOT_START.getException();
+        }
+
+        Path parentDir = Path.of(fileName).getParent();
+        System.out.println("parentDir = " + parentDir);
+
+        runner = new PascalEncoderVisitor(parentDir.toString(), tokens);
+        runner.visit(tree);
+        PascalEncoderVisitor.run();
+        return this;
+    }
+
+
 
     private void println(String str) throws IOException {
         OutputStream out = getOut();

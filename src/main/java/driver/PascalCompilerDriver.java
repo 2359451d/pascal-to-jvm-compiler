@@ -6,13 +6,14 @@ import org.antlr.v4.runtime.Parser;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.Set;
 
 public class PascalCompilerDriver {
 
     private static Set<String> commandMap = Set.of(
-            "parse", "check"
+            "parse", "check", "run"
     );
 
     public static Map<String, String> checkArguments(String[] args) throws PascalCompilerException {
@@ -42,10 +43,11 @@ public class PascalCompilerDriver {
     }
      **/
 
-    public static CompilerDriverBuilder constructDriverAndBuild(Map<String, String> argumentsMap) throws IOException, PascalCompilerException {
+    public static CompilerDriverBuilder constructDriverAndBuild(Map<String, String> argumentsMap) throws IOException, PascalCompilerException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         // if arguments are valid: command valid, path valid
         String command = argumentsMap.get("command");
         String path = argumentsMap.get("path");
+        System.out.println("path = " + path);
 
         // default output is standard output
         CompilerDriverBuilder builder = null;
@@ -56,6 +58,9 @@ public class PascalCompilerDriver {
         if (command.equals("check")) {
             // throw PascalCompilerException, if syntactic analysis not being executed yet
             builder = new PascalCompilerDriverBuilder(path).parse().check();
+        }
+        if (command.equals("run")) {
+            builder = new PascalCompilerDriverBuilder(path).parse().check().run();
         }
         return builder;
     }
@@ -68,6 +73,12 @@ public class PascalCompilerDriver {
         } catch (PascalCompilerException e) {
             System.out.println(e.getMessage());
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
     }

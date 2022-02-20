@@ -1,10 +1,9 @@
 package type.enumerated;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import type.BaseType;
 import type.TypeDescriptor;
-import util.CustomToStringStyle;
+import utils.CustomToStringStyle;
 
 /**
  * Represents a single value of an existing enumerated type

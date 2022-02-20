@@ -21,4 +21,5 @@ public class PascalCustomLexer extends PascalLexer {
     public int getTokenErrors() {
         return _tokenErrors;
     }
+
 }
