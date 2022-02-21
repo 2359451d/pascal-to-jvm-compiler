@@ -8,4 +8,5 @@ real1, real2:Real;
 begin
   sum:= MaxInt;
   first:= sum *2;
+  WriteLn(first);
 end.

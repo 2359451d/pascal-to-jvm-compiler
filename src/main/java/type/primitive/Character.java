@@ -15,6 +15,12 @@ public class Character extends Primitive<java.lang.Character>{
         this.value = value;
     }
 
+    public Character(char value, boolean isConstant) {
+        this(value);
+        this.isConstant = isConstant;
+    }
+
+
     //@Override
     //public String getDescriptor() {
     //    return Type.getDescriptor(char.class);

@@ -1506,9 +1506,13 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             List<PascalParser.ExpressionContext> expressionContexts = each.expression();
             for (PascalParser.ExpressionContext eachExpr : expressionContexts) {
                 TypeDescriptor outputType = visit(eachExpr);
+                TypeDescriptor _outputType = outputType;
+                if (outputType instanceof FormalParam) {
+                    _outputType = ((FormalParam) outputType).getHostType();
+                }
                 System.out.println("write each.getText() = " + each.getText());
-                System.out.println("outputType = " + outputType);
-                if (!isSimpleType(outputType) && !(outputType instanceof StringLiteral)) {
+                System.out.println("_outputType = " + _outputType);
+                if (!isSimpleType(_outputType) && !(_outputType instanceof StringLiteral)) {
                     if (sb == null) {
                         sb = new StringBuilder();
                         sb.append(

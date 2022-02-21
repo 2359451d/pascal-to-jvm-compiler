@@ -4,21 +4,43 @@
  * Date: 14/02/2022
  *)
 program printProcTest;
-procedure printX(x,y:Integer; ch: Char; flag:boolean; float1:real);
+procedure printX(x,y:Integer; ch: Char ;flag:boolean; float1:real);
+{procedure printX(x,y:Integer);}
 var
   intVar1,intVar2:Integer;
   boolVar:Boolean;
   charVar:Char;
   floatVar:Real;
 begin
-  WriteLn('boolvar',boolvar);
-  WriteLn('float',floatVar);
-WriteLn('charvar',charVar);
+  float1:= 1;
+  WriteLn('float1 ', float1);
+  WriteLn(float1+1);
 
-WriteLn(x);
-WriteLn(x+1);
-WriteLn(y);
-WriteLn(intVar1);
+  WriteLn();
+  WriteLn(charVar);
+  WriteLn(ch);
+  ch:='a';
+  WriteLn(ch);
+  WriteLn(flag);
+  flag:=false;
+  WriteLn(flag);
+
+  intVar1:= 1;
+  WriteLn(intVar1);
+  intVar1:= MaxInt+555;
+  WriteLn(intVar1);
+
+  floatVar:= 10000;
+  WriteLn(floatVar);
+
+  {WriteLn('boolvar',boolvar);
+  WriteLn('float',floatVar);
+  WriteLn('charvar',charVar);
+
+  WriteLn(x);
+  WriteLn(x+1);
+  WriteLn(y);
+  WriteLn(intVar1);}
 
 end;
 var
@@ -38,6 +60,5 @@ begin
 Write(not true);}
   WriteLn(123);
 
-
-  {printX(intVar1);}
+  printX(intVarGlobal, intVarGlobal, 'A', true, 0.5);
 end.

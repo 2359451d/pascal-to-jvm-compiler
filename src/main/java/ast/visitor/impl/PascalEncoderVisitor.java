@@ -13,6 +13,7 @@ import type.BaseType;
 import type.StringLiteral;
 import type.TypeDescriptor;
 import type.error.ErrorType;
+import type.nestedType.param.FormalParam;
 import type.primitive.Boolean;
 import type.primitive.Character;
 import type.primitive.Primitive;
@@ -22,6 +23,7 @@ import type.primitive.floating.Real;
 import type.primitive.integer.DefaultIntegerType;
 import type.primitive.integer.Integer32;
 import type.primitive.integer.IntegerBaseType;
+import type.procOrFunc.Procedure;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -513,7 +515,13 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 TypeConverterHelper.I2F();
             }
         }
-        methodVisitor.visitFieldInsn(Opcodes.PUTSTATIC, className, id, lType.getDescriptor());
+        if (isStaticField(id)) {
+            InstructionHelper.putStatic(className, id, lType);
+            //methodVisitor.visitFieldInsn(Opcodes.PUTSTATIC, className, id, lType.getDescriptor());
+        } else {
+            int variableSlotNum = getVariableSlotNum(id);
+            LoadStoreHelper.storePrimitive(lType, variableSlotNum);
+        }
         return null;
     }
 
@@ -1244,8 +1252,38 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         // if trivial procedure statement
         if (ctx.identifier() != null) {
             String procedureId = ctx.identifier().getText().toLowerCase();
-            System.out.println("procedureId = " + procedureId);
-            System.out.println("ctx.getText() = " + ctx.getText());
+            System.out.println("procedureId ctx.getText() = " + ctx.getText());
+
+            // call procedure
+            // push operands to be consumed onto stack
+            // then call defined static function
+            List<PascalParser.ActualParameterContext> actualParameterContexts = ctx.parameterList().actualParameter();
+            // generate corresponding bytecode
+            // literal - ldc
+            // static fields - getstatic
+            actualParameterContexts.forEach(this::visit);
+
+            TypeDescriptor proc = retrieve(procedureId, ctx);
+            List<TypeDescriptor> formalParams=null;
+            if (proc instanceof Procedure) {
+                formalParams = ((Procedure) proc).getFormalParams();
+            }
+            Class<?>[] procArgumentsClass = new Class<?>[formalParams.size()];
+            int i = 0;
+            for (TypeDescriptor each : formalParams) {
+                if (each instanceof FormalParam) {
+                    TypeDescriptor hostType = ((FormalParam) each).getHostType();
+                    Class<?> descriptorClass = hostType.getDescriptorClass();
+                    procArgumentsClass[i++] = descriptorClass;
+                }
+            }
+            String procDescriptor = getMethodDescriptor(void.class, procArgumentsClass);
+            System.out.println("procDescriptor = " + procDescriptor);
+            methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC,
+                    className,
+                    procedureId, procDescriptor,
+                    false);
+            tableManager.displayAllTablesCurrentScope();
         } else {
             if (ctx.readProcedureStatement() != null) {
                 visit(ctx.readProcedureStatement());
@@ -1306,7 +1344,16 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
     @Override
     public TypeDescriptor visitString(PascalParser.StringContext ctx) {
+        System.out.println("Load String "+ ctx.getText());
         String text = ctx.getText().replace("'", "");
+        // if char
+        if (text.length()==1) {
+            char[] chars = text.toCharArray();
+            int charValue = (int)chars[0];
+            methodVisitor.visitLdcInsn(Integer.valueOf(charValue));
+            return new Character(chars[0], true);
+        }
+
         if (loadConst) methodVisitor.visitLdcInsn(text);
         loadConst = true; //reset
         return new StringLiteral(text, true);
