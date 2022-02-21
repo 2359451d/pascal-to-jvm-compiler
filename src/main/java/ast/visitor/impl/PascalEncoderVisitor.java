@@ -616,12 +616,13 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         if (!expressionType.equiv(lType)) {
             if (expressionType instanceof IntegerBaseType && lType instanceof FloatBaseType) {
                 // int convert to float before putStatic
-                TypeConverterHelper.I2F();
+                TypeConverterHelper.I2D();
             }
         }
 
         // store value to static field
         if (isStaticField(id)) {
+            System.out.println("lType.getDescriptorClass() = " + lType.getDescriptorClass());
             InstructionHelper.putStatic(className, id, lType);
             //methodVisitor.visitFieldInsn(Opcodes.PUTSTATIC, className, id, lType.getDescriptor());
         } else {
@@ -766,7 +767,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 if (lType instanceof FloatBaseType || (rType instanceof FloatBaseType || rId.contains("."))) {
                     // convert if left type is integer
                     if (lType instanceof IntegerBaseType) {
-                        TypeConverterHelper.I2F();
+                        TypeConverterHelper.I2D();
                     }
                 }
             }
@@ -775,7 +776,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
             // check whether right type need to do type conversion
             if (lType instanceof FloatBaseType || _rType instanceof FloatBaseType) {
                 if (_rType instanceof IntegerBaseType) {
-                    TypeConverterHelper.I2F();
+                    TypeConverterHelper.I2D();
                 }
             }
 
@@ -787,7 +788,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 // type conversion before arithmetic operation
                 if (_rType instanceof FloatBaseType || type instanceof FloatBaseType) {
                     if (type instanceof IntegerBaseType) {
-                        TypeConverterHelper.I2F();
+                        TypeConverterHelper.I2D();
                     }
                 }
                 invokeAdditiveInstruction(_operator, _rType, type);
@@ -890,14 +891,14 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 }
                 // convert Ltype before visit right field
                 if (convertLType) {
-                    TypeConverterHelper.I2F();
+                    TypeConverterHelper.I2D();
                 }
 
                 // get right field first then check whether conversion needed
                 TypeDescriptor _rType = visit(ctx.term());
 
                 if (lType instanceof FloatBaseType && _rType instanceof IntegerBaseType) {
-                    TypeConverterHelper.I2F();
+                    TypeConverterHelper.I2D();
                 }
                 System.out.println("left ctx.signedFactor().getText() = " + ctx.signedFactor().getText());
                 System.out.println("lType = " + lType);
@@ -925,11 +926,11 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
                 // if operands involved integer, convert to float first
                 if (lType instanceof IntegerBaseType) {
-                    TypeConverterHelper.I2F();
+                    TypeConverterHelper.I2D();
                 }
                 TypeDescriptor _rType = visit(ctx.term());
                 if (_rType instanceof IntegerBaseType) {
-                    TypeConverterHelper.I2F();
+                    TypeConverterHelper.I2D();
                 }
 
                 invokeMultiplicativeInstruction(operator, lType, _rType);
@@ -1235,26 +1236,9 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
                         constantValue = ((StringLiteral) type).getValue();
                     }
 
-                    //if (isConst) {
-                    //    preprocessedStr.append(constantValue);
-                    //    //if (_type instanceof I)
-                    //    //preprocessed_str.append(_type.get)
-                    //    //StringUtils.join("StringTest", "\u0001", "hhhhh");
-                    //    //bw.write(StringUtils.join(str.toArray(), "\u0001"));
-                    //} else {
                     preprocessedStr.append("\u0001");
                     argumentClass.add(type.getDescriptorClass());
-                    //}
 
-                    //dynamic call
-                    //methodVisitor.visitInvokeDynamicInsn(
-                    // "makeConcatWithConstants",
-                    // "(Ljava/lang/String;)Ljava/lang/String;",
-                    // new Handle(Opcodes.H_INVOKESTATIC,
-                    // "java/lang/invoke/StringConcatFactory", "makeConcatWithConstants", "(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite;", false), new Object[]{"concat\u0001"});
-                    //if (type instanceof StringLiteral) {
-                    //
-                    //}
                 }
             }
 

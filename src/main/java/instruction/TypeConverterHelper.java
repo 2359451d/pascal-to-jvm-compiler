@@ -4,11 +4,11 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 public class TypeConverterHelper extends AbstractHelper {
-    public static void I2F(MethodVisitor mv) {
-        mv.visitInsn(Opcodes.I2F);
+    public static void I2D(MethodVisitor mv) {
+        mv.visitInsn(Opcodes.I2D);
     }
 
-    public static void I2F() {
-        I2F(defaultMethodVisitor);
+    public static void I2D() {
+        I2D(defaultMethodVisitor);
     }
 }

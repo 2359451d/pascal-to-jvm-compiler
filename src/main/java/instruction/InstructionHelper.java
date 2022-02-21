@@ -26,7 +26,7 @@ public class InstructionHelper extends AbstractHelper {
                 || type instanceof Character) {
             opcode = Opcodes.IRETURN;
         } else if (type instanceof FloatBaseType) {
-            opcode = Opcodes.FRETURN;
+            opcode = Opcodes.DRETURN;
         } else opcode = Opcodes.ARETURN;
         mv.visitInsn(opcode);
     }
@@ -137,12 +137,12 @@ public class InstructionHelper extends AbstractHelper {
          *     int IADD = 96;
          *     int LADD = 97; (not implemented in ISO7185)
          *     int FADD = 98;
-         *     int DADD = 99;(not implemented in ISO7185)
+         *     int DADD = 99;
          */
         // default int add
         int opcode = Opcodes.IADD;
         if (type instanceof FloatBaseType) {
-            opcode = Opcodes.FADD;
+            opcode = Opcodes.DADD;
         }
         mv.visitInsn(opcode);
     }
@@ -162,7 +162,7 @@ public class InstructionHelper extends AbstractHelper {
     public static void sub(MethodVisitor mv, TypeDescriptor type) {
         int opcode = Opcodes.ISUB;
         if (type instanceof FloatBaseType) {
-            opcode = Opcodes.FSUB;
+            opcode = Opcodes.DSUB;
         }
         mv.visitInsn(opcode);
     }
@@ -174,7 +174,7 @@ public class InstructionHelper extends AbstractHelper {
     public static void mul(MethodVisitor mv, TypeDescriptor type) {
         int opcode = Opcodes.IMUL;
         if (type instanceof FloatBaseType) {
-            opcode = Opcodes.FMUL;
+            opcode = Opcodes.DMUL;
         }
         mv.visitInsn(opcode);
     }
@@ -184,7 +184,7 @@ public class InstructionHelper extends AbstractHelper {
     }
 
     public static void realDiv(MethodVisitor mv) {
-        int opcode = Opcodes.FDIV;
+        int opcode = Opcodes.DDIV;
         mv.visitInsn(opcode);
     }
 
@@ -212,7 +212,7 @@ public class InstructionHelper extends AbstractHelper {
     public static void intOrFloatNeg(MethodVisitor mv, TypeDescriptor type) {
         int opcode = Opcodes.INEG;
         if (type instanceof FloatBaseType) {
-            opcode = Opcodes.FNEG;
+            opcode = Opcodes.DNEG;
         }
         mv.visitInsn(opcode);
     }
@@ -229,9 +229,9 @@ public class InstructionHelper extends AbstractHelper {
      */
     public static void loadIntOrReal(MethodVisitor mv, TypeDescriptor type) {
         if (type instanceof FloatBaseType) {
-            float value = ((FloatBaseType) type).getValue();
-            if (value == 0.0F) {
-                mv.visitInsn(Opcodes.FCONST_0);
+            double value = ((FloatBaseType) type).getValue();
+            if (value == 0.0D) {
+                mv.visitInsn(Opcodes.DCONST_0);
             } else mv.visitLdcInsn(value);
             return;
         }
