@@ -5,7 +5,7 @@ import type.TypeDescriptor;
 import type.primitive.Primitive;
 import type.primitive.integer.IntegerBaseType;
 
-public class FloatBaseType extends Primitive<Float> {
+public class FloatBaseType extends Primitive<Double> {
 
     public static final Double MAX_VALUE = Double.MAX_VALUE;
     public static final Double MIN_VALUE = Double.MIN_VALUE;
@@ -18,10 +18,10 @@ public class FloatBaseType extends Primitive<Float> {
 
     public FloatBaseType(String type) {
         super(type);
-        this.value = 0.0F; // default value
+        this.value = 0.0D; // default value
     }
 
-    public FloatBaseType(String type, float value) {
+    public FloatBaseType(String type, double value) {
         super(type);
         this.value = value;
     }
@@ -41,7 +41,7 @@ public class FloatBaseType extends Primitive<Float> {
 
     @Override
     public Class<?> getDescriptorClass() {
-        return float.class;
+        return double.class;
     }
 
     @Override

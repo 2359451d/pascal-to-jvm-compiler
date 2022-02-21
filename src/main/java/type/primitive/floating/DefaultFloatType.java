@@ -8,7 +8,7 @@ public class DefaultFloatType extends FloatBaseType {
 
     }
 
-    public static Real of(float value) {
+    public static Real of(double value) {
         return new Real(value);
     }
 
@@ -22,7 +22,7 @@ public class DefaultFloatType extends FloatBaseType {
         return real;
     }
 
-    public static Real of(float value, boolean isConstant) {
+    public static Real of(double value, boolean isConstant) {
         Real real = new Real(value);
         real.setConstant(isConstant);
         return real;

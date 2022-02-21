@@ -27,7 +27,7 @@ public class LoadStoreHelper extends AbstractHelper {
             mv.visitVarInsn(Opcodes.ILOAD, slotNumber);
         }
         if (type instanceof FloatBaseType) {
-            mv.visitVarInsn(Opcodes.FLOAD, slotNumber);
+            mv.visitVarInsn(Opcodes.DLOAD, slotNumber);
         }
         if (type instanceof StringLiteral) {
             loadReference(slotNumber);
