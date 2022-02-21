@@ -22,6 +22,10 @@ begin
 
   WriteLn(false>true);
 
+  WriteLn('a<b=','a'<'b');
+  WriteLn(1.0<=1);
+  WriteLn('ab'='a');
+
   {char1:= 'a';
   char2:= 'b';
   bool1:= char1<char2;}
