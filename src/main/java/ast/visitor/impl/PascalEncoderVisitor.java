@@ -2,9 +2,12 @@ package ast.visitor.impl;
 
 import ast.visitor.PascalBaseVisitor;
 import ast.visitor.PascalParser;
+import driver.PascalCompilerDriverBuilder;
 import instruction.*;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.xpath.XPath;
 import org.apache.commons.lang3.StringUtils;
 import org.objectweb.asm.*;
 import tableUtils.SymbolTable;
@@ -29,7 +32,6 @@ import type.procOrFunc.Procedure;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.lang.instrument.Instrumentation;
 import java.lang.invoke.CallSite;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -651,22 +653,62 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         setLabel(methodVisitor, label);
     }
 
+    /**
+     * ifeq	153	Jump if int comparison with zero succeeds
+     * ifge	156	Jump if int comparison with zero succeeds
+     * ifgt	157	Jump if int comparison with zero succeeds
+     * ifle	158	Jump if int comparison with zero succeeds
+     * iflt	155	Jump if int comparison with zero succeeds
+     * ifne	154	Jump if int comparison with zero succeeds
+     */
     Map<String, Integer> relationalOpMapping = Map.of(
+            "<", Opcodes.IFGE,
+            ">", Opcodes.IFLE,
+            "=", Opcodes.IFNE,
+            "<>", Opcodes.IFEQ,
+            "<=", Opcodes.IFGT,
+            ">=", Opcodes.IFLT);
+
+    Map<String, Integer> relationalOpMappingWithDouble = Map.of(
+            "<", Opcodes.DCMPG,
+            ">", Opcodes.DCMPL,
+            "=", Opcodes.DCMPL,
+            "<>", Opcodes.DCMPL,
+            "<=", Opcodes.DCMPG,
+            ">=", Opcodes.DCMPL);
+
+    Map<String, Integer> relationalOpMappingWithInt = Map.of(
             "<", Opcodes.IF_ICMPGE,
-            ">", Opcodes.IF_ICMPLE);
+            ">", Opcodes.IF_ICMPLE,
+            "=", Opcodes.IF_ICMPNE,
+            "<>", Opcodes.IF_ICMPEQ,
+            "<=", Opcodes.IF_ICMPGT,
+            ">=", Opcodes.IF_ICMPLT);
 
     /**
-     * TODO OTHER OP
-     * TODO REAL, CHAR, STR, OTHER TYPES
+     * TODO OTHER OP REAL, CHAR, STR, OTHER TYPES
      *
      * @param operator
      */
-    private void invokeRelationalInstruction(String operator) {
+    private void invokeRelationalInstruction(String operator, TypeDescriptor lType, TypeDescriptor rType) {
+        boolean involveReal = lType instanceof FloatBaseType || rType instanceof FloatBaseType;
+        boolean involveStr = lType instanceof StringLiteral || rType instanceof StringLiteral;
         // prepare labels
         Label evaluateToFalse = makeLabel();
         Label endLabel = makeLabel();
 
-        JumpInstructionHelper.jumpIntComparison(relationalOpMapping.get(operator), evaluateToFalse);
+        if (involveReal || involveStr) {
+            if (involveReal) methodVisitor.visitInsn(relationalOpMappingWithDouble.get(operator));
+            if (involveStr) {
+                InstructionHelper.invokeStatic(StringUtils.class,"compare",false,
+                        String.class,String.class);
+            }
+            JumpInstructionHelper.jumpInstruction(relationalOpMapping.get(operator),evaluateToFalse);
+        } else {
+            JumpInstructionHelper.jumpInstruction(
+                    relationalOpMappingWithInt.get(operator),
+                    evaluateToFalse);
+        }
 
         InstructionHelper.loadTrueOrFalse(true);
         gotoLabel(endLabel);
@@ -684,6 +726,10 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
      * e2=expression)?
      * ;
      *
+     * Relational op between int and real is allowed
+     * ! but need to convert int to double before compare
+     * ! and use DXXX instruction if real involved
+     *
      * @param ctx
      * @return
      */
@@ -691,25 +737,60 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
     public TypeDescriptor visitExpression(PascalParser.ExpressionContext ctx) {
         TypeDescriptor lType = visit(ctx.simpleExpression());
         if (ctx.expression() != null) {
+            // if relational op exists,
+            // check first whether rType involve real, before push onto stack
+            Collection<ParseTree> matches;
+            matches = XPath.findAll(ctx, "//NUM_REAL", PascalCompilerDriverBuilder.parser);
+            boolean rTypeIsReal = !matches.isEmpty();
+
+            // check whether rType involve String/Char
+            matches = XPath.findAll(ctx, "//STRING_LITERAL", PascalCompilerDriverBuilder.parser);
+            boolean rTypeIsStr = !matches.isEmpty();
+            // check further whether rType is char
+            boolean rTypeIsChar = false;
+            if (rTypeIsStr) {
+                String rawText = ctx.expression().getText().replace("'", "");
+                rTypeIsChar = rawText.length() == 1;
+            }
+
+            // if rtype involve real, lType is int
+            // convert left operand first
+            if (rTypeIsReal && lType instanceof IntegerBaseType) {
+                TypeConverterHelper.I2D();
+            }
+
+            //if rType is String, lType is Char
+            //convert left operand
+            if (rTypeIsStr && !rTypeIsChar && lType instanceof Character) {
+                InstructionHelper.invokeStatic(String.class,"valueOf",false,char.class);
+            }
+
             // push right operand onto stack
             TypeDescriptor rType = visit(ctx.expression());
 
+            // if left is real, right is int, convert right operand
+            if (rType instanceof IntegerBaseType && lType instanceof FloatBaseType) {
+                TypeConverterHelper.I2D();
+            }
+            // if left is String, right is char, convert right operand
+            if (lType instanceof StringLiteral && rType instanceof Character) {
+                InstructionHelper.invokeStatic(String.class,"valueOf",false,char.class);
+            }
+
             String relationalOperator = ctx.relationalOperator.getText().toLowerCase();
-            invokeRelationalInstruction(relationalOperator);
+            // if relational op with two int operands
+            //if (lType instanceof IntegerBaseType && rType instanceof IntegerBaseType ||
+            //        (lType instanceof Boolean && rType instanceof Boolean) ||
+            //        (lType instanceof Character && rType instanceof Character)) {
+            //}
+            if (lType instanceof Primitive && rType instanceof Primitive) {
+                invokeRelationalInstruction(relationalOperator, lType, rType);
+            }
+            if (lType instanceof StringLiteral || rType instanceof StringLiteral) {
+                invokeRelationalInstruction(relationalOperator, lType, rType);
+            }
 
             return new Boolean();
-            //if (lType instanceof Boolean && rType instanceof Boolean) {
-            //    return new Boolean();
-            //}
-            //
-            //if (lType instanceof StringLiteral && rType instanceof StringLiteral) {
-            //    return new StringLiteral();
-            //}
-            //
-            //if (lType instanceof FloatBaseType || rType instanceof FloatBaseType) {
-            //    return DefaultFloatType.instance;
-            //}
-            //return DefaultIntegerType.instance;
         }
         return lType;
     }

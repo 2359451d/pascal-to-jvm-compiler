@@ -24,7 +24,7 @@ public class PascalCompilerDriverBuilder extends CompilerDriverBuilder {
 
     private PascalLexer lexer;
     private CommonTokenStream tokens; // token buffer
-    private PascalParser parser;
+    public static PascalParser parser;
     private PascalBaseVisitor<TypeDescriptor> checker;
     private PascalEncoderVisitor runner;
     private ParseTree tree;
