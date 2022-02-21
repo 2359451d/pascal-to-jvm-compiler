@@ -86,6 +86,49 @@ public class InstructionHelper extends AbstractHelper {
         invokeVirtual(owner, methodName, false, type);
     }
 
+    public static void invokeStatic(MethodVisitor methodVisitor,
+                                    Class<?> owner,
+                                    String methodName,
+                                    boolean isInterface, Class<?>... arguments) {
+        try {
+            Method method = owner.getMethod(methodName, arguments);
+            methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC,
+                    Type.getInternalName(owner),
+                    methodName,
+                    Type.getMethodDescriptor(method),
+                    isInterface);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void invokeStatic(
+            Class<?> owner,
+            String methodName,
+            boolean isInterface, Class<?>... arguments) {
+        invokeStatic(defaultMethodVisitor, owner, methodName, isInterface, arguments);
+    }
+
+    public static void invokeStatic(MethodVisitor methodVisitor,
+                                    String owner,
+                                    String methodName,
+                                    String methodDescriptor,
+                                    boolean isInterface) {
+        methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC,
+                owner,
+                methodName,
+                methodDescriptor,
+                isInterface);
+    }
+
+    public static void invokeStatic(
+            String owner,
+            String methodName,
+            String methodDescriptor,
+            boolean isInterface) {
+        invokeStatic(defaultMethodVisitor, owner, methodName, methodDescriptor, isInterface);
+    }
+
 
     /**
      * Get static field
