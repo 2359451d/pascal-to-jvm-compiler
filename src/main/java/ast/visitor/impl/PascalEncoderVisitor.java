@@ -29,6 +29,7 @@ import type.procOrFunc.Procedure;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.lang.instrument.Instrumentation;
 import java.lang.invoke.CallSite;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -343,6 +344,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
     }
 
     String resultVar = null;
+
     @Override
     public TypeDescriptor visitFunctionDecl(PascalParser.FunctionDeclContext ctx) {
         System.out.println("++++++++Function Decl+++++++++");
@@ -406,7 +408,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
         TypeDescriptor resultVarType = retrieve(resultVar, ctx);
         int resultVarSlotNum = getVariableSlotNum(resultVar);
-        LoadStoreHelper.loadIntOrFloatLocal(resultVarType,resultVarSlotNum);
+        LoadStoreHelper.loadIntOrFloatLocal(resultVarType, resultVarSlotNum);
         InstructionHelper.returnFromMethod(resultType);
         //methodVisitor.visitInsn(Opcodes.RETURN);
 
@@ -609,7 +611,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
             tableManager.displayAllTablesCurrentScope();
             TypeDescriptor resultType = retrieve(resultVar, ctx);
             int slotNum = getVariableSlotNum(resultVar);
-            if (resultType instanceof Primitive) LoadStoreHelper.storePrimitive(resultType,slotNum);
+            if (resultType instanceof Primitive) LoadStoreHelper.storePrimitive(resultType, slotNum);
             return null;
         }
 
@@ -1305,7 +1307,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         List<PascalParser.InputValueContext> inputValueContexts = ctx.readParameters().inputValue();
         invoke(Instruction.CREATE_SCANNER);
         invoke(Instruction.STORE_REFERENCE);
-        String scanner = "scanner" + UUID.randomUUID().toString();
+        String scanner = "__scanner" + new Random().nextInt(999);
         putReferenceTypeIntoLocals(scanner);
 
         System.out.println("ctx.getText() = " + ctx.getText());
@@ -1315,20 +1317,35 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
         // read scanner content into variable
         inputValueContexts.forEach(each -> {
-            //get scanner
+            //load scanner (LoadReference - ALOAD)
             int variableSlot = getVariableSlotNum(scanner);
             System.out.println("scanner variableSlot = " + variableSlot);
             LoadStoreHelper.loadReference(variableSlot);
-            //invoke(Instruction.LOAD_REFERENCE, scanner);
 
             String fieldName = each.getText();
             TypeDescriptor inputType = visit(each);
             System.out.println("fieldName = " + fieldName);
             System.out.println("inputType = " + inputType);
-            if (inputType instanceof IntegerBaseType) {
-                InstructionHelper.invokeVirtual(Scanner.class, "nextInt");
-                InstructionHelper.putStatic(className, fieldName, inputType);
+            //if (inputType instanceof IntegerBaseType) {
+            //    InstructionHelper.invokeVirtual(Scanner.class, "nextInt");
+            // else scanner.nextLine() or next()
+            String methodName = ctx.READ() != null ? "next" : "nextLine";
+            InstructionHelper.invokeVirtual(Scanner.class, methodName);
+            if (inputType instanceof FloatBaseType) {
+                // parse string to double
+                InstructionHelper.invokeStatic(Double.class,
+                        "parseDouble", false, String.class);
             }
+            if (inputType instanceof IntegerBaseType) {
+                InstructionHelper.invokeStatic(Integer.class,"parseInt",false, String.class );
+            }
+            if (inputType instanceof Character) {
+                // get the char at pos 0, ignoring others
+                methodVisitor.visitInsn(Opcodes.ICONST_0);
+                InstructionHelper.invokeVirtual(String.class,"charAt",int.class);
+                //methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "charAt", "(I)C", false);
+            }
+            InstructionHelper.putStatic(className, fieldName, inputType);
         });
         return null;
     }
@@ -1382,10 +1399,11 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         Class<?> resultTypeDescriptorClass = resultType != null ? resultType.getDescriptorClass() : void.class;
         String funcDescriptor = getMethodDescriptor(resultTypeDescriptorClass, funcArgumentsClass);
         System.out.println("funcDescriptor = " + funcDescriptor);
-        methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC,
-                className,
-                functionId, funcDescriptor,
-                false);
+        InstructionHelper.invokeStatic(className, functionId, funcDescriptor, false);
+        //methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC,
+        //        className,
+        //        functionId, funcDescriptor,
+        //        false);
         tableManager.displayAllTablesCurrentScope();
         return resultType;
     }
@@ -1424,10 +1442,11 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
             }
             String procDescriptor = getMethodDescriptor(void.class, procArgumentsClass);
             System.out.println("procDescriptor = " + procDescriptor);
-            methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC,
-                    className,
-                    procedureId, procDescriptor,
-                    false);
+            InstructionHelper.invokeStatic(className, procedureId, procDescriptor, false);
+            //methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC,
+            //        className,
+            //        procedureId, procDescriptor,
+            //        false);
             tableManager.displayAllTablesCurrentScope();
         } else {
             if (ctx.readProcedureStatement() != null) {
