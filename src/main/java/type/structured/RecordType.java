@@ -1,5 +1,7 @@
 package type.structured;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import type.TypeDescriptor;
 
 import java.util.LinkedHashMap;
@@ -22,4 +24,9 @@ public class RecordType extends StructuredBaseType{
     public boolean equiv(TypeDescriptor type) {
         return super.equiv(type);
     }
+
+    //@Override
+    //public String toString() {
+    //    return ToStringBuilder.reflectionToString(this, ToStringStyle.DEFAULT_STYLE);
+    //}
 }

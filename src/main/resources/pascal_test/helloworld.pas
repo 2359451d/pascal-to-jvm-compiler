@@ -1,6 +1,7 @@
 program HelloWorld;
 begin
-  h%
-  write('Hello World.');
-  readln;
+  {h%}
+  write('Hello World.', 'print something');
+  Write('helllo');
+  Write('h');
 end.

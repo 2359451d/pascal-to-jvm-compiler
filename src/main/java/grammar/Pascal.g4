@@ -347,11 +347,15 @@ variable
    (
    arrayScripting
    | fieldDesignator
-   | POINTER
+   | POINTER // only for pointer variable
    )*
 //   (LBRACK expression (COMMA expression)* RBRACK // array scripting
 //   | LBRACK2 expression (COMMA expression)* RBRACK2 // array scripting
    ;
+
+//referencedVariable
+//    : variable POINTER+
+//    ;
 
 variableHead
    : (AT identifier | identifier)
@@ -431,7 +435,11 @@ functionDesignator
 
 parameterList
    : actualParameter (COMMA actualParameter)*
+   | writeParameters
+   | readParameters
    ;
+
+
 
 set_
    : LBRACK elementList RBRACK
@@ -448,7 +456,36 @@ element
    ;
 
 procedureStatement
-   : identifier (LPAREN parameterList RPAREN)?
+   : readProcedureStatement
+   | writeProcedureStatement
+   | identifier (LPAREN parameterList RPAREN)?
+   ;
+
+writeProcedureStatement
+   :(WRITE|WRITELN) (LPAREN writeParameters RPAREN)?
+   ;
+
+readProcedureStatement
+   : (READ|READLN) (LPAREN readParameters RPAREN)?
+   ;
+
+// output value must be of type int,reasl,bool,char, or a string
+// bool - True, False
+writeParameters
+   : (outputValue (COMMA outputValue)*)*
+   ;
+
+outputValue
+   : expression (':' expression (':' expression)*)*
+   ;
+
+
+readParameters
+   : inputValue (COMMA inputValue)*
+   ;
+
+inputValue
+   : variable
    ;
 
 actualParameter
@@ -672,6 +709,21 @@ fragment Z
    : ('z' | 'Z')
    ;
 
+WRITE
+   : W R I T E
+   ;
+
+WRITELN
+   : W R I T E L N
+   ;
+
+READ
+   : R E A D
+   ;
+
+READLN
+   : R E A D L N
+   ;
 
 AND
    : A N D

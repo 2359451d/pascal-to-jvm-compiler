@@ -3,7 +3,7 @@ package type.structured;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import type.BaseType;
 import type.TypeDescriptor;
-import util.CustomToStringStyle;
+import utils.CustomToStringStyle;
 
 public class StructuredBaseType extends BaseType {
 

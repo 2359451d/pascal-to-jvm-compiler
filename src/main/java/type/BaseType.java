@@ -7,7 +7,7 @@ import java.lang.reflect.Field;
 
 public abstract class BaseType implements TypeDescriptor {
 
-    private boolean isConstant = false;
+    protected boolean isConstant = false;
     //private boolean isPackedElement = false;
 
     public boolean isConstant() {

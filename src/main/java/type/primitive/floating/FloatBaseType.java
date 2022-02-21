@@ -1,13 +1,16 @@
 package type.primitive.floating;
 
+import org.objectweb.asm.Type;
 import type.TypeDescriptor;
 import type.primitive.Primitive;
 import type.primitive.integer.IntegerBaseType;
 
-public class FloatBaseType extends Primitive {
+public class FloatBaseType extends Primitive<Float> {
 
     public static final Double MAX_VALUE = Double.MAX_VALUE;
     public static final Double MIN_VALUE = Double.MIN_VALUE;
+
+    //protected Float value;
 
     public FloatBaseType() {
         super("real");
@@ -15,6 +18,30 @@ public class FloatBaseType extends Primitive {
 
     public FloatBaseType(String type) {
         super(type);
+        this.value = 0.0F; // default value
+    }
+
+    public FloatBaseType(String type, float value) {
+        super(type);
+        this.value = value;
+    }
+
+    //public Float getValue() {
+    //    return value;
+    //}
+    //
+    //public void setValue(Float value) {
+    //    this.value = value;
+    //}
+
+    //@Override
+    //public String getDescriptor() {
+    //    return Type.getDescriptor(float.class);
+    //}
+
+    @Override
+    public Class<?> getDescriptorClass() {
+        return float.class;
     }
 
     @Override

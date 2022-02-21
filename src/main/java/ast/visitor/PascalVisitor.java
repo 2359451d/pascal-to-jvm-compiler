@@ -628,6 +628,42 @@ public interface PascalVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitProcedureStatement(PascalParser.ProcedureStatementContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link PascalParser#writeProcedureStatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitWriteProcedureStatement(PascalParser.WriteProcedureStatementContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link PascalParser#readProcedureStatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitReadProcedureStatement(PascalParser.ReadProcedureStatementContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link PascalParser#writeParameters}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitWriteParameters(PascalParser.WriteParametersContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link PascalParser#outputValue}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitOutputValue(PascalParser.OutputValueContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link PascalParser#readParameters}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitReadParameters(PascalParser.ReadParametersContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link PascalParser#inputValue}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitInputValue(PascalParser.InputValueContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link PascalParser#actualParameter}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

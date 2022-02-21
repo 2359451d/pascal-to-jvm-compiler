@@ -22,6 +22,7 @@ public enum ErrorType implements TypeDescriptor {
     INVALID_ARRAY_SCRIPTING(600, "invalid array scripting"),
     INVALID_ARRAY_TYPE(601, "invalid array type"),
     INVALID_RECORD_FIELD(700, "invalid record field"),
+    INVALID_DEREFERENCE_OPERATION(800, "invalid dereference operation"),
 
     ;
 

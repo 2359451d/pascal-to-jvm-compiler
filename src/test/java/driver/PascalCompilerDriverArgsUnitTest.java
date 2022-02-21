@@ -7,8 +7,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import util.JsonHelper;
-import util.ResourceHelper;
+import utils.JsonHelper;
+import utils.ResourceHelper;
 
 import java.io.IOException;
 import java.util.Map;

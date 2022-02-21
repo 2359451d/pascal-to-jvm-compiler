@@ -1,5 +1,7 @@
 package type;
 
+import org.objectweb.asm.Type;
+
 /**
  * Base interface for BaseType, ErrorType, BuiltinType
  * <p>
@@ -8,4 +10,13 @@ package type;
  */
 public interface TypeDescriptor {
     boolean equiv(TypeDescriptor type);
+
+    default String getDescriptor() {
+        Class<?> descriptorClass = getDescriptorClass();
+        return descriptorClass != null ? Type.getDescriptor(descriptorClass) : "";
+    }
+
+    default Class<?> getDescriptorClass() {
+        return null;
+    }
 }

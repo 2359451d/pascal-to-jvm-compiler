@@ -9,12 +9,10 @@ program nestedFuncTest;
 var
   result :Integer;
   subrangeVar1: 1..10;
-  subrangeVar2: 1..10;
 function sum:Integer;
   var
     left: Integer;
     right: Integer;
-    sumVar: Char;
   function add(left, right: Integer):Integer;
     begin
       add:= left+right;
@@ -28,6 +26,5 @@ function sum:Integer;
 
 begin
   result := sum;
-  {WriteLn(result);}
   subrangeVar1 := 10;
 end.
