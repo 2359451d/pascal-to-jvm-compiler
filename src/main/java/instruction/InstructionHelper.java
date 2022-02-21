@@ -15,6 +15,27 @@ import java.lang.reflect.Method;
 public class InstructionHelper extends AbstractHelper {
     //static MethodVisitor defaultMethodVisitor = PascalEncoderVisitor.methodVisitor;
 
+    public static void returnFromMethod(MethodVisitor mv, TypeDescriptor type) {
+        int opcode = Opcodes.RETURN;
+        if (type == null) {
+            mv.visitInsn(opcode);
+            return;
+        }
+        if (type instanceof IntegerBaseType
+                || type instanceof Boolean
+                || type instanceof Character) {
+            opcode = Opcodes.IRETURN;
+        } else if (type instanceof FloatBaseType) {
+            opcode = Opcodes.FRETURN;
+        } else opcode = Opcodes.ARETURN;
+        mv.visitInsn(opcode);
+    }
+
+    public static void returnFromMethod(TypeDescriptor type) {
+        returnFromMethod(defaultMethodVisitor, type);
+    }
+
+
     public static void invokeVirtual(Class<?> owner, String methodName,
                                      Class<?>... arguments) {
         invokeVirtual(defaultMethodVisitor, owner, methodName, false, arguments);
@@ -52,19 +73,18 @@ public class InstructionHelper extends AbstractHelper {
 
     public static void invokeVirtual(MethodVisitor mv, Class<?> owner, String methodName,
                                      boolean isInterface, TypeDescriptor type) {
-       invokeVirtual(mv,owner,methodName,isInterface, type.getDescriptorClass());
+        invokeVirtual(mv, owner, methodName, isInterface, type.getDescriptorClass());
     }
 
     public static void invokeVirtual(Class<?> owner, String methodName,
                                      boolean isInterface, TypeDescriptor type) {
-        invokeVirtual(defaultMethodVisitor,owner,methodName,isInterface,type);
+        invokeVirtual(defaultMethodVisitor, owner, methodName, isInterface, type);
     }
 
     public static void invokeVirtual(Class<?> owner, String methodName,
                                      TypeDescriptor type) {
-        invokeVirtual(owner,methodName,false,type);
+        invokeVirtual(owner, methodName, false, type);
     }
-
 
 
     /**
@@ -198,11 +218,12 @@ public class InstructionHelper extends AbstractHelper {
     }
 
     public static void intOrFloatNeg(TypeDescriptor type) {
-        intOrFloatNeg(defaultMethodVisitor,type);
+        intOrFloatNeg(defaultMethodVisitor, type);
     }
 
     /**
      * Load constant int, real literal
+     *
      * @param mv
      * @param type
      */
@@ -211,7 +232,7 @@ public class InstructionHelper extends AbstractHelper {
             float value = ((FloatBaseType) type).getValue();
             if (value == 0.0F) {
                 mv.visitInsn(Opcodes.FCONST_0);
-            }else mv.visitLdcInsn(value);
+            } else mv.visitLdcInsn(value);
             return;
         }
         if (type instanceof Boolean) {
@@ -219,7 +240,7 @@ public class InstructionHelper extends AbstractHelper {
             if (value == null || !value) {
                 // load false (const 0)
                 mv.visitInsn(Opcodes.ICONST_0);
-            }else mv.visitInsn(Opcodes.ICONST_1);
+            } else mv.visitInsn(Opcodes.ICONST_1);
             return;
         }
 
@@ -240,7 +261,7 @@ public class InstructionHelper extends AbstractHelper {
 
 
     public static void loadIntOrReal(TypeDescriptor type) {
-        loadIntOrReal(defaultMethodVisitor,type);
+        loadIntOrReal(defaultMethodVisitor, type);
     }
 
     public static void loadTrueOrFalse(MethodVisitor mv, boolean flag) {
@@ -252,7 +273,7 @@ public class InstructionHelper extends AbstractHelper {
     }
 
     public static void loadTrueOrFalse(boolean flag) {
-        loadTrueOrFalse(defaultMethodVisitor,flag);
+        loadTrueOrFalse(defaultMethodVisitor, flag);
     }
 
     public static void intLogicalOp(MethodVisitor mv, int opcode) {
@@ -260,7 +281,7 @@ public class InstructionHelper extends AbstractHelper {
     }
 
     public static void intLogicalOp(int opcode) {
-        intLogicalOp(defaultMethodVisitor,opcode);
+        intLogicalOp(defaultMethodVisitor, opcode);
     }
 
 

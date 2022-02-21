@@ -23,6 +23,7 @@ import type.primitive.floating.Real;
 import type.primitive.integer.DefaultIntegerType;
 import type.primitive.integer.Integer32;
 import type.primitive.integer.IntegerBaseType;
+import type.procOrFunc.Function;
 import type.procOrFunc.Procedure;
 
 import java.io.FileOutputStream;
@@ -197,8 +198,8 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         boolean isDuplicatedInOtherTable = false;
         Map<Class<? extends ParserRuleContext>, Table<Object, TypeDescriptor>> otherTables = tableManager
                 .selectAllTablesExcludedToClass(
-                ctx.getClass()
-        );
+                        ctx.getClass()
+                );
         for (Table<Object, TypeDescriptor> eachTable : otherTables.values()) {
             if (eachTable instanceof LocalsTable) continue;
             if (eachTable.containsKey(id.toLowerCase())) isDuplicatedInOtherTable = true;
@@ -315,6 +316,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
     @Override
     public TypeDescriptor visitCompoundStatement(PascalParser.CompoundStatementContext ctx) {
         if (ctx.parent.parent instanceof PascalParser.ProgramContext) {
+            System.out.println("+++++++++MAIN METHOD GENERATED++++++++");
             // create a main method
             methodVisitor = classWriter.visitMethod(Opcodes.ACC_PUBLIC + Opcodes.ACC_STATIC, "main",
                     "([Ljava/lang/String;)V", null, null);
@@ -322,18 +324,12 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
             updateDefaultMethodVisitor(methodVisitor);
 
             methodVisitor.visitCode();
-            System.out.println("program ctx = " + ctx.getText());
-            // TODO this placeholder (default constructor)
 
-            //methodVisitor.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/System",
-            //        "out", "Ljava/io/PrintStream;");
-            //methodVisitor.visitLdcInsn("Hello World!");
-            //methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream",
-            //        "println", "(Ljava/lang/String;)V", false);
             visit(ctx.statements());
 
             // return
-            methodVisitor.visitInsn(Opcodes.RETURN);
+            InstructionHelper.returnFromMethod(null);
+            //methodVisitor.visitInsn(Opcodes.RETURN);
             // set stack size & locals
             methodVisitor.visitMaxs(2, 2);
             // method end
@@ -344,6 +340,100 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
             return null;
         }
         return visit(ctx.statements());
+    }
+
+    String resultVar = null;
+    @Override
+    public TypeDescriptor visitFunctionDecl(PascalParser.FunctionDeclContext ctx) {
+        System.out.println("++++++++Function Decl+++++++++");
+        tableManager.displayAllTablesCurrentScope();
+        String id = ctx.identifier().getText().toLowerCase();
+
+        tableManager.allTablesEnterNewScope();
+
+        List<PascalParser.FormalParameterSectionContext> formalParameterSectionContexts = ctx.formalParameterList().formalParameterSection();
+        //Type[] arguments = new Type[formalParameterSectionContexts.size()];
+        ArrayList<Class<?>> arguments = new ArrayList<>();
+        int i = 0;
+        for (PascalParser.FormalParameterSectionContext each : formalParameterSectionContexts) {
+            // pass value
+            if (each instanceof PascalParser.NoLabelParamContext) {
+                PascalParser.ParameterGroupContext parameterGroupContext = ((PascalParser.NoLabelParamContext) each).parameterGroup();
+                List<PascalParser.IdentifierContext> identifierList = parameterGroupContext.identifierList().identifier();
+                TypeDescriptor argumentType = visit(parameterGroupContext.typeIdentifier());
+                Class<?> argumentTypeDescriptorClass = argumentType.getDescriptorClass();
+                for (PascalParser.IdentifierContext eachId : identifierList) {
+                    //arguments[i++] = Type.getType(argumentTypeDescriptorClass);
+                    arguments.add(argumentTypeDescriptorClass);
+                    define(eachId.getText().toLowerCase(), argumentType, ctx);
+                    putLocals(eachId.getText(), 1);
+                }
+            }
+        }
+
+        tableManager.displayAllTablesCurrentScope();
+
+        TypeDescriptor resultType = visit(ctx.resultType());
+        String methodDescriptor = getMethodDescriptor(
+                resultType.getDescriptorClass(), arguments.toArray(new Class[]{}));
+        //String methodDescriptor = Type.getMethodDescriptor(
+        //        Type.VOID_TYPE, arguments.toArray(new Type[]{})
+        //);
+
+        methodVisitor = classWriter.visitMethod(Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC,
+                id, methodDescriptor, null, null);
+
+        updateDefaultMethodVisitor(methodVisitor);
+
+        methodVisitor.visitCode();
+
+        // define random local var to be returned as final result
+        resultVar = "__result" + new Random().nextInt(999);
+        define(resultVar, resultType, ctx);
+        if (resultType instanceof Primitive) {
+            putLocals(resultVar, 1);
+        }
+
+        Label enterScope = makeLabel();
+        Label exitScope = makeLabel();
+
+        setLabel(methodVisitor, enterScope);
+
+        visit(ctx.block());
+
+
+        setLabel(methodVisitor, exitScope);
+
+        TypeDescriptor resultVarType = retrieve(resultVar, ctx);
+        int resultVarSlotNum = getVariableSlotNum(resultVar);
+        LoadStoreHelper.loadIntOrFloatLocal(resultVarType,resultVarSlotNum);
+        InstructionHelper.returnFromMethod(resultType);
+        //methodVisitor.visitInsn(Opcodes.RETURN);
+
+        System.out.println("Func locals");
+        tableManager.displayAllTablesCurrentScope();
+        tableManager.showAllTables();
+
+        // fill in the local variables
+        // in terms of symbol table & local variable table (get slot number, in case of underlying order is not right)
+        symbolTable.displayCurrentScope();
+        Map<Object, TypeDescriptor> symbolTableAllVarInCurrentScope = symbolTable.getAllVarInCurrentScope();
+        symbolTableAllVarInCurrentScope.forEach((k, v) -> {
+            LocalVariableInformation localVariableInformation = localVariableTable.get(k);
+            int slotNum = localVariableInformation.getSlotNum();
+            methodVisitor.visitLocalVariable(k.toString(), v.getDescriptor(),
+                    null,
+                    enterScope, exitScope, slotNum);
+        });
+
+        methodVisitor.visitMaxs(2, 2); // this would be compute automatically
+        methodVisitor.visitEnd();
+
+        tableManager.allTablesExitNewScope();
+
+        // reset result var variable identifier
+        resultVar = null;
+        return null;
     }
 
     @Override
@@ -396,7 +486,8 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
         setLabel(methodVisitor, exitScope);
 
-        methodVisitor.visitInsn(Opcodes.RETURN);
+        InstructionHelper.returnFromMethod(null);
+        //methodVisitor.visitInsn(Opcodes.RETURN);
 
         System.out.println("Proc locals");
         tableManager.displayAllTablesCurrentScope();
@@ -488,7 +579,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 // store the local var based on the type descriptor
                 // use corresponding store instruction
                 int slotNum = getVariableSlotNum(id);
-                LoadStoreHelper.storePrimitive(type,slotNum);
+                LoadStoreHelper.storePrimitive(type, slotNum);
                 //invoke(Instruction.STORE_REFERENCE);
 
             }
@@ -509,16 +600,32 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         System.out.println("expressionType = " + expressionType);
         String id = ctx.variable().getText().toLowerCase();
         TypeDescriptor lType = retrieve(id, ctx);
+        System.out.println("assignment lType = " + lType);
+
+        // function return statement(assignment)
+        if (lType instanceof Function) {
+            // store the content to local result variable
+            System.out.println("Function return assignment");
+            tableManager.displayAllTablesCurrentScope();
+            TypeDescriptor resultType = retrieve(resultVar, ctx);
+            int slotNum = getVariableSlotNum(resultVar);
+            if (resultType instanceof Primitive) LoadStoreHelper.storePrimitive(resultType,slotNum);
+            return null;
+        }
+
         if (!expressionType.equiv(lType)) {
             if (expressionType instanceof IntegerBaseType && lType instanceof FloatBaseType) {
                 // int convert to float before putStatic
                 TypeConverterHelper.I2F();
             }
         }
+
+        // store value to static field
         if (isStaticField(id)) {
             InstructionHelper.putStatic(className, id, lType);
             //methodVisitor.visitFieldInsn(Opcodes.PUTSTATIC, className, id, lType.getDescriptor());
         } else {
+            // store value to local varaible
             int variableSlotNum = getVariableSlotNum(id);
             LoadStoreHelper.storePrimitive(lType, variableSlotNum);
         }
@@ -974,8 +1081,10 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
         // static field access
         System.out.println("visitVariable ctx.getText() = " + ctx.getText());
+        System.out.println("visitVariable type = " + type);
         System.out.println("isStaticField(id) = " + isStaticField(id));
         if (isStaticField(id)) {
+            tableManager.displayAllTablesCurrentScope();
             InstructionHelper.getStatic(className, id, type);
         } else {
             LocalVariableInformation localVariableInformation = localVariableTable.get(id);
@@ -1246,6 +1355,57 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         return super.visitInputValue(ctx);
     }
 
+    /**
+     * functionDesignator
+     * : identifier LPAREN parameterList RPAREN
+     * ;
+     *
+     * @param ctx
+     * @return
+     */
+    @Override
+    public TypeDescriptor visitFunctionDesignator(PascalParser.FunctionDesignatorContext ctx) {
+        String functionId = ctx.identifier().getText().toLowerCase();
+        System.out.println("FunctionDesignator ctx.getText() = " + ctx.getText());
+        System.out.println("functionId ctx.getText() = " + functionId);
+
+        // call function
+        // push operands to be consumed onto stack
+        // then call defined static function
+        List<PascalParser.ActualParameterContext> actualParameterContexts = ctx.parameterList().actualParameter();
+        // generate corresponding bytecode
+        // literal - ldc
+        // static fields - getstatic
+        actualParameterContexts.forEach(this::visit);
+
+        TypeDescriptor func = retrieve(functionId, ctx);
+        List<TypeDescriptor> formalParams = null;
+        TypeDescriptor resultType = null;
+        if (func instanceof Function) {
+            formalParams = ((Function) func).getFormalParams();
+            resultType = ((Function) func).getResultType();
+        }
+        Class<?>[] funcArgumentsClass = new Class<?>[formalParams.size()];
+        int i = 0;
+        for (TypeDescriptor each : formalParams) {
+            if (each instanceof FormalParam) {
+                TypeDescriptor hostType = ((FormalParam) each).getHostType();
+                Class<?> descriptorClass = hostType.getDescriptorClass();
+                funcArgumentsClass[i++] = descriptorClass;
+            }
+        }
+        // function must not return void though
+        Class<?> resultTypeDescriptorClass = resultType != null ? resultType.getDescriptorClass() : void.class;
+        String funcDescriptor = getMethodDescriptor(resultTypeDescriptorClass, funcArgumentsClass);
+        System.out.println("funcDescriptor = " + funcDescriptor);
+        methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC,
+                className,
+                functionId, funcDescriptor,
+                false);
+        tableManager.displayAllTablesCurrentScope();
+        return resultType;
+    }
+
     @Override
     public TypeDescriptor visitProcedureStatement(PascalParser.ProcedureStatementContext ctx) {
         System.out.println("procedure statement ctx.getText() = " + ctx.getText());
@@ -1257,6 +1417,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
             // call procedure
             // push operands to be consumed onto stack
             // then call defined static function
+            //FIXME non args-proc
             List<PascalParser.ActualParameterContext> actualParameterContexts = ctx.parameterList().actualParameter();
             // generate corresponding bytecode
             // literal - ldc
@@ -1264,7 +1425,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
             actualParameterContexts.forEach(this::visit);
 
             TypeDescriptor proc = retrieve(procedureId, ctx);
-            List<TypeDescriptor> formalParams=null;
+            List<TypeDescriptor> formalParams = null;
             if (proc instanceof Procedure) {
                 formalParams = ((Procedure) proc).getFormalParams();
             }
@@ -1344,12 +1505,12 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
     @Override
     public TypeDescriptor visitString(PascalParser.StringContext ctx) {
-        System.out.println("Load String "+ ctx.getText());
+        System.out.println("Load String " + ctx.getText());
         String text = ctx.getText().replace("'", "");
         // if char
-        if (text.length()==1) {
+        if (text.length() == 1) {
             char[] chars = text.toCharArray();
-            int charValue = (int)chars[0];
+            int charValue = (int) chars[0];
             methodVisitor.visitLdcInsn(Integer.valueOf(charValue));
             return new Character(chars[0], true);
         }

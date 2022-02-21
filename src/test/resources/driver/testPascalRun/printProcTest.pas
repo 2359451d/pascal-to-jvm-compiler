@@ -4,6 +4,10 @@
  * Date: 14/02/2022
  *)
 program printProcTest;
+
+var
+  globalInt:Integer;
+
 procedure printX(x,y:Integer; ch: Char ;flag:boolean; float1:real);
 {procedure printX(x,y:Integer);}
 var
@@ -12,25 +16,29 @@ var
   charVar:Char;
   floatVar:Real;
 begin
-  float1:= 1;
+  globalInt:=999;
+  WriteLn('globalInt ',globalInt);
+
+
+  float1 := 1;
   WriteLn('float1 ', float1);
-  WriteLn(float1+1);
+  WriteLn(float1 + 1);
 
   WriteLn();
   WriteLn(charVar);
   WriteLn(ch);
-  ch:='a';
+  ch := 'a';
   WriteLn(ch);
   WriteLn(flag);
-  flag:=false;
+  flag := false;
   WriteLn(flag);
 
-  intVar1:= 1;
+  intVar1 := 1;
   WriteLn(intVar1);
-  intVar1:= MaxInt+555;
+  intVar1 := MaxInt + 555;
   WriteLn(intVar1);
 
-  floatVar:= 10000;
+  floatVar := 10000;
   WriteLn(floatVar);
 
   {WriteLn('boolvar',boolvar);
@@ -45,8 +53,13 @@ begin
 end;
 var
   intVarGlobal: Integer;
-
+procedure printY(x:Integer);
 begin
+  intVarGlobal:=999;
+  WriteLn('printY - intVarGlobal ', intVarGlobal);
+end;
+begin
+  printY(1);
   {printX(1);}
   {intVar1:= 5;
   WriteLn('hahhh');
