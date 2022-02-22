@@ -345,6 +345,69 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         return visit(ctx.statements());
     }
 
+    @Override
+    public TypeDescriptor visitConditionalStatement(PascalParser.ConditionalStatementContext ctx) {
+        visit(ctx.ifStatement());
+        // end if
+        setLabel(entireEndIf);
+        return null;
+    }
+
+    //Label elseBlock;
+    //Label endIf;
+    Label entireEndIf=makeLabel();
+    /**
+     * ifStatement
+     * : IF expression THEN statement (: ELSE statement)?
+     * ;
+     *
+     * @param ctx
+     * @return
+     */
+    @Override
+    public TypeDescriptor visitIfStatement(PascalParser.IfStatementContext ctx) {
+        visitChildren(ctx.expression());
+        //// 1. generate code to evaluate if expression
+        //TypeDescriptor ifExpressionType = visit(ctx.expression());
+        //// 2. store into temp local var
+        //String tempBoolVar = "__bool" + new Random().nextInt(999);
+        //putLocals(tempBoolVar, 1);
+        //LoadStoreHelper.storePrimitive(ifExpressionType, getVariableSlotNum(tempBoolVar));
+        //
+        //// 3. generate bytecode of if true - else structure
+        //// prepare labels
+        //Label elseBlock = makeLabel();
+        //Label endIf = makeLabel();
+        //// 3.1 load temp local var onto stack
+        //LoadStoreHelper.loadIntOrFloatLocal(ifExpressionType, getVariableSlotNum(tempBoolVar));
+        //// jump if temp bool var == 0 (means if expression is false)
+        //JumpInstructionHelper.jumpInstruction(Opcodes.IFEQ,
+        //        elseBlock);
+        //// if T
+        //visit(ctx.statement(0));
+        //// jump to endif
+        //JumpInstructionHelper.gotoLabel(entireEndIf);
+        //
+        //// else block
+        //setLabel(elseBlock);
+        //if (ctx.statement().size() > 1) {
+        //    // check whether is "else if" block
+        //    //Collection<ParseTree> compoundStatementMatch = XPath.findAll(ctx.statement(1), "//compoundStatement", PascalCompilerDriverBuilder.parser);
+        //    Collection<ParseTree> ifStatementMatch = XPath.findAll(ctx.statement(1), "//ifStatement", PascalCompilerDriverBuilder.parser);
+        //    ifStatementMatch.forEach(each->{
+        //        if (each instanceof PascalParser.IfStatementContext) {
+        //            System.out.println("((PascalParser.IfStatementContext) each).parent.parent.parent.parent.getClass() = " + ((PascalParser.IfStatementContext) each).parent.parent.parent.parent.parent.getClass());
+        //        }
+        //        System.out.println("if each.getText() = " + each.getText());
+        //    });
+        //
+        //    visit(ctx.statement(1));
+        //}
+
+
+        return null;
+    }
+
     String resultVar = null;
 
     @Override
@@ -369,8 +432,11 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 for (PascalParser.IdentifierContext eachId : identifierList) {
                     //arguments[i++] = Type.getType(argumentTypeDescriptorClass);
                     arguments.add(argumentTypeDescriptorClass);
-                    define(eachId.getText().toLowerCase(), argumentType, ctx);
-                    putLocals(eachId.getText(), 1);
+                    String eachIdText = eachId.getText();
+                    define(eachIdText.toLowerCase(), argumentType, ctx);
+
+                    if (!(argumentType instanceof FloatBaseType)) putLocals(eachIdText, 1);
+                    else putLocals(eachIdText, 2);
                 }
             }
         }
@@ -395,7 +461,8 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         resultVar = "__result" + new Random().nextInt(999);
         define(resultVar, resultType, ctx);
         if (resultType instanceof Primitive) {
-            putLocals(resultVar, 1);
+            if (!(resultType instanceof FloatBaseType)) putLocals(resultVar, 1);
+            else putLocals(resultVar, 2);
         }
 
         Label enterScope = makeLabel();
@@ -462,8 +529,11 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 for (PascalParser.IdentifierContext eachId : identifierList) {
                     //arguments[i++] = Type.getType(argumentTypeDescriptorClass);
                     arguments.add(Type.getType(argumentTypeDescriptorClass));
-                    define(eachId.getText().toLowerCase(), argumentType, ctx);
-                    putLocals(eachId.getText(), 1);
+                    String eachIdText = eachId.getText();
+                    define(eachIdText.toLowerCase(), argumentType, ctx);
+
+                    if (!(argumentType instanceof FloatBaseType)) putLocals(eachIdText, 1);
+                    else putLocals(eachIdText, 2);
                 }
             }
         }
@@ -576,7 +646,9 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
                         id, typeDescriptor, null, null);
                 fieldVisitor.visitEnd();
             } else {
-                putLocals(id, 1, false);
+                if (!(type instanceof FloatBaseType)) putLocals(id, 1, false);
+                else putLocals(id, 2);
+
                 if (type instanceof Primitive) {
                     InstructionHelper.loadIntOrReal(type);
                 }
@@ -690,7 +762,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
      *
      * @param operator
      */
-    private void invokeRelationalInstruction(String operator, TypeDescriptor lType, TypeDescriptor rType) {
+    private void invokeRelationalInstruction(String operator, TypeDescriptor lType, TypeDescriptor rType, PascalParser.IfStatementContext ifStatementContext) {
         boolean involveReal = lType instanceof FloatBaseType || rType instanceof FloatBaseType;
         boolean involveStr = lType instanceof StringLiteral || rType instanceof StringLiteral;
         // prepare labels
@@ -700,21 +772,25 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         if (involveReal || involveStr) {
             if (involveReal) methodVisitor.visitInsn(relationalOpMappingWithDouble.get(operator));
             if (involveStr) {
-                InstructionHelper.invokeStatic(StringUtils.class,"compare",false,
-                        String.class,String.class);
+                InstructionHelper.invokeStatic(StringUtils.class, "compare", false,
+                        String.class, String.class);
             }
-            JumpInstructionHelper.jumpInstruction(relationalOpMapping.get(operator),evaluateToFalse);
+            JumpInstructionHelper.jumpInstruction(relationalOpMapping.get(operator), evaluateToFalse);
         } else {
             JumpInstructionHelper.jumpInstruction(
                     relationalOpMappingWithInt.get(operator),
                     evaluateToFalse);
         }
 
-        InstructionHelper.loadTrueOrFalse(true);
+        if (ifStatementContext==null) InstructionHelper.loadTrueOrFalse(true);
+        else visitChildren(ifStatementContext.statement(0));
         gotoLabel(endLabel);
 
         setLabel(evaluateToFalse);
-        InstructionHelper.loadTrueOrFalse(false);
+        if (ifStatementContext==null) InstructionHelper.loadTrueOrFalse(false);
+        else if (ifStatementContext.statement().size()>1) {
+            visitChildren(ifStatementContext.statement(1));
+        }
 
         setLabel(endLabel);
 
@@ -725,7 +801,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
      * : simpleExpression (relationalOperator=(EQUAL| NOT_EQUAL| LT| LE| GE| GT| IN)
      * e2=expression)?
      * ;
-     *
+     * <p>
      * Relational op between int and real is allowed
      * ! but need to convert int to double before compare
      * ! and use DXXX instruction if real involved
@@ -735,6 +811,13 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     @Override
     public TypeDescriptor visitExpression(PascalParser.ExpressionContext ctx) {
+        System.out.println("ctx.getText() = " + ctx.getText());
+        System.out.println("expr ctx.parent.getClass() = " + ctx.parent.getClass());
+        boolean fromIfStatement = ctx.parent.parent.parent.parent.parent.parent.getClass() == PascalParser.IfStatementContext.class;
+        if (fromIfStatement) {
+            System.out.println("if state ctx.parent.getText() = " + ctx.parent.getText());
+        }
+
         TypeDescriptor lType = visit(ctx.simpleExpression());
         if (ctx.expression() != null) {
             // if relational op exists,
@@ -753,7 +836,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 rTypeIsChar = rawText.length() == 1;
             }
 
-            // if rtype involve real, lType is int
+            // if rType involve real, lType is int
             // convert left operand first
             if (rTypeIsReal && lType instanceof IntegerBaseType) {
                 TypeConverterHelper.I2D();
@@ -762,7 +845,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
             //if rType is String, lType is Char
             //convert left operand
             if (rTypeIsStr && !rTypeIsChar && lType instanceof Character) {
-                InstructionHelper.invokeStatic(String.class,"valueOf",false,char.class);
+                InstructionHelper.invokeStatic(String.class, "valueOf", false, char.class);
             }
 
             // push right operand onto stack
@@ -774,20 +857,19 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
             }
             // if left is String, right is char, convert right operand
             if (lType instanceof StringLiteral && rType instanceof Character) {
-                InstructionHelper.invokeStatic(String.class,"valueOf",false,char.class);
+                InstructionHelper.invokeStatic(String.class, "valueOf", false, char.class);
             }
 
             String relationalOperator = ctx.relationalOperator.getText().toLowerCase();
-            // if relational op with two int operands
-            //if (lType instanceof IntegerBaseType && rType instanceof IntegerBaseType ||
-            //        (lType instanceof Boolean && rType instanceof Boolean) ||
-            //        (lType instanceof Character && rType instanceof Character)) {
-            //}
+
             if (lType instanceof Primitive && rType instanceof Primitive) {
-                invokeRelationalInstruction(relationalOperator, lType, rType);
+                if (fromIfStatement) invokeRelationalInstruction(relationalOperator, lType, rType, (PascalParser.IfStatementContext) ctx.parent.parent.parent.parent.parent.parent);
+                else invokeRelationalInstruction(relationalOperator,lType,rType,null);
             }
             if (lType instanceof StringLiteral || rType instanceof StringLiteral) {
-                invokeRelationalInstruction(relationalOperator, lType, rType);
+                if (fromIfStatement) invokeRelationalInstruction(relationalOperator, lType, rType, (PascalParser.IfStatementContext) ctx.parent.parent.parent.parent.parent.parent);
+                else invokeRelationalInstruction(relationalOperator,lType,rType,null);
+                //invokeRelationalInstruction(relationalOperator, lType, rType);
             }
 
             return new Boolean();
@@ -822,6 +904,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
     }
 
 
+
     /**
      * simpleExpression
      * : term (additiveOperator=(PLUS| MINUS| OR) simpleExpression)?
@@ -832,6 +915,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     @Override
     public TypeDescriptor visitSimpleExpression(PascalParser.SimpleExpressionContext ctx) {
+        System.out.println("simple expr ctx.parent.parent.getClass() = " + ctx.parent.parent.getClass());
         TypeDescriptor lType = visit(ctx.term());
         System.out.println("simple expr ctx.getText() = " + ctx.getText());
         System.out.println("simple expression lType = " + lType);
@@ -1418,12 +1502,12 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
                         "parseDouble", false, String.class);
             }
             if (inputType instanceof IntegerBaseType) {
-                InstructionHelper.invokeStatic(Integer.class,"parseInt",false, String.class );
+                InstructionHelper.invokeStatic(Integer.class, "parseInt", false, String.class);
             }
             if (inputType instanceof Character) {
                 // get the char at pos 0, ignoring others
                 methodVisitor.visitInsn(Opcodes.ICONST_0);
-                InstructionHelper.invokeVirtual(String.class,"charAt",int.class);
+                InstructionHelper.invokeVirtual(String.class, "charAt", int.class);
                 //methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "charAt", "(I)C", false);
             }
             InstructionHelper.putStatic(className, fieldName, inputType);
