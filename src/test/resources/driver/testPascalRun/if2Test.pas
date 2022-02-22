@@ -20,7 +20,7 @@ begin
     writeln('None of the values is matching' );
   writeln('Exact value of a is: ', a );
 
-  if (a=100) then
+  if (true) then
   begin
     if (a>10) then WriteLn('a!=10')
     else
@@ -29,4 +29,6 @@ begin
     end;
   end
   else Write('?');
+
+  if (false) then ;
 end.

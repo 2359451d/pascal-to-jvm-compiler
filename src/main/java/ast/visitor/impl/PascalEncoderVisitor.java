@@ -762,7 +762,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
      *
      * @param operator
      */
-    private void invokeRelationalInstruction(String operator, TypeDescriptor lType, TypeDescriptor rType, PascalParser.IfStatementContext ifStatementContext) {
+    private void invokeRelationalInstruction(String operator, TypeDescriptor lType, TypeDescriptor rType, PascalParser.IfStatementContext ifStatementContext, boolean involveConstantIf) {
         boolean involveReal = lType instanceof FloatBaseType || rType instanceof FloatBaseType;
         boolean involveStr = lType instanceof StringLiteral || rType instanceof StringLiteral;
         // prepare labels
@@ -777,6 +777,10 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
             }
             JumpInstructionHelper.jumpInstruction(relationalOpMapping.get(operator), evaluateToFalse);
         } else {
+            if (involveConstantIf) {
+                System.out.println("int compare "+operator);
+                InstructionHelper.loadTrueOrFalse(true);
+            }
             JumpInstructionHelper.jumpInstruction(
                     relationalOpMappingWithInt.get(operator),
                     evaluateToFalse);
@@ -796,19 +800,24 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
     }
 
-    /**
-     * expression
-     * : simpleExpression (relationalOperator=(EQUAL| NOT_EQUAL| LT| LE| GE| GT| IN)
-     * e2=expression)?
-     * ;
-     * <p>
-     * Relational op between int and real is allowed
-     * ! but need to convert int to double before compare
-     * ! and use DXXX instruction if real involved
-     *
-     * @param ctx
-     * @return
-     */
+    private void invokeRelationalInstruction(String operator, TypeDescriptor lType, TypeDescriptor rType, PascalParser.IfStatementContext ifStatementContext) {
+        invokeRelationalInstruction(operator,lType , rType, ifStatementContext, false);
+    }
+
+
+        /**
+         * expression
+         * : simpleExpression (relationalOperator=(EQUAL| NOT_EQUAL| LT| LE| GE| GT| IN)
+         * e2=expression)?
+         * ;
+         * <p>
+         * Relational op between int and real is allowed
+         * ! but need to convert int to double before compare
+         * ! and use DXXX instruction if real involved
+         *
+         * @param ctx
+         * @return
+         */
     @Override
     public TypeDescriptor visitExpression(PascalParser.ExpressionContext ctx) {
         System.out.println("ctx.getText() = " + ctx.getText());
@@ -874,6 +883,14 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
             return new Boolean();
         }
+        // if only involve 1 operand(left) and from if statement
+        if (fromIfStatement) {
+
+            System.out.println("Constant expr found");
+            invokeRelationalInstruction("=", null, null, (PascalParser.IfStatementContext) ctx.parent.parent.parent.parent.parent.parent,
+                    true);
+        }
+
         return lType;
     }
 
