@@ -355,7 +355,8 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
     //Label elseBlock;
     //Label endIf;
-    Label entireEndIf=makeLabel();
+    Label entireEndIf = makeLabel();
+
     /**
      * ifStatement
      * : IF expression THEN statement (: ELSE statement)?
@@ -366,7 +367,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     @Override
     public TypeDescriptor visitIfStatement(PascalParser.IfStatementContext ctx) {
-        visitChildren(ctx.expression());
+        visit(ctx.expression());
         //// 1. generate code to evaluate if expression
         //TypeDescriptor ifExpressionType = visit(ctx.expression());
         //// 2. store into temp local var
@@ -405,6 +406,14 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         //}
 
 
+        return null;
+    }
+
+    @Override
+    public TypeDescriptor visitWhileStatement(PascalParser.WhileStatementContext ctx) {
+        whileExprStart = makeLabel();
+        setLabel(whileExprStart);
+        visit(ctx.expression());
         return null;
     }
 
@@ -762,7 +771,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
      *
      * @param operator
      */
-    private void invokeRelationalInstruction(String operator, TypeDescriptor lType, TypeDescriptor rType, PascalParser.IfStatementContext ifStatementContext, boolean involveConstantIf) {
+    private void invokeRelationalInstruction(String operator, TypeDescriptor lType, TypeDescriptor rType, PascalParser.IfStatementContext ifStatementContext, PascalParser.WhileStatementContext whileStatementContext, boolean involveConstantIf) {
         boolean involveReal = lType instanceof FloatBaseType || rType instanceof FloatBaseType;
         boolean involveStr = lType instanceof StringLiteral || rType instanceof StringLiteral;
         // prepare labels
@@ -778,7 +787,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
             JumpInstructionHelper.jumpInstruction(relationalOpMapping.get(operator), evaluateToFalse);
         } else {
             if (involveConstantIf) {
-                System.out.println("int compare "+operator);
+                System.out.println("int compare " + operator);
                 InstructionHelper.loadTrueOrFalse(true);
             }
             JumpInstructionHelper.jumpInstruction(
@@ -786,45 +795,76 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
                     evaluateToFalse);
         }
 
-        if (ifStatementContext==null) InstructionHelper.loadTrueOrFalse(true);
-        else visitChildren(ifStatementContext.statement(0));
-        gotoLabel(endLabel);
-
-        setLabel(evaluateToFalse);
-        if (ifStatementContext==null) InstructionHelper.loadTrueOrFalse(false);
-        else if (ifStatementContext.statement().size()>1) {
-            visitChildren(ifStatementContext.statement(1));
+        if (ifStatementContext != null) {
+            System.out.println("if block");
+            visit(ifStatementContext.statement(0));
+        } else if (whileStatementContext != null) {
+            System.out.println("while block");
+            visit(whileStatementContext.statement());
+        } else {
+            InstructionHelper.loadTrueOrFalse(true);
         }
 
+        System.out.println("whileExprStart = " + whileExprStart);
+        if (whileStatementContext != null) {
+            System.out.println("goto whileExprStart");
+            gotoLabel(whileExprStart);
+        }else gotoLabel(endLabel);
+        //gotoLabel(endLabel);
+
+        setLabel(evaluateToFalse);
+
+        if (ifStatementContext != null && ifStatementContext.statement().size() > 1) {
+            System.out.println("else block");
+            visit(ifStatementContext.statement(1));
+        } else if (whileStatementContext==null && ifStatementContext==null){
+            InstructionHelper.loadTrueOrFalse(false);
+        }
         setLabel(endLabel);
 
     }
 
-    private void invokeRelationalInstruction(String operator, TypeDescriptor lType, TypeDescriptor rType, PascalParser.IfStatementContext ifStatementContext) {
-        invokeRelationalInstruction(operator,lType , rType, ifStatementContext, false);
+    private void invokeRelationalInstruction(String operator, TypeDescriptor lType, TypeDescriptor rType, PascalParser.IfStatementContext ifStatementContext, PascalParser.WhileStatementContext whileStatementContext) {
+        invokeRelationalInstruction(operator, lType, rType, ifStatementContext, whileStatementContext, false);
     }
 
-
-        /**
-         * expression
-         * : simpleExpression (relationalOperator=(EQUAL| NOT_EQUAL| LT| LE| GE| GT| IN)
-         * e2=expression)?
-         * ;
-         * <p>
-         * Relational op between int and real is allowed
-         * ! but need to convert int to double before compare
-         * ! and use DXXX instruction if real involved
-         *
-         * @param ctx
-         * @return
-         */
+    Label whileExprStart = null;
+    /**
+     * expression
+     * : simpleExpression (relationalOperator=(EQUAL| NOT_EQUAL| LT| LE| GE| GT| IN)
+     * e2=expression)?
+     * ;
+     * <p>
+     * Relational op between int and real is allowed
+     * ! but need to convert int to double before compare
+     * ! and use DXXX instruction if real involved
+     *
+     * @param ctx
+     * @return
+     */
     @Override
     public TypeDescriptor visitExpression(PascalParser.ExpressionContext ctx) {
+        //whileExprStart = makeLabel();
+        //if (ctx.parent instanceof PascalParser.WhileStatementContext) setLabel(whileExprStart);
+
         System.out.println("ctx.getText() = " + ctx.getText());
         System.out.println("expr ctx.parent.getClass() = " + ctx.parent.getClass());
-        boolean fromIfStatement = ctx.parent.parent.parent.parent.parent.parent.getClass() == PascalParser.IfStatementContext.class;
+
+        boolean fromIfStatement = ctx.parent.parent.parent.parent.parent.parent.getClass() == PascalParser.IfStatementContext.class ||
+                ctx.parent.getClass() == PascalParser.IfStatementContext.class;
+        PascalParser.IfStatementContext ifStatementContext = null;
         if (fromIfStatement) {
-            System.out.println("if state ctx.parent.getText() = " + ctx.parent.getText());
+            if (ctx.parent.getClass() == PascalParser.IfStatementContext.class) {
+                ifStatementContext = (PascalParser.IfStatementContext) ctx.parent;
+            } else ifStatementContext = (PascalParser.IfStatementContext) ctx.parent.parent.parent.parent.parent.parent;
+        }
+        if (ifStatementContext != null)
+            System.out.println("ifStatementContext.getText() = " + ifStatementContext.getText());
+
+        boolean fromWhileStatement = ctx.parent.getClass() == PascalParser.WhileStatementContext.class;
+        PascalParser.WhileStatementContext whileStatementContext = null;
+        if (fromWhileStatement) {
+            whileStatementContext = (PascalParser.WhileStatementContext) ctx.parent;
         }
 
         TypeDescriptor lType = visit(ctx.simpleExpression());
@@ -871,24 +911,26 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
             String relationalOperator = ctx.relationalOperator.getText().toLowerCase();
 
+            System.out.println("fromIfStatement = " + fromIfStatement);
             if (lType instanceof Primitive && rType instanceof Primitive) {
-                if (fromIfStatement) invokeRelationalInstruction(relationalOperator, lType, rType, (PascalParser.IfStatementContext) ctx.parent.parent.parent.parent.parent.parent);
-                else invokeRelationalInstruction(relationalOperator,lType,rType,null);
+                //if (fromIfStatement) invokeRelationalInstruction(relationalOperator, lType, rType, ifStatementContext);
+               invokeRelationalInstruction(relationalOperator, lType, rType, ifStatementContext, whileStatementContext);
             }
             if (lType instanceof StringLiteral || rType instanceof StringLiteral) {
-                if (fromIfStatement) invokeRelationalInstruction(relationalOperator, lType, rType, (PascalParser.IfStatementContext) ctx.parent.parent.parent.parent.parent.parent);
-                else invokeRelationalInstruction(relationalOperator,lType,rType,null);
+                invokeRelationalInstruction(relationalOperator, lType, rType, ifStatementContext, whileStatementContext);
+                //if (fromIfStatement) invokeRelationalInstruction(relationalOperator, lType, rType, ifStatementContext);
+                //else invokeRelationalInstruction(relationalOperator, lType, rType, null);
                 //invokeRelationalInstruction(relationalOperator, lType, rType);
             }
 
             return new Boolean();
         }
         // if only involve 1 operand(left) and from if statement
-        if (fromIfStatement) {
-
+        if (fromIfStatement && (ctx.getText().equalsIgnoreCase("true") ||
+                ctx.getText().equalsIgnoreCase("false"))) {
             System.out.println("Constant expr found");
-            invokeRelationalInstruction("=", null, null, (PascalParser.IfStatementContext) ctx.parent.parent.parent.parent.parent.parent,
-                    true);
+            invokeRelationalInstruction("=", null, null, ifStatementContext,
+                    null,true);
         }
 
         return lType;
@@ -919,7 +961,6 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 break;
         }
     }
-
 
 
     /**
