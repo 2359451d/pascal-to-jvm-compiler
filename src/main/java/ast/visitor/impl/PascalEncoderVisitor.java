@@ -417,6 +417,58 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         return null;
     }
 
+
+    /**
+     * forStatement
+     *    : FOR identifier ASSIGN forList DO statement
+     *    ;
+     * @param ctx
+     * @return
+     */
+    @Override
+    public TypeDescriptor visitForStatement(PascalParser.ForStatementContext ctx) {
+        Label forExprStart = makeLabel();
+        Label endFor = makeLabel();
+        //
+        //// initialised for counter
+        String counterId = ctx.identifier().getText().toLowerCase();
+        TypeDescriptor hostType = visit(ctx.identifier());
+        TypeDescriptor initValueType = visit(ctx.forList().initialValue());
+        if (isStaticField(counterId)) {
+            InstructionHelper.putStatic(className,counterId, hostType);
+        }
+
+        setLabel(forExprStart);
+        // push final value operand
+        if (isStaticField(counterId)) {
+            InstructionHelper.getStatic(className,counterId,hostType);
+        }
+        TypeDescriptor finalValueType = visit(ctx.forList().finalValue());
+        JumpInstructionHelper.jumpInstruction(relationalOpMappingWithInt.get("<="),endFor);
+
+        visit(ctx.statement());
+
+        // for counter increment
+        // 1. load var/field
+        if (isStaticField(counterId)) {
+            InstructionHelper.getStatic(className, counterId, hostType);
+        } else {
+        //    TODO, local
+        }
+        // 2. load const 1
+        InstructionHelper.loadTrueOrFalse(true);
+        // 3. increment (counter+1)
+        InstructionHelper.add(hostType);
+        // 4. update counter
+        if (isStaticField(counterId)) {
+            InstructionHelper.putStatic(className,counterId,hostType);
+        }else{}
+        gotoLabel(forExprStart);
+
+        setLabel(endFor);
+        return null;
+    }
+
     String resultVar = null;
 
     @Override
@@ -868,6 +920,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         }
 
         TypeDescriptor lType = visit(ctx.simpleExpression());
+
         if (ctx.expression() != null) {
             // if relational op exists,
             // check first whether rType involve real, before push onto stack
