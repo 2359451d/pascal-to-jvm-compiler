@@ -20,8 +20,9 @@ begin
   AddOne :=999;
 
   funcIntVar :=1;
+  writeln('funcBoolVar->',funcBoolVar>false);
   writeln('funcRealVar->',funcRealVar+1);
-  writeln('funcBoolVar->',funcBoolVar);
+
 
   {if A>x then
     a :=a+1;}
@@ -33,8 +34,8 @@ Var
 begin
   WriteLn(A);
   A := 0;
-  N := AddOne(1); { N := 1.0000 }
-  WriteLn(N); {1.0}
+  N := AddOne(1); { N := 999.0 }
+  WriteLn(N); {999.0}
   WriteLn('A->',A);
 
   b := AddOne(999);

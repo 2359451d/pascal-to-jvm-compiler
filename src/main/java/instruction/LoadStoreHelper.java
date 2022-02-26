@@ -54,7 +54,7 @@ public class LoadStoreHelper extends AbstractHelper {
     public static void storePrimitive(MethodVisitor mv, TypeDescriptor type, int slotNum) {
         int opcode = Opcodes.ISTORE; // int, bool, char
         if (type instanceof FloatBaseType) {
-            opcode = Opcodes.FSTORE;
+            opcode = Opcodes.DSTORE;
         }
         mv.visitVarInsn(opcode, slotNum);
     }

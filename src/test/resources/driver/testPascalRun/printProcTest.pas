@@ -19,12 +19,14 @@ begin
   globalInt:=999;
   WriteLn('globalInt ',globalInt);
 
-
   float1 := 1;
   WriteLn('float1 ', float1);
   WriteLn(float1 + 1);
+  floatVar := 1.0;
+  WriteLn('floatVar ', floatVar);
+  WriteLn('floatVar+1 ', floatVar+1);
 
-  WriteLn();
+WriteLn();
   WriteLn(charVar);
   WriteLn(ch);
   ch := 'a';

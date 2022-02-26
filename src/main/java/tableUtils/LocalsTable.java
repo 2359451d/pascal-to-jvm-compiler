@@ -9,6 +9,7 @@ public class LocalsTable<K, T extends LocalVariableInformation> extends Table<K,
      */
     //private Map<K, ? super LocalVariableInformation> table;
 
+    private int length;
     public static Class<? extends ParserRuleContext> context = PascalParser.VariableContext.class;
 
     public LocalsTable() {
@@ -55,18 +56,12 @@ public class LocalsTable<K, T extends LocalVariableInformation> extends Table<K,
      */
     public boolean put(K id, int length, boolean isStatic) {
         System.out.println("current local table size "+ this.sizeOfCurrentScope());
-        int start = this.sizeOfCurrentScope();
+
+        int start = this.length();
+        updateLength(length); //update length as new local put
+        System.out.println("length after update = " + this.length);
         return put(id,start,length,isStatic);
     }
-
-    //private void put(K id, T localVariableInformation) {
-    //    put(id,localVariableInformation.getSlotNum(),localVariableInformation.getLength(),
-    //            localVariableInformation.isStatic());
-    //}
-
-    //private void put(String id, int length) {
-    //    put(id,length,false);
-    //}
 
     @Override
     public boolean put(K id, T attr) {
@@ -84,9 +79,17 @@ public class LocalsTable<K, T extends LocalVariableInformation> extends Table<K,
         return false;
     }
 
-    //public int length() {
-    //    return table.size();
-    //}
+    /**
+     * Total length of all the locals in the table
+     * @return
+     */
+    public int length() {
+        return length;
+    }
+
+    private void updateLength(int increment) {
+        this.length += increment;
+    }
 
     //public Map<K, ? super LocalVariableInformation> getTable() {
     //    return table;
