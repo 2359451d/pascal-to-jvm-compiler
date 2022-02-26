@@ -1387,6 +1387,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
     private void putLocals(String id, int length, boolean isStatic) {
         System.out.println("put locals - id = " + id);
+        System.out.println("length = " + length);
         localVariableTable.put(id, new LocalVariableInformation(length, isStatic));
         System.out.println("slot num " + localVariableTable.get(id).getSlotNum());
         localVariableTable.displayCurrentScope();
