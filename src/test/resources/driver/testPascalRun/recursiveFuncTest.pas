@@ -20,4 +20,5 @@ begin
   readln(num);
   f := fact(num);
   writeln(' Factorial ', num, ' is: ' , f);
+  WriteLn(fact(10));
 end.

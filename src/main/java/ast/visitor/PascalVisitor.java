@@ -537,6 +537,13 @@ public interface PascalVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitSignedFactor(PascalParser.SignedFactorContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code factorFuncDesignator}
+	 * labeled alternative in {@link PascalParser#factor}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFactorFuncDesignator(PascalParser.FactorFuncDesignatorContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code factorVar}
 	 * labeled alternative in {@link PascalParser#factor}.
 	 * @param ctx the parse tree
@@ -550,13 +557,6 @@ public interface PascalVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitFactorExpr(PascalParser.FactorExprContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code factorFuncDesignator}
-	 * labeled alternative in {@link PascalParser#factor}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitFactorFuncDesignator(PascalParser.FactorFuncDesignatorContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code factorUnConst}
 	 * labeled alternative in {@link PascalParser#factor}.

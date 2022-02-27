@@ -19,5 +19,7 @@ public class RecursiveFuncTest {
         num = Integer.parseInt(scanner.nextLine());
         f = fact(num);
         System.out.println("Factorial "+num+" is: "+f);
+
+        System.out.println(fact(10));
     }
 }

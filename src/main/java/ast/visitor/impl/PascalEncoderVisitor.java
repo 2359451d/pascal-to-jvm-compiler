@@ -1486,6 +1486,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
             //        StringUtils.join("StringTest", "\u0001", "hhhhh"));
             // single param, do no concat
             if (outputValueContexts.size() == 1) {
+                System.out.println("outputValueContexts = " + outputValueContexts.get(0).getText());
                 TypeDescriptor type = visit(outputValueContexts.get(0));
                 String methodName = "println";
                 if (ctx.WRITE() != null) {

@@ -413,9 +413,9 @@ signedFactor
    ;
 
 factor
-   : variable   # factorVar
+   : functionDesignator #factorFuncDesignator // function call
+   | variable   # factorVar
    | LPAREN expression RPAREN #factorExpr
-   | functionDesignator #factorFuncDesignator // function call
    | unsignedConstant #factorUnConst
    | set_ #factorSet
    | NOT factor #notFactor

@@ -4603,31 +4603,31 @@ public class PascalParser extends Parser {
 			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,54,_ctx) ) {
 			case 1:
-				_localctx = new FactorVarContext(_localctx);
+				_localctx = new FactorFuncDesignatorContext(_localctx);
 				enterOuterAlt(_localctx, 1);
 				{
 				setState(667);
-				variable();
+				functionDesignator();
 				}
 				break;
 			case 2:
-				_localctx = new FactorExprContext(_localctx);
+				_localctx = new FactorVarContext(_localctx);
 				enterOuterAlt(_localctx, 2);
 				{
 				setState(668);
-				match(LPAREN);
-				setState(669);
-				expression();
-				setState(670);
-				match(RPAREN);
+				variable();
 				}
 				break;
 			case 3:
-				_localctx = new FactorFuncDesignatorContext(_localctx);
+				_localctx = new FactorExprContext(_localctx);
 				enterOuterAlt(_localctx, 3);
 				{
-				setState(672);
-				functionDesignator();
+				setState(669);
+				match(LPAREN);
+				setState(670);
+				expression();
+				setState(671);
+				match(RPAREN);
 				}
 				break;
 			case 4:
@@ -6875,11 +6875,11 @@ public class PascalParser extends Parser {
 		"\u0295\t\7\2\2\u0295\u0297\5\u0088E\2\u0296\u0294\3\2\2\2\u0296\u0297"+
 		"\3\2\2\2\u0297\u0089\3\2\2\2\u0298\u029a\t\3\2\2\u0299\u0298\3\2\2\2\u0299"+
 		"\u029a\3\2\2\2\u029a\u029b\3\2\2\2\u029b\u029c\5\u008cG\2\u029c\u008b"+
-		"\3\2\2\2\u029d\u02a9\5|?\2\u029e\u029f\7=\2\2\u029f\u02a0\5\u0084C\2\u02a0"+
-		"\u02a1\7>\2\2\u02a1\u02a9\3\2\2\2\u02a2\u02a9\5\u0090I\2\u02a3\u02a9\5"+
+		"\3\2\2\2\u029d\u02a9\5\u0090I\2\u029e\u02a9\5|?\2\u029f\u02a0\7=\2\2\u02a0"+
+		"\u02a1\5\u0084C\2\u02a1\u02a2\7>\2\2\u02a2\u02a9\3\2\2\2\u02a3\u02a9\5"+
 		"\u008eH\2\u02a4\u02a9\5\u0094K\2\u02a5\u02a6\7\36\2\2\u02a6\u02a9\5\u008c"+
 		"G\2\u02a7\u02a9\5\34\17\2\u02a8\u029d\3\2\2\2\u02a8\u029e\3\2\2\2\u02a8"+
-		"\u02a2\3\2\2\2\u02a8\u02a3\3\2\2\2\u02a8\u02a4\3\2\2\2\u02a8\u02a5\3\2"+
+		"\u029f\3\2\2\2\u02a8\u02a3\3\2\2\2\u02a8\u02a4\3\2\2\2\u02a8\u02a5\3\2"+
 		"\2\2\u02a8\u02a7\3\2\2\2\u02a9\u008d\3\2\2\2\u02aa\u02af\5\30\r\2\u02ab"+
 		"\u02af\5\24\13\2\u02ac\u02af\5\36\20\2\u02ad\u02af\7\35\2\2\u02ae\u02aa"+
 		"\3\2\2\2\u02ae\u02ab\3\2\2\2\u02ae\u02ac\3\2\2\2\u02ae\u02ad\3\2\2\2\u02af"+

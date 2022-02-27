@@ -1510,6 +1510,9 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 if (outputType instanceof FormalParam) {
                     _outputType = ((FormalParam) outputType).getHostType();
                 }
+                if (outputType instanceof Function) {
+                     _outputType= ((Function) outputType).getResultType();
+                }
                 System.out.println("write each.getText() = " + each.getText());
                 System.out.println("_outputType = " + _outputType);
                 if (!isSimpleType(_outputType) && !(_outputType instanceof StringLiteral)) {
