@@ -360,13 +360,6 @@ public interface PascalVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitProcedurePrototypeDecl(PascalParser.ProcedurePrototypeDeclContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code procedureImpl}
-	 * labeled alternative in {@link PascalParser#procedureDeclaration}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitProcedureImpl(PascalParser.ProcedureImplContext ctx);
-	/**
 	 * Visit a parse tree produced by the {@code procedureDecl}
 	 * labeled alternative in {@link PascalParser#procedureDeclaration}.
 	 * @param ctx the parse tree
@@ -444,13 +437,6 @@ public interface PascalVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitFunctionPrototypeDecl(PascalParser.FunctionPrototypeDeclContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code functionImpl}
-	 * labeled alternative in {@link PascalParser#functionDeclaration}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitFunctionImpl(PascalParser.FunctionImplContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code functionDecl}
 	 * labeled alternative in {@link PascalParser#functionDeclaration}.
@@ -537,13 +523,6 @@ public interface PascalVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitSignedFactor(PascalParser.SignedFactorContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code factorFuncDesignator}
-	 * labeled alternative in {@link PascalParser#factor}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitFactorFuncDesignator(PascalParser.FactorFuncDesignatorContext ctx);
-	/**
 	 * Visit a parse tree produced by the {@code factorVar}
 	 * labeled alternative in {@link PascalParser#factor}.
 	 * @param ctx the parse tree
@@ -557,6 +536,13 @@ public interface PascalVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitFactorExpr(PascalParser.FactorExprContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code factorFuncDesignator}
+	 * labeled alternative in {@link PascalParser#factor}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFactorFuncDesignator(PascalParser.FactorFuncDesignatorContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code factorUnConst}
 	 * labeled alternative in {@link PascalParser#factor}.

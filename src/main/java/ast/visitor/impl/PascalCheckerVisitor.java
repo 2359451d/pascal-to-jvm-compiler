@@ -54,7 +54,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      * Table & Table Manager fields
      */
     private Table<Object, TypeDescriptor> symbolTable;
-    private Table<Object, TypeDescriptor> typeTable ;
+    private Table<Object, TypeDescriptor> typeTable;
     private TableManager<Object, TypeDescriptor> tableManager = TableManager.getInstance(); // quick reference
 
 
@@ -68,7 +68,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         tokens = toks;
         symbolTable = new SymbolTable<>();
         //symbolTable = tableManager.createTableSafely("symbol table",
-                //SymbolTable.class, Object.class, TypeDescriptor);
+        //SymbolTable.class, Object.class, TypeDescriptor);
         typeTable = new TypeTable<>();
     }
 
@@ -118,18 +118,18 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     }
 
     private boolean hasNoOverflow(Long number) {
-        if (number==null) return true;
+        if (number == null) return true;
         return number <= defaultIntegerType.MAX_VALUE;
     }
 
     private boolean hasNoUnderflow(Long number) {
-        if (number==null) return true;
+        if (number == null) return true;
         return number >= defaultIntegerType.MIN_VALUE;
     }
 
     private boolean hasNoOverflowOrUnderflow(Long number, boolean checkOverflow, boolean checkUnderflow) {
         // null means check in runtime
-        if (number==null) return true;
+        if (number == null) return true;
 
         if (checkOverflow && checkUnderflow) {
             return hasNoOverflow(number) && hasNoUnderflow(number);
@@ -166,7 +166,8 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         }
 
         boolean putSuccessfully = false;
-        if (!isDuplicatedInOtherTable && selectedTable!=null) putSuccessfully = selectedTable.put(id.toLowerCase(), type);
+        if (!isDuplicatedInOtherTable && selectedTable != null)
+            putSuccessfully = selectedTable.put(id.toLowerCase(), type);
 
         if (isDuplicatedInOtherTable || !putSuccessfully)
             reportError(ctx, id + " is redeclared");
@@ -979,7 +980,25 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         String id = ctx.identifier().getText().toLowerCase();
         ArrayList<TypeDescriptor> params = new ArrayList<>();
 
+        // set true if procedureDecl ctx is actually the implementation of predefined prototype
+        boolean isProcedureImpl = false;
+        Pair<TypeDescriptor, ParserRuleContext> procPrototypePair=null;
+        if (prototypeImplTrackingMap.containsKey(id)) {
+            isProcedureImpl = true;
+            procPrototypePair = prototypeImplTrackingMap.get(id);
+            TypeDescriptor type = procPrototypePair.getLeft();
+            // if prototype is of Function type which the implementation cannot match
+            // report errors
+            if (!(type instanceof Procedure)) {
+                reportError(ctx, "Implantation header cannot match previous prototype declaration: %s",
+                        type);
+            }
+            // remove the entry in the tracking map, no matter whether the implementation can match the header or not
+            prototypeImplTrackingMap.remove(id);
+        }
+
         System.out.println("PROC DECL Starts*************************");
+        symbolTable.displayCurrentScope();
         //symbolTable.enterLocalScope();
         //typeTable.enterLocalScope();
         tableManager.allTablesEnterNewScope();
@@ -994,9 +1013,30 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             // all formal params set up
             Map<Object, TypeDescriptor> allParams = symbolTable.getAllVarInCurrentScope();
             allParams.forEach((k, v) -> params.add(v));
+        } else if (isProcedureImpl) {
+            // visit all the parameters from prototype trackingmap
+            ParserRuleContext procPrototypePairRight = procPrototypePair.getRight();
+            if (procPrototypePairRight instanceof PascalParser.ProcedurePrototypeDeclContext) {
+                PascalParser.ProcedureHeadingContext procedureHeadingContext = ((PascalParser.ProcedurePrototypeDeclContext) procPrototypePairRight).procedureHeading();
+                if (procedureHeadingContext.formalParameterList() != null) {
+                    List<PascalParser.FormalParameterSectionContext> formalParameterSectionList = procedureHeadingContext.formalParameterList().formalParameterSection();
+                    for (PascalParser.FormalParameterSectionContext paramSection : formalParameterSectionList) {
+                        // define parameter group in current scope of type Param(Type,String:label)
+                        visit(paramSection);
+                    }
+                    // all formal params set up
+                    Map<Object, TypeDescriptor> allParams = symbolTable.getAllVarInCurrentScope();
+                    System.out.println("allParams = " + allParams);
+                    allParams.forEach((k, v) -> params.add(v));
+                }
+            }
         }
-        define(id, new Procedure(params), ctx);
-        System.out.println("Define Proc signature");
+
+        System.out.println("Before Proc decl");
+        symbolTable.displayCurrentScope();
+        Procedure procedure = new Procedure(params);
+        define(id, procedure, ctx);
+        System.out.println("Define Proc Decl signature\n" + procedure);
 
         tableManager.displayAllTablesCurrentScope();
         //symbolTable.displayCurrentScope();
@@ -1006,7 +1046,8 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         //symbolTable.exitLocalScope(); // back to last scope
         //typeTable.exitLocalScope();
         tableManager.allTablesExitNewScope();
-        define(id, new Procedure(params), ctx);
+
+        if (!isProcedureImpl) define(id, procedure, ctx);
         System.out.println("PROC DECL ENDS*************************");
         //symbolTable.displayCurrentScope();
         tableManager.displayAllTablesCurrentScope();
@@ -1015,7 +1056,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
     @Override
     public TypeDescriptor visitProcedurePrototypeDecl(PascalParser.ProcedurePrototypeDeclContext ctx) {
-        String id = ctx.procedureHeading().identifier().getText();
+        String id = ctx.procedureHeading().identifier().getText().toLowerCase();
         ArrayList<TypeDescriptor> params = new ArrayList<>();
 
         System.out.println("Proc Prototype DECL Starts*************************");
@@ -1044,6 +1085,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         tableManager.allTablesExitNewScope();
         define(id, procedure, ctx);
         System.out.println("PROC Prototype DECL ENDS*************************");
+        symbolTable.displayCurrentScope();
 
         // insert new entry into the tracking map
         // check whether there exist implementation corresponds to current function prototype declaration
@@ -1065,47 +1107,48 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      * @param ctx
      * @return
      */
-    @Override
-    public TypeDescriptor visitProcedureImpl(PascalParser.ProcedureImplContext ctx) {
-        System.out.println("PROC IMpl Starts*************************");
-        String id = ctx.identifier().getText().toLowerCase();
-
-        if (prototypeImplTrackingMap.containsKey(id)) {
-            Pair<TypeDescriptor, ParserRuleContext> functionPrototypePair = prototypeImplTrackingMap.get(id);
-            TypeDescriptor type = functionPrototypePair.getLeft();
-            // if prototype is of Function type which the implementation cannot match
-            // report errors
-            if (!(type instanceof Procedure)) {
-                reportError(ctx, "Implantation header cannot match previous prototype declaration: %s",
-                        type);
-            }
-            // remove the entry in the tracking map, no matter whether the implementation can match the header or not
-            prototypeImplTrackingMap.remove(id);
-        }
-
-        // enter new scope for scope checking
-        tableManager.allTablesEnterNewScope();
-
-        TypeDescriptor procedureOrFunction = retrieve(id, ctx); // get predefined procedure prototype
-        define(id, procedureOrFunction, ctx);
-
-        //extract all the defined formals, inserting into current scope
-        if (procedureOrFunction instanceof ProcFuncBaseType) {
-            List<TypeDescriptor> formalParams = ((ProcFuncBaseType) procedureOrFunction).getFormalParams();
-            formalParams.forEach(each -> {
-                if (each instanceof FormalParam) {
-                    String formalName = ((FormalParam) each).getName();
-                    define(formalName, each, ctx);
-                }
-            });
-        }
-
-        visit(ctx.block()); // scope & type checking in current proc scope
-        tableManager.allTablesExitNewScope();
-
-        System.out.println("PROC Implementation ENDS*************************");
-        return null;
-    }
+    //@Override
+    //public TypeDescriptor visitProcedureImpl(PascalParser.ProcedureImplContext ctx) {
+    //    System.out.println("PROC IMpl Starts*************************");
+    //    String id = ctx.identifier().getText().toLowerCase();
+    //    symbolTable.displayCurrentScope();
+    //
+    //    if (prototypeImplTrackingMap.containsKey(id)) {
+    //        Pair<TypeDescriptor, ParserRuleContext> functionPrototypePair = prototypeImplTrackingMap.get(id);
+    //        TypeDescriptor type = functionPrototypePair.getLeft();
+    //        // if prototype is of Function type which the implementation cannot match
+    //        // report errors
+    //        if (!(type instanceof Procedure)) {
+    //            reportError(ctx, "Implantation header cannot match previous prototype declaration: %s",
+    //                    type);
+    //        }
+    //        // remove the entry in the tracking map, no matter whether the implementation can match the header or not
+    //        prototypeImplTrackingMap.remove(id);
+    //    }
+    //
+    //    // enter new scope for scope checking
+    //    tableManager.allTablesEnterNewScope();
+    //
+    //    TypeDescriptor procedureOrFunction = retrieve(id, ctx); // get predefined procedure prototype
+    //    define(id, procedureOrFunction, ctx);
+    //
+    //    //extract all the defined formals, inserting into current scope
+    //    if (procedureOrFunction instanceof ProcFuncBaseType) {
+    //        List<TypeDescriptor> formalParams = ((ProcFuncBaseType) procedureOrFunction).getFormalParams();
+    //        formalParams.forEach(each -> {
+    //            if (each instanceof FormalParam) {
+    //                String formalName = ((FormalParam) each).getName();
+    //                define(formalName, each, ctx);
+    //            }
+    //        });
+    //    }
+    //
+    //    visit(ctx.block()); // scope & type checking in current proc scope
+    //    tableManager.allTablesExitNewScope();
+    //
+    //    System.out.println("PROC Implementation ENDS*************************");
+    //    return null;
+    //}
 
     /**
      * Check whether a Function has result assignment or not (should be the last node in the block)
@@ -1155,9 +1198,41 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         // initialise for each declared Function
         functionHasReturnAssignment = false;
 
-        String id = ctx.identifier().getText();
+        String id = ctx.identifier().getText().toLowerCase();
+
+        // set true if FunctionDecl ctx is actually the implementation of predefined prototype
+        boolean isFunctionImpl = false;
+        if (!prototypeImplTrackingMap.containsKey(id) &&
+                ctx.resultType() == null) {
+            reportError(ctx, "Invalid function declaration [%s]. Function must have return type.", ctx.getText());
+            return null;
+        }
+        Pair<TypeDescriptor, ParserRuleContext> functionPrototypePair = null;
+        if (prototypeImplTrackingMap.containsKey(id)) {
+            isFunctionImpl = true;
+            functionPrototypePair = prototypeImplTrackingMap.get(id);
+            TypeDescriptor type = functionPrototypePair.getLeft();
+            // if prototype is of Procedure type which the implementation cannot match
+            // report errors
+            if (!(type instanceof Function)) {
+                reportError(ctx, "Implantation header cannot match previous prototype declaration: %s",
+                        type);
+            }
+            // remove the entry in the tracking map, no matter whether the implementation can match the header or not
+            prototypeImplTrackingMap.remove(id);
+        }
+
         selectedFunction = id;
-        TypeDescriptor resultType = visit(ctx.resultType());
+        TypeDescriptor resultType = null;
+        if (ctx.resultType() != null) {
+            // if normal function declaration
+            resultType = visit(ctx.resultType());
+        } else if (functionPrototypePair != null) {
+            TypeDescriptor function = functionPrototypePair.getLeft();
+            if (function instanceof Function) {
+                resultType = ((Function) function).getResultType();
+            }
+        }
         ArrayList<TypeDescriptor> params = new ArrayList<>();
 
         System.out.println("Func DECL Starts*************************");
@@ -1174,7 +1249,25 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             Map<Object, TypeDescriptor> allParams = symbolTable.getAllVarInCurrentScope();
             System.out.println("allParams = " + allParams);
             allParams.forEach((k, v) -> params.add(v));
+        } else if (isFunctionImpl) {
+            // visit all the parameters from prototype trackingmap
+            ParserRuleContext functionPrototypePairRight = functionPrototypePair.getRight();
+            if (functionPrototypePairRight instanceof PascalParser.FunctionPrototypeDeclContext) {
+                PascalParser.FunctionHeadingContext functionHeadingContext = ((PascalParser.FunctionPrototypeDeclContext) functionPrototypePairRight).functionHeading();
+                if (functionHeadingContext.formalParameterList() != null) {
+                    List<PascalParser.FormalParameterSectionContext> formalParameterSectionList = functionHeadingContext.formalParameterList().formalParameterSection();
+                    for (PascalParser.FormalParameterSectionContext paramSection : formalParameterSectionList) {
+                        // define parameter group in current scope of type Param(Type,String:label)
+                        visit(paramSection);
+                    }
+                    // all formal params set up
+                    Map<Object, TypeDescriptor> allParams = symbolTable.getAllVarInCurrentScope();
+                    System.out.println("allParams = " + allParams);
+                    allParams.forEach((k, v) -> params.add(v));
+                }
+            }
         }
+
         Function function = new Function(params, resultType);
         define(id, function, ctx);
         System.out.println("Define Func signature");
@@ -1189,7 +1282,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         }
 
         tableManager.allTablesExitNewScope();
-        define(id, function, ctx);
+        if (!isFunctionImpl) define(id, function, ctx);
         System.out.println("FUNC DECL ENDS*************************");
         return null;
     }
@@ -1242,59 +1335,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         // Ignore Case
         prototypeImplTrackingMap.put(id.toLowerCase(), Pair.of(function, ctx));
 
-        return null;
-    }
-
-    /**
-     * Function implementation part, must correspond to predefined forward declaration
-     * <p>
-     * functionDeclaration
-     * : FUNCTION identifier (formalParameterList)? COLON resultType SEMI block #functionDecl
-     * | functionHeading SEMI directive #functionPrototypeDecl
-     * | FUNCTION identifier SEMI block #functionImpl
-     * ;
-     *
-     * @param ctx
-     * @return
-     */
-    @Override
-    public TypeDescriptor visitFunctionImpl(PascalParser.FunctionImplContext ctx) {
-        System.out.println("Function impl Starts");
-        String id = ctx.identifier().getText().toLowerCase();
-
-        if (prototypeImplTrackingMap.containsKey(id)) {
-            Pair<TypeDescriptor, ParserRuleContext> functionPrototypePair = prototypeImplTrackingMap.get(id);
-            TypeDescriptor type = functionPrototypePair.getLeft();
-            // if prototype is of Procedure type which the implementation cannot match
-            // report errors
-            if (!(type instanceof Function)) {
-                reportError(ctx, "Implantation header cannot match previous prototype declaration: %s",
-                        type);
-            }
-            // remove the entry in the tracking map, no matter whether the implementation can match the header or not
-            prototypeImplTrackingMap.remove(id);
-        }
-
-        // enter new scope to conduct the scope checking
-        tableManager.allTablesEnterNewScope();
-
-        TypeDescriptor functionOrProcedure = retrieve(id, ctx); // get predefined functionOrProcedure prototype
-        define(id, functionOrProcedure, ctx);
-
-        //extract all the defined formals, inserting into current scope
-        if (functionOrProcedure instanceof ProcFuncBaseType) {
-            List<TypeDescriptor> formalParams = ((ProcFuncBaseType) functionOrProcedure).getFormalParams();
-            formalParams.forEach(each -> {
-                if (each instanceof FormalParam) {
-                    String formalName = ((FormalParam) each).getName();
-                    define(formalName, each, ctx);
-                }
-            });
-        }
-
-        visit(ctx.block());
-        tableManager.allTablesExitNewScope();
-        System.out.println("Function impl ends");
         return null;
     }
 
@@ -1499,7 +1539,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         int pos = 0;
 
         // non-args write,directly return
-        if (ctx.writeParameters()==null) return null;
+        if (ctx.writeParameters() == null) return null;
 
         List<PascalParser.OutputValueContext> outputValueContexts = ctx.writeParameters().outputValue();
         for (PascalParser.OutputValueContext each : outputValueContexts) {
@@ -1511,7 +1551,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                     _outputType = ((FormalParam) outputType).getHostType();
                 }
                 if (outputType instanceof Function) {
-                     _outputType= ((Function) outputType).getResultType();
+                    _outputType = ((Function) outputType).getResultType();
                 }
                 System.out.println("write each.getText() = " + each.getText());
                 System.out.println("_outputType = " + _outputType);
@@ -1519,7 +1559,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                     if (sb == null) {
                         sb = new StringBuilder();
                         sb.append(
-                            String.format("Invalid write/writeln call [%s]", ctx.getText())
+                                String.format("Invalid write/writeln call [%s]", ctx.getText())
                         );
                     }
                     sb.append(String.format("\n- Pos [%d] with type: %s", pos++, outputType));
@@ -1552,7 +1592,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     @Override
     public TypeDescriptor visitFunctionDesignator(PascalParser.FunctionDesignatorContext ctx) {
         System.out.println("*******************FUNC CALL");
-        System.out.println("ctx.getText() = " + ctx.getText());
+        System.out.println("func designator ctx.getText() = " + ctx.getText());
         String id = ctx.identifier().getText();
         tableManager.displayAllTablesCurrentScope();
         //suppress errors
@@ -1579,7 +1619,10 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             return ErrorType.INVALID_FUNCTION_TYPE;
         } else if (_signature instanceof Function) {
             //check signatures
-            List<PascalParser.ActualParameterContext> actualParameterContextList = ctx.parameterList().actualParameter();
+            List<PascalParser.ActualParameterContext> actualParameterContextList = new ArrayList<>();
+            if (ctx.parameterList() != null) {
+                actualParameterContextList = ctx.parameterList().actualParameter();
+            }
             ErrorMessage errorMessage = checkSignature(_signature, actualParameterContextList, ctx);
             System.out.println("booleanMessage = " + errorMessage);
             if (errorMessage.hasErrors()) {
@@ -2678,15 +2721,15 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             // check whether operands are simple types
             if (!(isSimpleType(lType)) && !(lType instanceof StringLiteral)) {
                 System.out.println("not a simple type lType = " + lType);
-                reportError(ctx,"Illegal expression [%s]. Relational operator [%s] cannot be applied on left operand [%s].\nLtype: %s",
-                        ctx.getText(),operator,ctx.simpleExpression().getText(),lType);
+                reportError(ctx, "Illegal expression [%s]. Relational operator [%s] cannot be applied on left operand [%s].\nLtype: %s",
+                        ctx.getText(), operator, ctx.simpleExpression().getText(), lType);
                 // suppress error
                 return ErrorType.INVALID_EXPRESSION;
             }
 
             if (!(isSimpleType(rType)) && !(rType instanceof StringLiteral)) {
-                reportError(ctx,"Illegal expression [%s]. Relational operator [%s] cannot be applied on left operand [%s].\nLtype: %s",
-                        ctx.getText(),operator,ctx.e2.getText(), rType);
+                reportError(ctx, "Illegal expression [%s]. Relational operator [%s] cannot be applied on left operand [%s].\nLtype: %s",
+                        ctx.getText(), operator, ctx.e2.getText(), rType);
                 //reportError(ctx, String.format("Illegal expression [%s]: Relational operator [%s] cannot" +
                 //                " be applied on right operand [%s - type: %s]",
                 //        ctx.getText(), operator, ctx.e2.getText(), rType));
@@ -2912,8 +2955,8 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 case "div":
                 case "DIV":
                     if (!(_lType instanceof IntegerBaseType) || !(_rType instanceof IntegerBaseType)) {
-                        reportError(ctx,"All the operands of integer division must be Integer.\nLtype: %s\nRtype: %s",
-                                lType,rType);
+                        reportError(ctx, "All the operands of integer division must be Integer.\nLtype: %s\nRtype: %s",
+                                lType, rType);
                     }
                     return IntegerBaseType.copy(defaultIntegerType);
                 case "/":
@@ -2924,7 +2967,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                     // modulus reminder division, operands must be integer
                     if (!(_lType instanceof IntegerBaseType) || !(_rType instanceof IntegerBaseType)) {
                         reportError(ctx, "All the operands of modulus must be Integer.\nLtype: %s,\nRtype: %s",
-                                lType,rType);
+                                lType, rType);
                         //reportError(ctx, "The operands of modulus must be Integer: " +
                         //        "with lType: " + lType +
                         //        " with rType: " + rType);
@@ -2999,7 +3042,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 switch (monadicOp) {
                     case "-":
                         System.out.println("numberValue -> = " + numberValue);
-                        if (numberValue!=null) numberValue = -numberValue;
+                        if (numberValue != null) numberValue = -numberValue;
                         System.out.println("-numberValue -> = " + numberValue);
                         break;
                     case "+":

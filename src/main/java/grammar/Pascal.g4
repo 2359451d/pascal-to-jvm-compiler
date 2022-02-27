@@ -272,8 +272,8 @@ directive
 
 procedureDeclaration
    : procedureHeading SEMI directive #procedurePrototypeDecl
-   | PROCEDURE identifier SEMI block #procedureImpl
    | PROCEDURE identifier (formalParameterList)? SEMI block #procedureDecl
+//   | PROCEDURE identifier SEMI block #procedureImpl
    ;
 
 formalParameterList
@@ -313,8 +313,8 @@ constList
 
 functionDeclaration
    : functionHeading SEMI directive #functionPrototypeDecl
-   | FUNCTION identifier SEMI block #functionImpl
-   | FUNCTION identifier (formalParameterList)? COLON resultType SEMI block #functionDecl
+   | FUNCTION identifier (formalParameterList)? (COLON resultType)? SEMI block #functionDecl
+//   | FUNCTION identifier SEMI block #functionImpl
    ;
 
 resultType
@@ -413,9 +413,9 @@ signedFactor
    ;
 
 factor
-   : functionDesignator #factorFuncDesignator // function call
-   | variable   # factorVar
+   : variable   # factorVar
    | LPAREN expression RPAREN #factorExpr
+   | functionDesignator #factorFuncDesignator // function call
    | unsignedConstant #factorUnConst
    | set_ #factorSet
    | NOT factor #notFactor
@@ -438,7 +438,6 @@ parameterList
    | writeParameters
    | readParameters
    ;
-
 
 
 set_
@@ -476,7 +475,8 @@ writeParameters
    ;
 
 outputValue
-   : expression (':' expression (':' expression)*)*
+   : functionDesignator
+   | expression (':' expression (':' expression)*)*
    ;
 
 

@@ -9,6 +9,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.xpath.XPath;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.objectweb.asm.*;
 import tableUtils.SymbolTable;
 import tableUtils.*;
@@ -27,6 +28,7 @@ import type.primitive.integer.DefaultIntegerType;
 import type.primitive.integer.Integer32;
 import type.primitive.integer.IntegerBaseType;
 import type.procOrFunc.Function;
+import type.procOrFunc.ProcFuncBaseType;
 import type.procOrFunc.Procedure;
 
 import java.io.FileOutputStream;
@@ -276,7 +278,10 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
     @Override
     public TypeDescriptor visitProgram(PascalParser.ProgramContext ctx) {
         addStandardConstructor();
+        prototypeImplTrackingMap = new LinkedHashMap<>();
+
         putLocals("var0", 1, false);
+
 
         visit(ctx.programHeading());
         visit(ctx.block());
@@ -420,8 +425,9 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
     /**
      * forStatement
-     *    : FOR identifier ASSIGN forList DO statement
-     *    ;
+     * : FOR identifier ASSIGN forList DO statement
+     * ;
+     *
      * @param ctx
      * @return
      */
@@ -435,16 +441,16 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         TypeDescriptor hostType = visit(ctx.identifier());
         TypeDescriptor initValueType = visit(ctx.forList().initialValue());
         if (isStaticField(counterId)) {
-            InstructionHelper.putStatic(className,counterId, hostType);
+            InstructionHelper.putStatic(className, counterId, hostType);
         }
 
         setLabel(forExprStart);
         // push final value operand
         if (isStaticField(counterId)) {
-            InstructionHelper.getStatic(className,counterId,hostType);
+            InstructionHelper.getStatic(className, counterId, hostType);
         }
         TypeDescriptor finalValueType = visit(ctx.forList().finalValue());
-        JumpInstructionHelper.jumpInstruction(relationalOpMappingWithInt.get("<="),endFor);
+        JumpInstructionHelper.jumpInstruction(relationalOpMappingWithInt.get("<="), endFor);
 
         visit(ctx.statement());
 
@@ -453,7 +459,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         if (isStaticField(counterId)) {
             InstructionHelper.getStatic(className, counterId, hostType);
         } else {
-        //    TODO, local
+            //    TODO, local
         }
         // 2. load const 1
         InstructionHelper.loadTrueOrFalse(true);
@@ -461,15 +467,76 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         InstructionHelper.add(hostType);
         // 4. update counter
         if (isStaticField(counterId)) {
-            InstructionHelper.putStatic(className,counterId,hostType);
-        }else{}
+            InstructionHelper.putStatic(className, counterId, hostType);
+        } else {
+        }
         gotoLabel(forExprStart);
 
         setLabel(endFor);
         return null;
     }
 
+    /**
+     * Assist forward referencing mechanism
+     */
+    private Map<String, Pair<TypeDescriptor, ParserRuleContext>> prototypeImplTrackingMap;
+
     String resultVar = null;
+
+    /**
+     * @param ctx
+     * @return
+     */
+    @Override
+    public TypeDescriptor visitFunctionPrototypeDecl(PascalParser.FunctionPrototypeDeclContext ctx) {
+        String id = ctx.functionHeading().identifier().getText();
+        TypeDescriptor resultType = visit(ctx.functionHeading().resultType());
+        ArrayList<TypeDescriptor> params = new ArrayList<>();
+
+        System.out.println("Func Prototype DECL Starts*************************");
+        tableManager.allTablesEnterNewScope();
+
+        // if the procedure has formal parameters
+        PascalParser.FormalParameterListContext formalParameterListContext = ctx.functionHeading().formalParameterList();
+        if (formalParameterListContext != null) {
+            List<PascalParser.FormalParameterSectionContext> formalParameterSectionList = formalParameterListContext.formalParameterSection();
+            for (PascalParser.FormalParameterSectionContext paramSection : formalParameterSectionList) {
+                // define parameter group in current scope of type Param(Type,String:label)
+                TypeDescriptor argumentType = visit(paramSection);
+                if (paramSection instanceof PascalParser.NoLabelParamContext) {
+                    PascalParser.IdentifierListContext identifierListContext = ((PascalParser.NoLabelParamContext) paramSection).parameterGroup().identifierList();
+                    for (PascalParser.IdentifierContext eachId : identifierListContext.identifier()) {
+                        String eachIdText = eachId.getText();
+                        define(eachIdText.toLowerCase(), argumentType, ctx);
+
+                        if (!(argumentType instanceof FloatBaseType)) putLocals(eachIdText, 1);
+                        else putLocals(eachIdText, 2);
+                    }
+                }
+            }
+            // all formal params set up
+            Map<Object, TypeDescriptor> allParams = symbolTable.getAllVarInCurrentScope();
+            System.out.println("allParams = " + allParams);
+            allParams.forEach((k, v) -> params.add(v));
+        }
+        Function function = new Function(params, resultType);
+        define(id, function, ctx);
+        System.out.println("Define Func Prototype signature");
+        System.out.println("function = " + function);
+
+        tableManager.displayAllTablesCurrentScope();
+
+        tableManager.allTablesExitNewScope();
+        define(id, function, ctx);
+        System.out.println("FUNC Prototype DECL ENDS*************************");
+
+        // insert new entry into the tracking map
+        // check whether there exist implementation corresponds to current function prototype declaration
+        // Ignore Case
+        prototypeImplTrackingMap.put(id.toLowerCase(), Pair.of(function, ctx));
+
+        return null;
+    }
 
     @Override
     public TypeDescriptor visitFunctionDecl(PascalParser.FunctionDeclContext ctx) {
@@ -477,21 +544,37 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         tableManager.displayAllTablesCurrentScope();
         String id = ctx.identifier().getText().toLowerCase();
 
+        Pair<TypeDescriptor, ParserRuleContext> functionPrototypePair = null;
+        PascalParser.FunctionPrototypeDeclContext functionPrototypeDeclContext = null;
+        if (prototypeImplTrackingMap.containsKey(id)) {
+            functionPrototypePair = prototypeImplTrackingMap.get(id);
+            if (functionPrototypePair.getRight() instanceof PascalParser.FunctionPrototypeDeclContext) {
+                functionPrototypeDeclContext = (PascalParser.FunctionPrototypeDeclContext) functionPrototypePair.getRight();
+            }
+            // remove the entry in the tracking map, no matter whether the implementation can match the header or not
+            prototypeImplTrackingMap.remove(id);
+        }
+
         tableManager.allTablesEnterNewScope();
 
-        List<PascalParser.FormalParameterSectionContext> formalParameterSectionContexts = ctx.formalParameterList().formalParameterSection();
-        //Type[] arguments = new Type[formalParameterSectionContexts.size()];
         ArrayList<Class<?>> arguments = new ArrayList<>();
-        int i = 0;
+        List<PascalParser.FormalParameterSectionContext> formalParameterSectionContexts = new ArrayList<>();
+        if (ctx.formalParameterList() != null) {
+            formalParameterSectionContexts = ctx.formalParameterList().formalParameterSection();
+        } else if (functionPrototypeDeclContext != null) {
+            // if functionDecl ctx is actual the implementation of predefined function
+            // populate necessary information from PrototypeDeclContext
+            if (functionPrototypeDeclContext.functionHeading().formalParameterList() != null) {
+                formalParameterSectionContexts = functionPrototypeDeclContext.functionHeading().formalParameterList().formalParameterSection();
+            }
+        }
         for (PascalParser.FormalParameterSectionContext each : formalParameterSectionContexts) {
-            // pass value
             if (each instanceof PascalParser.NoLabelParamContext) {
                 PascalParser.ParameterGroupContext parameterGroupContext = ((PascalParser.NoLabelParamContext) each).parameterGroup();
                 List<PascalParser.IdentifierContext> identifierList = parameterGroupContext.identifierList().identifier();
                 TypeDescriptor argumentType = visit(parameterGroupContext.typeIdentifier());
                 Class<?> argumentTypeDescriptorClass = argumentType.getDescriptorClass();
                 for (PascalParser.IdentifierContext eachId : identifierList) {
-                    //arguments[i++] = Type.getType(argumentTypeDescriptorClass);
                     arguments.add(argumentTypeDescriptorClass);
                     String eachIdText = eachId.getText();
                     define(eachIdText.toLowerCase(), argumentType, ctx);
@@ -504,12 +587,18 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
         tableManager.displayAllTablesCurrentScope();
 
-        TypeDescriptor resultType = visit(ctx.resultType());
+        TypeDescriptor resultType = null;
+        if (ctx.resultType() != null) {
+            // if normal function declaration
+            resultType = visit(ctx.resultType());
+        } else if (functionPrototypePair != null) {
+            TypeDescriptor function = functionPrototypePair.getLeft();
+            if (function instanceof Function) {
+                resultType = ((Function) function).getResultType();
+            }
+        }
         String methodDescriptor = getMethodDescriptor(
                 resultType.getDescriptorClass(), arguments.toArray(new Class[]{}));
-        //String methodDescriptor = Type.getMethodDescriptor(
-        //        Type.VOID_TYPE, arguments.toArray(new Type[]{})
-        //);
 
         methodVisitor = classWriter.visitMethod(Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC,
                 id, methodDescriptor, null, null);
@@ -551,7 +640,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         symbolTable.displayCurrentScope();
         Map<Object, TypeDescriptor> symbolTableAllVarInCurrentScope = symbolTable.getAllVarInCurrentScope();
         symbolTableAllVarInCurrentScope.forEach((k, v) -> {
-            System.out.println("k = " + k + " v= "+v);
+            System.out.println("k = " + k + " v= " + v);
             if (localVariableTable.containsKey(k)) {
                 LocalVariableInformation localVariableInformation = localVariableTable.get(k);
                 int slotNum = localVariableInformation.getSlotNum();
@@ -571,20 +660,92 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         return null;
     }
 
+    /**
+     * procedureDeclaration
+     * : procedureHeading SEMI directive #procedurePrototypeDecl
+     *
+     * @param ctx
+     * @return
+     */
+    @Override
+    public TypeDescriptor visitProcedurePrototypeDecl(PascalParser.ProcedurePrototypeDeclContext ctx) {
+        String id = ctx.procedureHeading().identifier().getText();
+        ArrayList<TypeDescriptor> params = new ArrayList<>();
+
+        System.out.println("Proc Prototype DECL Starts*************************");
+        tableManager.allTablesEnterNewScope();
+
+        // if the procedure has formal parameters
+        PascalParser.FormalParameterListContext formalParameterListContext = ctx.procedureHeading().formalParameterList();
+        if (formalParameterListContext != null) {
+            List<PascalParser.FormalParameterSectionContext> formalParameterSectionList = formalParameterListContext.formalParameterSection();
+            for (PascalParser.FormalParameterSectionContext paramSection : formalParameterSectionList) {
+                // define parameter group in current scope of type Param(Type,String:label)
+                TypeDescriptor argumentType = visit(paramSection);
+                if (paramSection instanceof PascalParser.NoLabelParamContext) {
+                    PascalParser.IdentifierListContext identifierListContext = ((PascalParser.NoLabelParamContext) paramSection).parameterGroup().identifierList();
+                    for (PascalParser.IdentifierContext eachId : identifierListContext.identifier()) {
+                        String eachIdText = eachId.getText();
+                        define(eachIdText.toLowerCase(), argumentType, ctx);
+
+                        if (!(argumentType instanceof FloatBaseType)) putLocals(eachIdText, 1);
+                        else putLocals(eachIdText, 2);
+                    }
+                }
+            }
+            // all formal params set up
+            Map<Object, TypeDescriptor> allParams = symbolTable.getAllVarInCurrentScope();
+            System.out.println("allParams = " + allParams);
+            allParams.forEach((k, v) -> params.add(v));
+        }
+        Procedure procedure = new Procedure(params);
+        define(id, procedure, ctx);
+        System.out.println("Define Func Prototype signature");
+        System.out.println("procedure = " + procedure);
+
+        tableManager.displayAllTablesCurrentScope();
+
+        tableManager.allTablesExitNewScope();
+        define(id, procedure, ctx);
+        System.out.println("Proc Prototype DECL ENDS*************************");
+
+        // insert new entry into the tracking map
+        // check whether there exist implementation corresponds to current function prototype declaration
+        // Ignore Case
+        prototypeImplTrackingMap.put(id.toLowerCase(), Pair.of(procedure, ctx));
+        return null;
+    }
+
     @Override
     public TypeDescriptor visitProcedureDecl(PascalParser.ProcedureDeclContext ctx) {
         System.out.println("++++++++Procedure Decl+++++++++");
         tableManager.displayAllTablesCurrentScope();
         String id = ctx.identifier().getText().toLowerCase();
 
+        PascalParser.ProcedurePrototypeDeclContext procedurePrototypeDeclContext = null;
+        if (prototypeImplTrackingMap.containsKey(id)) {
+            Pair<TypeDescriptor, ParserRuleContext> procedurePrototypePair = prototypeImplTrackingMap.get(id);
+            if (procedurePrototypePair.getRight() instanceof PascalParser.ProcedurePrototypeDeclContext) {
+                procedurePrototypeDeclContext = (PascalParser.ProcedurePrototypeDeclContext) procedurePrototypePair.getRight();
+            }
+            // remove the entry in the tracking map, no matter whether the implementation can match the header or not
+            prototypeImplTrackingMap.remove(id);
+        }
+
         tableManager.allTablesEnterNewScope();
 
-        List<PascalParser.FormalParameterSectionContext> formalParameterSectionContexts = ctx.formalParameterList().formalParameterSection();
-        //Type[] arguments = new Type[formalParameterSectionContexts.size()];
         ArrayList<Type> arguments = new ArrayList<>();
-        int i = 0;
+        List<PascalParser.FormalParameterSectionContext> formalParameterSectionContexts=new ArrayList<>();
+        if (ctx.formalParameterList() != null) {
+            formalParameterSectionContexts = ctx.formalParameterList().formalParameterSection();
+        } else if (procedurePrototypeDeclContext != null) {
+            // if ProcDecl ctx is actual the implementation of predefined procedure
+            // populate necessary information from PrototypeDeclContext
+            if (procedurePrototypeDeclContext.procedureHeading().formalParameterList() != null) {
+                formalParameterSectionContexts = procedurePrototypeDeclContext.procedureHeading().formalParameterList().formalParameterSection();
+            }
+        }
         for (PascalParser.FormalParameterSectionContext each : formalParameterSectionContexts) {
-            // pass value
             if (each instanceof PascalParser.NoLabelParamContext) {
                 PascalParser.ParameterGroupContext parameterGroupContext = ((PascalParser.NoLabelParamContext) each).parameterGroup();
                 List<PascalParser.IdentifierContext> identifierList = parameterGroupContext.identifierList().identifier();
@@ -643,19 +804,6 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
                     enterScope, exitScope, slotNum);
         });
 
-        //int idx = 0;
-        //for (PascalParser.FormalParameterSectionContext eachSection : formalParameterSectionContexts) {
-        //    if (eachSection instanceof PascalParser.NoLabelParamContext) {
-        //        PascalParser.ParameterGroupContext parameterGroupContext = ((PascalParser.NoLabelParamContext) eachSection).parameterGroup();
-        //        TypeDescriptor formalType = visit(parameterGroupContext.typeIdentifier());
-        //        List<PascalParser.IdentifierContext> identifierList = parameterGroupContext.identifierList().identifier();
-        //        for (PascalParser.IdentifierContext eachId : identifierList) {
-        //            String formalId = eachId.getText().toLowerCase();
-        //            methodVisitor.visitLocalVariable(formalId, formalType.getDescriptor(), null,
-        //                    enterScope, exitScope, idx++);
-        //        }
-        //    }
-        //}
         methodVisitor.visitMaxs(2, 2); // this would be compute automatically
         methodVisitor.visitEnd();
 
@@ -864,7 +1012,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         if (whileStatementContext != null) {
             System.out.println("goto whileExprStart");
             gotoLabel(whileExprStart);
-        }else gotoLabel(endLabel);
+        } else gotoLabel(endLabel);
         //gotoLabel(endLabel);
 
         setLabel(evaluateToFalse);
@@ -872,7 +1020,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         if (ifStatementContext != null && ifStatementContext.statement().size() > 1) {
             System.out.println("else block");
             visit(ifStatementContext.statement(1));
-        } else if (whileStatementContext==null && ifStatementContext==null){
+        } else if (whileStatementContext == null && ifStatementContext == null) {
             InstructionHelper.loadTrueOrFalse(false);
         }
         setLabel(endLabel);
@@ -884,6 +1032,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
     }
 
     Label whileExprStart = null;
+
     /**
      * expression
      * : simpleExpression (relationalOperator=(EQUAL| NOT_EQUAL| LT| LE| GE| GT| IN)
@@ -970,7 +1119,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
             System.out.println("fromIfStatement = " + fromIfStatement);
             if (lType instanceof Primitive && rType instanceof Primitive) {
                 //if (fromIfStatement) invokeRelationalInstruction(relationalOperator, lType, rType, ifStatementContext);
-               invokeRelationalInstruction(relationalOperator, lType, rType, ifStatementContext, whileStatementContext);
+                invokeRelationalInstruction(relationalOperator, lType, rType, ifStatementContext, whileStatementContext);
             }
             if (lType instanceof StringLiteral || rType instanceof StringLiteral) {
                 invokeRelationalInstruction(relationalOperator, lType, rType, ifStatementContext, whileStatementContext);
@@ -986,7 +1135,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 ctx.getText().equalsIgnoreCase("false"))) {
             System.out.println("Constant expr found");
             invokeRelationalInstruction("=", null, null, ifStatementContext,
-                    null,true);
+                    null, true);
         }
 
         return lType;
@@ -1330,6 +1479,19 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         return !localVariableTable.containsKey(id);
     }
 
+    private TypeDescriptor functionDesignator(String functionId, Function function) {
+        System.out.println("Call Function Designator Manually");
+        TypeDescriptor resultType = function.getResultType();
+        Class<?>[] funcArgumentsClass = new Class<?>[0];
+
+        // function must not return void though
+        Class<?> resultTypeDescriptorClass = resultType != null ? resultType.getDescriptorClass() : void.class;
+        String funcDescriptor = getMethodDescriptor(resultTypeDescriptorClass, funcArgumentsClass);
+        System.out.println("funcDescriptor = " + funcDescriptor);
+        InstructionHelper.invokeStatic(className, functionId, funcDescriptor, false);
+        return resultType;
+    }
+
     /**
      * Variable declared in variable declaration part
      * Find in LocalVariableTable, if static then visit
@@ -1348,10 +1510,19 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
     @Override
     public TypeDescriptor visitVariable(PascalParser.VariableContext ctx) {
         System.out.println("visitVariable ctx.getText() = " + ctx.getText());
+        symbolTable.displayCurrentScope();
 
         TypeDescriptor type = visit(ctx.variableHead());
         //TypeDescriptor type = visit(ctx);
         System.out.println("type = " + type);
+
+        // if should actually match [non-args] function
+        // call function designator logics manually from this point
+        if (type instanceof Function) {
+            String functionId = ctx.variableHead().getText().toLowerCase();
+            return functionDesignator(functionId, (Function) type);
+        }
+
         symbolTable.displayCurrentScope();
         localVariableTable.displayCurrentScope();
 
@@ -1700,12 +1871,13 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
             // call procedure
             // push operands to be consumed onto stack
             // then call defined static function
-            //FIXME non args-proc
-            List<PascalParser.ActualParameterContext> actualParameterContexts = ctx.parameterList().actualParameter();
-            // generate corresponding bytecode
-            // literal - ldc
-            // static fields - getstatic
-            actualParameterContexts.forEach(this::visit);
+            if (ctx.parameterList() != null) {
+                List<PascalParser.ActualParameterContext> actualParameterContexts = ctx.parameterList().actualParameter();
+                // generate corresponding bytecode
+                // literal - ldc
+                // static fields - getstatic
+                actualParameterContexts.forEach(this::visit);
+            }
 
             TypeDescriptor proc = retrieve(procedureId, ctx);
             List<TypeDescriptor> formalParams = null;
