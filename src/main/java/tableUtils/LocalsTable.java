@@ -3,23 +3,37 @@ package tableUtils;
 import ast.visitor.PascalParser;
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import java.util.Deque;
+import java.util.LinkedList;
+
 public class LocalsTable<K, T extends LocalVariableInformation> extends Table<K, T> {
     /**
      * Id - startPos(slot), length
      */
     //private Map<K, ? super LocalVariableInformation> table;
 
-    private int length;
+    private Deque<Integer> lengthStack;
     public static Class<? extends ParserRuleContext> context = PascalParser.VariableContext.class;
 
     public LocalsTable() {
         super("local variable table", context);
+        this.lengthStack = new LinkedList<>();
+        this.lengthStack.push(0);//global scope, initialise 0
         //this.table = new LinkedHashMap<>();
     }
 
-    //private boolean containsId(K id) {
-    //    return table != null && table.containsKey(id);
-    //}
+    @Override
+    public void enterLocalScope() {
+        super.enterLocalScope();
+        System.out.println("Locals enter scope");
+        this.lengthStack.addLast(0);
+    }
+
+    @Override
+    public void exitLocalScope() {
+        super.exitLocalScope();
+        this.lengthStack.removeLast();
+    }
 
     private int getSlot(K id) {
         if (this.get(id) != null) {
@@ -58,8 +72,9 @@ public class LocalsTable<K, T extends LocalVariableInformation> extends Table<K,
         System.out.println("current local table size "+ this.sizeOfCurrentScope());
 
         int start = this.length();
+        System.out.println("start = " + start);
         updateLength(length); //update length as new local put
-        System.out.println("length after update = " + this.length);
+        System.out.println("length after update = " + this.length());
         return put(id,start,length,isStatic);
     }
 
@@ -84,11 +99,12 @@ public class LocalsTable<K, T extends LocalVariableInformation> extends Table<K,
      * @return
      */
     public int length() {
-        return length;
+        return this.lengthStack.getLast();
     }
 
     private void updateLength(int increment) {
-        this.length += increment;
+        Integer base = this.lengthStack.removeLast();
+        this.lengthStack.addLast(base+increment);
     }
 
     //public Map<K, ? super LocalVariableInformation> getTable() {

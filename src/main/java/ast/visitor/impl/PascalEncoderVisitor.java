@@ -551,11 +551,14 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         symbolTable.displayCurrentScope();
         Map<Object, TypeDescriptor> symbolTableAllVarInCurrentScope = symbolTable.getAllVarInCurrentScope();
         symbolTableAllVarInCurrentScope.forEach((k, v) -> {
-            LocalVariableInformation localVariableInformation = localVariableTable.get(k);
-            int slotNum = localVariableInformation.getSlotNum();
-            methodVisitor.visitLocalVariable(k.toString(), v.getDescriptor(),
-                    null,
-                    enterScope, exitScope, slotNum);
+            System.out.println("k = " + k + " v= "+v);
+            if (localVariableTable.containsKey(k)) {
+                LocalVariableInformation localVariableInformation = localVariableTable.get(k);
+                int slotNum = localVariableInformation.getSlotNum();
+                methodVisitor.visitLocalVariable(k.toString(), v.getDescriptor(),
+                        null,
+                        enterScope, exitScope, slotNum);
+            }
         });
 
         methodVisitor.visitMaxs(2, 2); // this would be compute automatically
