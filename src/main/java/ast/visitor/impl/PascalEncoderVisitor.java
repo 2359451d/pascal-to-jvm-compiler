@@ -414,6 +414,28 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         return null;
     }
 
+
+    Label repeatBlockStart=null;
+    /**
+     * repeatStatement
+     * : REPEAT statements UNTIL expression
+     * ;
+     *
+     * @param ctx
+     * @return
+     */
+    @Override
+    public TypeDescriptor visitRepeatStatement(PascalParser.RepeatStatementContext ctx) {
+        repeatBlockStart = makeLabel();
+        setLabel(repeatBlockStart);
+
+        visit(ctx.statements());
+        visit(ctx.expression());
+        return null;
+    }
+
+    Label whileExprStart = null;
+
     @Override
     public TypeDescriptor visitWhileStatement(PascalParser.WhileStatementContext ctx) {
         whileExprStart = makeLabel();
@@ -616,7 +638,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         }
         //initialise result value
         InstructionHelper.loadIntOrReal(resultType);
-        LoadStoreHelper.storePrimitive(resultType,getVariableSlotNum(resultVar));
+        LoadStoreHelper.storePrimitive(resultType, getVariableSlotNum(resultVar));
 
         Label enterScope = makeLabel();
         Label exitScope = makeLabel();
@@ -738,7 +760,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         tableManager.allTablesEnterNewScope();
 
         ArrayList<Type> arguments = new ArrayList<>();
-        List<PascalParser.FormalParameterSectionContext> formalParameterSectionContexts=new ArrayList<>();
+        List<PascalParser.FormalParameterSectionContext> formalParameterSectionContexts = new ArrayList<>();
         if (ctx.formalParameterList() != null) {
             formalParameterSectionContexts = ctx.formalParameterList().formalParameterSection();
         } else if (procedurePrototypeDeclContext != null) {
@@ -973,7 +995,8 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
             ">=", Opcodes.IF_ICMPLT);
 
     /**
-     * TODO OTHER OP REAL, CHAR, STR, OTHER TYPES
+     * TODO OTHER OP OTHER TYPES
+     * TODO Refactor for For,while statement(too coupling)
      *
      * @param operator
      */
@@ -1027,14 +1050,30 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
             InstructionHelper.loadTrueOrFalse(false);
         }
         setLabel(endLabel);
-
     }
 
     private void invokeRelationalInstruction(String operator, TypeDescriptor lType, TypeDescriptor rType, PascalParser.IfStatementContext ifStatementContext, PascalParser.WhileStatementContext whileStatementContext) {
         invokeRelationalInstruction(operator, lType, rType, ifStatementContext, whileStatementContext, false);
     }
 
-    Label whileExprStart = null;
+    private void invokeRelationalInstructionFromRepeat(String operator, TypeDescriptor lType, TypeDescriptor rType) {
+        boolean involveReal = lType instanceof FloatBaseType || rType instanceof FloatBaseType;
+        boolean involveStr = lType instanceof StringLiteral || rType instanceof StringLiteral;
+
+        if (involveReal || involveStr) {
+            if (involveReal) methodVisitor.visitInsn(relationalOpMappingWithDouble.get(operator));
+            if (involveStr) {
+                InstructionHelper.invokeStatic(StringUtils.class, "compare", false,
+                        String.class, String.class);
+            }
+            JumpInstructionHelper.jumpInstruction(relationalOpMapping.get(operator), repeatBlockStart);
+        } else {
+            JumpInstructionHelper.jumpInstruction(
+                    relationalOpMappingWithInt.get(operator),
+                    repeatBlockStart);
+        }
+    }
+
 
     /**
      * expression
@@ -1073,6 +1112,8 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         if (fromWhileStatement) {
             whileStatementContext = (PascalParser.WhileStatementContext) ctx.parent;
         }
+
+        boolean fromRepeatStatement = ctx.parent.getClass() == PascalParser.RepeatStatementContext.class;
 
         TypeDescriptor lType = visit(ctx.simpleExpression());
 
@@ -1119,16 +1160,14 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
             String relationalOperator = ctx.relationalOperator.getText().toLowerCase();
 
-            System.out.println("fromIfStatement = " + fromIfStatement);
             if (lType instanceof Primitive && rType instanceof Primitive) {
                 //if (fromIfStatement) invokeRelationalInstruction(relationalOperator, lType, rType, ifStatementContext);
-                invokeRelationalInstruction(relationalOperator, lType, rType, ifStatementContext, whileStatementContext);
+                if (fromRepeatStatement) invokeRelationalInstructionFromRepeat(relationalOperator,lType,rType);
+                else invokeRelationalInstruction(relationalOperator, lType, rType, ifStatementContext, whileStatementContext);
             }
             if (lType instanceof StringLiteral || rType instanceof StringLiteral) {
-                invokeRelationalInstruction(relationalOperator, lType, rType, ifStatementContext, whileStatementContext);
-                //if (fromIfStatement) invokeRelationalInstruction(relationalOperator, lType, rType, ifStatementContext);
-                //else invokeRelationalInstruction(relationalOperator, lType, rType, null);
-                //invokeRelationalInstruction(relationalOperator, lType, rType);
+                if (fromRepeatStatement) invokeRelationalInstructionFromRepeat(relationalOperator,lType,rType);
+                else invokeRelationalInstruction(relationalOperator, lType, rType, ifStatementContext, whileStatementContext);
             }
 
             return new Boolean();
@@ -1145,7 +1184,6 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
     }
 
     private Stack<TypeDescriptor> operandStack = new Stack<>();
-
     /**
      * additiveOperator=(PLUS| MINUS| OR)
      * TODO: OR
