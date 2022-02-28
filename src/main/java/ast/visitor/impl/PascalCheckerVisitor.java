@@ -1017,9 +1017,9 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             // visit all the parameters from prototype trackingmap
             ParserRuleContext procPrototypePairRight = procPrototypePair.getRight();
             if (procPrototypePairRight instanceof PascalParser.ProcedurePrototypeDeclContext) {
-                PascalParser.ProcedureHeadingContext procedureHeadingContext = ((PascalParser.ProcedurePrototypeDeclContext) procPrototypePairRight).procedureHeading();
-                if (procedureHeadingContext.formalParameterList() != null) {
-                    List<PascalParser.FormalParameterSectionContext> formalParameterSectionList = procedureHeadingContext.formalParameterList().formalParameterSection();
+                PascalParser.ProcedureHeadingContext functionHeadingContext = ((PascalParser.ProcedurePrototypeDeclContext) procPrototypePairRight).procedureHeading();
+                if (functionHeadingContext.formalParameterList() != null) {
+                    List<PascalParser.FormalParameterSectionContext> formalParameterSectionList = functionHeadingContext.formalParameterList().formalParameterSection();
                     for (PascalParser.FormalParameterSectionContext paramSection : formalParameterSectionList) {
                         // define parameter group in current scope of type Param(Type,String:label)
                         visit(paramSection);
@@ -2789,93 +2789,104 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     public TypeDescriptor visitSimpleExpression(PascalParser.SimpleExpressionContext ctx) {
         System.out.println("check simple expr ctx.getText() = " + ctx.getText());
         TypeDescriptor lType = visit(ctx.term());
+        TypeDescriptor _lType = lType;
+
+        if (lType instanceof Function) {
+            _lType = ((Function) lType).getResultType();
+        }
+
         TypeDescriptor rType;
 
         // if it involves 2 operands, need to check the type on both sides
         // then return the specific type
         if (null != ctx.simpleExpression()) {
             rType = visit(ctx.simpleExpression());
+            TypeDescriptor _rType = rType;
+            if (rType instanceof Function) {
+                _rType = ((Function) rType).getResultType();
+            }
+
             String operator = ctx.additiveOperator.getText();
 
             // if is Logical operator OR
             if (operator.equalsIgnoreCase("or")) {
                 // TODO subrange
-                if (lType instanceof Subrange) {
-                    return checkLogicalOpOperand(ctx, ((Subrange) lType).getLowerBound(), ctx.term().getText(), rType, ctx.simpleExpression().getText(), operator);
+                if (_lType instanceof Subrange) {
+                    return checkLogicalOpOperand(ctx, ((Subrange) _lType).getLowerBound(), ctx.term().getText(), _rType, ctx.simpleExpression().getText(), operator);
                 }
-                return checkLogicalOpOperand(ctx, lType, ctx.term().getText(), rType, ctx.simpleExpression().getText(), operator);
+                return checkLogicalOpOperand(ctx, _lType, ctx.term().getText(), _rType, ctx.simpleExpression().getText(), operator);
             }
 
             //below are arithmetic operation, operands must be number
 
             System.out.println("leftType ctx.term().getText() = " + ctx.term().getText());
-            System.out.println("lT = " + lType);
+            System.out.println("lT = " + _lType);
             // if left operand is not int nor real
-            if (!(lType instanceof IntegerBaseType) && !(lType instanceof FloatBaseType)) {
+            if (!(_lType instanceof IntegerBaseType) && !(_lType instanceof FloatBaseType)) {
 
                 // TODO Nested Type Refactor
-                if (lType instanceof Subrange) {
-                    TypeDescriptor lowerBound = ((Subrange) lType).getLowerBound();
+                if (_lType instanceof Subrange) {
+                    TypeDescriptor lowerBound = ((Subrange) _lType).getLowerBound();
                     if (!(lowerBound instanceof IntegerBaseType) && !(lowerBound instanceof FloatBaseType)) {
                         reportError(ctx, "Additive operator [%s] cannot be applied on the left operand of [%s]. Actual: %s",
-                                operator, ctx.getText(), lType);
+                                operator, ctx.getText(), _lType);
                         return ErrorType.INVALID_TYPE;
                     }
-                } else if (lType instanceof NestedBaseType) {
-                    TypeDescriptor hostType = ((NestedBaseType) lType).getHostType();
+                } else if (_lType instanceof NestedBaseType) {
+                    TypeDescriptor hostType = ((NestedBaseType) _lType).getHostType();
                     if (!(hostType instanceof IntegerBaseType) && !(hostType instanceof FloatBaseType)) {
                         reportError(ctx, "Additive operator [%s] cannot be applied on the left operand of [%s]. Actual: %s",
-                                operator, ctx.getText(), lType);
+                                operator, ctx.getText(), _lType);
                         return ErrorType.INVALID_TYPE;
                     }
                 } else {
                     reportError(ctx, "Additive operator [%s] cannot be applied on the left operand of [%s]. Actual: %s",
-                            operator, ctx.getText(), lType);
+                            operator, ctx.getText(), _lType);
                     return ErrorType.INVALID_TYPE;
                 }
             }
             // if right operand is not int nor real
-            if (!(rType instanceof IntegerBaseType) && !(rType instanceof FloatBaseType)) {
+            if (!(_rType instanceof IntegerBaseType) && !(_rType instanceof FloatBaseType)) {
                 // TODO Nested Type Refactor
-                if (rType instanceof Subrange) {
-                    TypeDescriptor lowerBound = ((Subrange) rType).getLowerBound();
+                if (_rType instanceof Subrange) {
+                    TypeDescriptor lowerBound = ((Subrange) _rType).getLowerBound();
                     if (!(lowerBound instanceof IntegerBaseType) && !(lowerBound instanceof FloatBaseType)) {
                         reportError(ctx, "Additive Operator [%s] cannot be applied on the right operand of [%s]. Actual: %s",
-                                operator, ctx.getText(), rType);
+                                operator, ctx.getText(), _rType);
                         return ErrorType.INVALID_TYPE;
                     }
-                } else if (rType instanceof NestedBaseType) {
-                    TypeDescriptor hostType = ((NestedBaseType) rType).getHostType();
+                } else if (_rType instanceof NestedBaseType) {
+                    TypeDescriptor hostType = ((NestedBaseType) _rType).getHostType();
                     if (!(hostType instanceof IntegerBaseType) && !(hostType instanceof FloatBaseType)) {
                         reportError(ctx, "Additive Operator [%s] cannot be applied on the right operand of [%s]. Actual: %s",
-                                operator, ctx.getText(), rType);
+                                operator, ctx.getText(), _rType);
                         return ErrorType.INVALID_TYPE;
                     }
                 } else {
                     reportError(ctx, "Additive Operator [%s] cannot be applied on the right operand of [%s]. Actual: %s",
-                            operator, ctx.getText(), rType);
+                            operator, ctx.getText(), _rType);
                     return ErrorType.INVALID_TYPE;
                 }
             }
 
-            //if (lType.equiv(Type.REAL) || rType.equiv(Type.REAL)) return Type.REAL;
+            //if (_lType.equiv(Type.REAL) || _rType.equiv(Type.REAL)) return Type.REAL;
             //else return Type.INTEGER;
-            if (lType instanceof FloatBaseType || rType instanceof FloatBaseType) {
+            if (_lType instanceof FloatBaseType || _rType instanceof FloatBaseType) {
                 return new FloatBaseType();
                 //}  else return IntegerBaseType.copy(defaultIntegerType);
             } else {
                 System.out.println("ctx.getText() = " + ctx.getText());
-                System.out.println("lType = " + lType);
-                System.out.println("rType = " + rType);
+                System.out.println("_lType = " + _lType);
+                System.out.println("_rType = " + _rType);
 
                 // subrange, params evaluation would be evaluated at the runtime
-                if (!(lType instanceof Subrange) && !(rType instanceof Subrange)
-                        && !(lType instanceof NestedBaseType) && !(rType instanceof NestedBaseType)
+                if (!(_lType instanceof Subrange) && !(_rType instanceof Subrange)
+                        && !(_lType instanceof NestedBaseType) && !(_rType instanceof NestedBaseType)
                 ) {
-                    if (((IntegerBaseType) lType).isConstant() && ((IntegerBaseType) rType).isConstant()) {
+                    if (((IntegerBaseType) _lType).isConstant() && ((IntegerBaseType) _rType).isConstant()) {
                         // only checks for constant & literal
-                        Long lValue = ((IntegerBaseType) lType).getValue();
-                        Long rValue = ((IntegerBaseType) rType).getValue();
+                        Long lValue = ((IntegerBaseType) _lType).getValue();
+                        Long rValue = ((IntegerBaseType) _rType).getValue();
                         return DefaultIntegerType.of(lValue + rValue);
                     }
                 }
@@ -2885,7 +2896,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
         }
         // only 1 term
-        return lType;
+        return _lType;
     }
 
     /**

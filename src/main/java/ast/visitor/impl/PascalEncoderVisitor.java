@@ -614,6 +614,9 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
             if (!(resultType instanceof FloatBaseType)) putLocals(resultVar, 1);
             else putLocals(resultVar, 2);
         }
+        //initialise result value
+        InstructionHelper.loadIntOrReal(resultType);
+        LoadStoreHelper.storePrimitive(resultType,getVariableSlotNum(resultVar));
 
         Label enterScope = makeLabel();
         Label exitScope = makeLabel();
@@ -1851,11 +1854,9 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         Class<?> resultTypeDescriptorClass = resultType != null ? resultType.getDescriptorClass() : void.class;
         String funcDescriptor = getMethodDescriptor(resultTypeDescriptorClass, funcArgumentsClass);
         System.out.println("funcDescriptor = " + funcDescriptor);
+
         InstructionHelper.invokeStatic(className, functionId, funcDescriptor, false);
-        //methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC,
-        //        className,
-        //        functionId, funcDescriptor,
-        //        false);
+
         tableManager.displayAllTablesCurrentScope();
         return resultType;
     }
