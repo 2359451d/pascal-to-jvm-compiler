@@ -2,15 +2,20 @@ package driver;
 
 import exception.BuiltinException;
 import exception.PascalCompilerException;
-import org.antlr.v4.runtime.Parser;
 import org.apache.commons.lang3.StringUtils;
+import utils.log.GlobalLogger;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Main Driver Entrance of the compiler
+ */
 public class PascalCompilerDriver {
+
+
 
     private static Set<String> commandMap = Set.of(
             "parse", "check", "run"
@@ -71,7 +76,7 @@ public class PascalCompilerDriver {
             argumentsMap = checkArguments(args);
             constructDriverAndBuild(argumentsMap);
         } catch (PascalCompilerException e) {
-            System.out.println(e.getMessage());
+            GlobalLogger.info("{}", e::getMessage);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InvocationTargetException e) {

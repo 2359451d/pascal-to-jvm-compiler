@@ -2,6 +2,7 @@ package ast.visitor.impl;
 
 import ast.visitor.PascalBaseVisitor;
 import ast.visitor.PascalParser;
+import ch.qos.logback.classic.Logger;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
@@ -40,6 +41,7 @@ import tableUtils.Table;
 import tableUtils.TableManager;
 import tableUtils.TypeTable;
 import utils.ErrorMessage;
+import utils.log.GlobalLogger;
 
 import java.util.*;
 
@@ -63,7 +65,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     private int indexCount = 0;
 
     // Constructor
-
     public PascalCheckerVisitor(CommonTokenStream toks) {
         tokens = toks;
         symbolTable = new SymbolTable<>();
@@ -82,9 +83,13 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         int startCol = start.getCharPositionInLine();
         int finishLine = finish.getLine();
         int finishCol = finish.getCharPositionInLine();
-        System.err.println(startLine + ":" + startCol + "-" +
-                finishLine + ":" + finishCol
-                + " " + message);
+        // lazy logging
+        GlobalLogger.error("{}:{}-{}:{} {}",
+                ()->startLine,
+                ()->startCol,
+                ()->finishLine,
+                ()->finishCol,
+                ()->message);
         errorCount++;
     }
 
@@ -97,19 +102,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     private void reportError(ParserRuleContext ctx, String message, Object... args
     ) {
-        // Print an error message relating to the given
-        // part of the AST.
-        Interval interval = ctx.getSourceInterval();
-        Token start = tokens.get(interval.a);
-        Token finish = tokens.get(interval.b);
-        int startLine = start.getLine();
-        int startCol = start.getCharPositionInLine();
-        int finishLine = finish.getLine();
-        int finishCol = finish.getCharPositionInLine();
-        System.err.println(startLine + ":" + startCol + "-" +
-                finishLine + ":" + finishCol
-                + " " + String.format(message, args));
-        errorCount++;
+        reportError(ctx, String.format(message, args));
     }
 
     public int getNumberOfContextualErrors() {
@@ -142,19 +135,12 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         //BuiltInUtils.fillTable(symbolTable);
         symbolTable.put("maxint", DefaultIntegerType.of((long) Integer.MAX_VALUE, true));
         RunTimeLibManager.fillTable(symbolTable);
-
-        //Table table = tableManager.selectTable(null);
-        //System.out.println("table? = " + table);
-        //tableManager.addTable(null,new SymbolTable<>());
-
-        //RunTimeLibFactory.fillTable(symbolTable);
     }
 
     private void define(String id, TypeDescriptor type,
                         ParserRuleContext ctx) {
         //select the specific selectedTable with corresponding usage context
         Table<Object, TypeDescriptor> selectedTable = tableManager.selectTable(ctx.getClass());
-        System.out.println("selectedTable = " + selectedTable);
 
         // Add id with its type to the selectedTable
         // Checking whether id is already declared in the same scope.
@@ -176,8 +162,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     private TypeDescriptor retrieve(String id, boolean notSuppressError,
                                     ParserRuleContext ctx) {
         Table<Object, TypeDescriptor> selectedTable = tableManager.selectTable(ctx.getClass());
-        System.out.println("selectedTable = " + selectedTable);
-
         // Retrieve id's type from all the defined table.
         // Case insensitive
         TypeDescriptor type = selectedTable.get(id.toLowerCase());
@@ -225,8 +209,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     @Override
     public TypeDescriptor visitProgram(PascalParser.ProgramContext ctx) {
-        System.out.println("program ctx = " + ctx.getText());
-
         predefine();
         prototypeImplTrackingMap = new LinkedHashMap<>();
         pointedTypeTrackingMap = new LinkedHashMap<>();
@@ -254,10 +236,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     @Override
     public TypeDescriptor visitBlock(PascalParser.BlockContext ctx) {
-        System.out.println("Block Starts*************************");
-        tableManager.displayAllTablesCurrentScope();
         visitChildren(ctx);
-        System.out.println("Block Ends*************************");
         tableManager.displayAllTablesCurrentScope();
         return null;
     }
@@ -312,9 +291,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         if (type.equiv(ErrorType.UNDEFINED_TYPE)) {
             reportError(ctx, "Type %s is undeclared", id);
         }
-        System.out.println("id = " + id);
-        System.out.println("type = " + type);
-        System.out.println("typeTable.get(id.toLowerCase()) = " + typeTable.get(id.toLowerCase()));
         return type;
     }
 
@@ -334,7 +310,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     @Override
     public TypeDescriptor visitTypeDefinition(PascalParser.TypeDefinitionContext ctx) {
-        System.out.println("Defin new type");
         String id = ctx.identifier().getText().toLowerCase();
 
         TypeDescriptor type = visit(ctx.type_());
@@ -358,9 +333,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
     @Override
     public TypeDescriptor visitVariableDeclaration(PascalParser.VariableDeclarationContext ctx) {
-        System.out.println("Vaeriable Decl Starts*************");
-        System.out.println("var decl ctx.getText() = " + ctx.getText());
-
         tableManager.displayAllTablesCurrentScope();
 
         List<PascalParser.IdentifierContext> identifierContextList = ctx.identifierList().identifier();
@@ -371,7 +343,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         }
         //symbolTable.displayCurrentScope();
         tableManager.displayAllTablesCurrentScope();
-        System.out.println("Variable Decl ends\n*************");
         return null;
     }
 
@@ -405,11 +376,8 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     @Override
     public TypeDescriptor visitConstantDefinition(PascalParser.ConstantDefinitionContext ctx) {
-        System.out.println("*************Define new Const");
-        System.out.println("ctx.getText() = " + ctx.getText());
         String id = ctx.identifier().getText();
         TypeDescriptor type = visit(ctx.constant());
-        //System.out.println("constant type = " + type);
         // suppress errors if constant type is ErrorType
         if (!(type instanceof ErrorType)) {
             BaseType constantType = (BaseType) type;
@@ -438,7 +406,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         TypeDescriptor unsignedNumber = visit(ctx.unsignedNumber());
         if (!(unsignedNumber instanceof IntegerBaseType)) {
             Long numberValue = ((IntegerBaseType) unsignedNumber).getValue();
-            System.out.println("numberValue = " + numberValue);
             if (!hasNoOverflow(numberValue)) {
                 reportError(ctx, "Illegal constant definition [%s] with right operand [%s] " +
                                 "which must be between [%d] and [%d]",
@@ -569,7 +536,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     @Override
     public TypeDescriptor visitEnumeratedType(PascalParser.EnumeratedTypeContext ctx) {
-        System.out.println("Define new enumerated type " + ctx.getText());
         List<PascalParser.IdentifierContext> identifierContextList = ctx.identifierList().identifier();
         EnumeratedType enumeratedType = new EnumeratedType();
         HashMap<String, Integer> valueMap = new LinkedHashMap<>();
@@ -623,7 +589,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         }
 
         Subrange subrange = new Subrange(lowerBound, upperBound);
-        System.out.println("subrange.getHostType() = " + subrange.getHostType());
         return subrange;
     }
 
@@ -637,9 +602,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         if (lowerBound instanceof StringLiteral) {
             String lowerValue = ((StringLiteral) lowerBound).getValue();
             String upperValue = ((StringLiteral) upperBound).getValue();
-            //System.out.println("lowerValue = " + lowerValue);
-            //System.out.println("upperValue = " + upperValue);
-            //System.out.println("StringUtils.compare(lowerValue, upperValue) = " + StringUtils.compare(lowerValue, upperValue));
             // only accepts character type(1 char + 2 marks) as subrange bound
             if (lowerValue.length() > 3 || upperValue.length() > 3) return ErrorType.INVALID_SUBRANGE_TYPE;
             if (StringUtils.compare(lowerValue, upperValue) > 0) return ErrorType.INVALID_SUBRANGE_BOUND;
@@ -715,7 +677,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     @Override
     public TypeDescriptor visitArrayType(PascalParser.ArrayTypeContext ctx) {
-        System.out.println("********Defin array type");
         TypeDescriptor componentType = visit(ctx.componentType());
         List<TypeDescriptor> indexList = new ArrayList<>();
         List<PascalParser.IndexTypeContext> indexTypeContextList = ctx.typeList().indexType();
@@ -734,7 +695,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         } else {
             arrayType = new ArrayType(componentType, indexList);
         }
-        System.out.println("arrayType = " + arrayType);
         // create a unpacked array (default)
         return arrayType;
     }
@@ -794,7 +754,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     @Override
     public TypeDescriptor visitRecordSection(PascalParser.RecordSectionContext ctx) {
-        System.out.println("record section ctx.getText() = " + ctx.getText());
         List<PascalParser.IdentifierContext> identifierList = ctx.identifierList().identifier();
         TypeDescriptor type = visit(ctx.type_());
         identifierList.forEach(each -> define(each.getText(), type, ctx));
@@ -805,7 +764,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
     @Override
     public TypeDescriptor visitPointerType(PascalParser.PointerTypeContext ctx) {
-        System.out.println("Define new Pointer " + ctx.getText());
         // lazily check the correctness of the pointer type definition
         // where allows the pointed type to be declared later
         PascalParser.TypeIdentifierContext typeIdentifierContext = ctx.typeIdentifier();
@@ -814,7 +772,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             String id = null;
             PascalParser.IdentifierContext identifier = ((PascalParser.TypeDefinitionContext) ctx.parent.parent).identifier();
             id = identifier.getText().toLowerCase();
-            System.out.println("type to be check later");
             String text = ((PascalParser.TypeIdContext) typeIdentifierContext).identifier().getText();
             pointedTypeTrackingMap.put(text.toLowerCase(), Pair.of(id, ctx));
             // directly return the pointer type placeholder first
@@ -846,13 +803,11 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     @Override
     public TypeDescriptor visitNoLabelParam(PascalParser.NoLabelParamContext ctx) {
-        System.out.println("ctx = " + ctx.getText());
         TypeDescriptor type = visit(ctx.parameterGroup().typeIdentifier());
         List<PascalParser.IdentifierContext> identifiers = ctx.parameterGroup().identifierList().identifier();
         for (PascalParser.IdentifierContext identifier : identifiers) {
             // for each group, define the corresponding formal parameter with null label
             // (x,y,...:Type)
-            System.out.println("Defin no label Param!!!!!!!!!!!!!");
             String id = identifier.getText();
             define(id, new FormalParam(type, id, null), ctx);
         }
@@ -877,7 +832,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         for (PascalParser.IdentifierContext identifier : identifiers) {
             // for each group, define the corresponding formal parameter with var label
             // (var x,y,...:Type)
-            System.out.println("Defin var label Param!!!!!!!!!!!!!");
             String id = identifier.getText();
             define(id, new FormalParam(type, id, "var"), ctx);
         }
@@ -899,9 +853,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     @Override
     public TypeDescriptor visitFuncParam(PascalParser.FuncParamContext ctx) {
-        System.out.println("Defin func label Param!!!!!!!!!!!!!");
-        System.out.println("funcparam ctx.getText() = " + ctx.getText());
-
         tableManager.allTablesEnterNewScope();
 
         // Function id, ignore case
@@ -916,7 +867,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         }
         tableManager.allTablesExitNewScope();
         Function function = new Function(formalParams, resultType);
-        System.out.println("function param = " + function);
         define(id, new FormalParam(function, id, null), ctx);
 
         return null;
@@ -937,9 +887,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     @Override
     public TypeDescriptor visitProcParam(PascalParser.ProcParamContext ctx) {
-        System.out.println("Defin proc label Param!!!!!!!!!!!!!");
-        System.out.println("procparam ctx.getText() = " + ctx.getText());
-
         tableManager.allTablesEnterNewScope();
 
         // Function id, ignore case
@@ -953,11 +900,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         }
         tableManager.allTablesExitNewScope();
         Procedure procedure = new Procedure(formalParams);
-        System.out.println("procedure param = " + procedure);
-        ;
-        define(id, new FormalParam(procedure, id, null), ctx);
-
-        return null;
+        return procedure;
     }
 
 
@@ -982,7 +925,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
         // set true if procedureDecl ctx is actually the implementation of predefined prototype
         boolean isProcedureImpl = false;
-        Pair<TypeDescriptor, ParserRuleContext> procPrototypePair=null;
+        Pair<TypeDescriptor, ParserRuleContext> procPrototypePair = null;
         if (prototypeImplTrackingMap.containsKey(id)) {
             isProcedureImpl = true;
             procPrototypePair = prototypeImplTrackingMap.get(id);
@@ -997,7 +940,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             prototypeImplTrackingMap.remove(id);
         }
 
-        System.out.println("PROC DECL Starts*************************");
         symbolTable.displayCurrentScope();
         //symbolTable.enterLocalScope();
         //typeTable.enterLocalScope();
@@ -1026,29 +968,23 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                     }
                     // all formal params set up
                     Map<Object, TypeDescriptor> allParams = symbolTable.getAllVarInCurrentScope();
-                    System.out.println("allParams = " + allParams);
                     allParams.forEach((k, v) -> params.add(v));
                 }
             }
         }
 
-        System.out.println("Before Proc decl");
         symbolTable.displayCurrentScope();
         Procedure procedure = new Procedure(params);
         define(id, procedure, ctx);
-        System.out.println("Define Proc Decl signature\n" + procedure);
 
         tableManager.displayAllTablesCurrentScope();
         //symbolTable.displayCurrentScope();
-        System.out.println("id = " + id);
-        System.out.println("symbolTable.get(id) = " + symbolTable.get(id));
         visit(ctx.block()); // scope & type checking in current proc scope
         //symbolTable.exitLocalScope(); // back to last scope
         //typeTable.exitLocalScope();
         tableManager.allTablesExitNewScope();
 
         if (!isProcedureImpl) define(id, procedure, ctx);
-        System.out.println("PROC DECL ENDS*************************");
         //symbolTable.displayCurrentScope();
         tableManager.displayAllTablesCurrentScope();
         return null;
@@ -1059,7 +995,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         String id = ctx.procedureHeading().identifier().getText().toLowerCase();
         ArrayList<TypeDescriptor> params = new ArrayList<>();
 
-        System.out.println("Proc Prototype DECL Starts*************************");
         tableManager.allTablesEnterNewScope();
 
         // if the procedure has formal parameters
@@ -1072,19 +1007,15 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             }
             // all formal params set up
             Map<Object, TypeDescriptor> allParams = symbolTable.getAllVarInCurrentScope();
-            System.out.println("allParams = " + allParams);
             allParams.forEach((k, v) -> params.add(v));
         }
         Procedure procedure = new Procedure(params);
         define(id, procedure, ctx);
-        System.out.println("Define Proc Prototype signature");
-        System.out.println("procedure = " + procedure);
 
         //tableManager.displayAllTablesCurrentScope();
 
         tableManager.allTablesExitNewScope();
         define(id, procedure, ctx);
-        System.out.println("PROC Prototype DECL ENDS*************************");
         symbolTable.displayCurrentScope();
 
         // insert new entry into the tracking map
@@ -1109,7 +1040,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     //@Override
     //public TypeDescriptor visitProcedureImpl(PascalParser.ProcedureImplContext ctx) {
-    //    System.out.println("PROC IMpl Starts*************************");
     //    String id = ctx.identifier().getText().toLowerCase();
     //    symbolTable.displayCurrentScope();
     //
@@ -1146,7 +1076,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     //    visit(ctx.block()); // scope & type checking in current proc scope
     //    tableManager.allTablesExitNewScope();
     //
-    //    System.out.println("PROC Implementation ENDS*************************");
     //    return null;
     //}
 
@@ -1235,7 +1164,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         }
         ArrayList<TypeDescriptor> params = new ArrayList<>();
 
-        System.out.println("Func DECL Starts*************************");
         tableManager.allTablesEnterNewScope();
 
         // if the procedure has formal parameters
@@ -1247,7 +1175,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             }
             // all formal params set up
             Map<Object, TypeDescriptor> allParams = symbolTable.getAllVarInCurrentScope();
-            System.out.println("allParams = " + allParams);
             allParams.forEach((k, v) -> params.add(v));
         } else if (isFunctionImpl) {
             // visit all the parameters from prototype trackingmap
@@ -1262,7 +1189,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                     }
                     // all formal params set up
                     Map<Object, TypeDescriptor> allParams = symbolTable.getAllVarInCurrentScope();
-                    System.out.println("allParams = " + allParams);
                     allParams.forEach((k, v) -> params.add(v));
                 }
             }
@@ -1270,9 +1196,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
         Function function = new Function(params, resultType);
         define(id, function, ctx);
-        System.out.println("Define Func signature");
-        System.out.println("function = " + function);
-
         //tableManager.displayAllTablesCurrentScope();
 
         visit(ctx.block());// scope & type checking in current func scope
@@ -1283,7 +1206,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
         tableManager.allTablesExitNewScope();
         if (!isFunctionImpl) define(id, function, ctx);
-        System.out.println("FUNC DECL ENDS*************************");
         return null;
     }
 
@@ -1303,7 +1225,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         TypeDescriptor resultType = visit(ctx.functionHeading().resultType());
         ArrayList<TypeDescriptor> params = new ArrayList<>();
 
-        System.out.println("Func Prototype DECL Starts*************************");
         tableManager.allTablesEnterNewScope();
 
         // if the procedure has formal parameters
@@ -1316,19 +1237,15 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             }
             // all formal params set up
             Map<Object, TypeDescriptor> allParams = symbolTable.getAllVarInCurrentScope();
-            System.out.println("allParams = " + allParams);
             allParams.forEach((k, v) -> params.add(v));
         }
         Function function = new Function(params, resultType);
         define(id, function, ctx);
-        System.out.println("Define Func Prototype signature");
-        System.out.println("function = " + function);
 
         //tableManager.displayAllTablesCurrentScope();
 
         tableManager.allTablesExitNewScope();
         define(id, function, ctx);
-        System.out.println("FUNC Prototype DECL ENDS*************************");
 
         // insert new entry into the tracking map
         // check whether there exist implementation corresponds to current function prototype declaration
@@ -1400,9 +1317,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 TypeDescriptor formal = formalParameters.get(i);
                 TypeDescriptor actual = visit(actualParameters.get(i));
                 ActualParam _actual = (ActualParam) actual;
-                System.out.println("_actual = " + _actual);
                 FormalParam _formal = (FormalParam) formal;
-                System.out.println("_formal = " + _formal);
                 if (!checkFormalAndActual(_formal, _actual)) {
                     if (stringBuilder.length() == 0) {
                         stringBuilder.append(String.format("Actual parameter cannot match the formal parameter of [%s]!", name));
@@ -1429,14 +1344,10 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     @Override
     public TypeDescriptor visitProcedureStatement(PascalParser.ProcedureStatementContext ctx) {
-        System.out.println("*******************PROC CALL");
-        System.out.println("ctx.getText() = " + ctx.getText());
-
         // if trivial procedure statement
         if (ctx.identifier() != null) {
             String id = ctx.identifier().getText();
             TypeDescriptor signature = retrieve(id, ctx);
-            System.out.println("signature type = " + signature);
             symbolTable.displayCurrentScope();
 
             // suppress error, proc identifier not defined
@@ -1462,19 +1373,14 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                     actualParameterContextList = ctx.parameterList().actualParameter();
                 }
                 actualParameterContextList.forEach(each -> {
-                    System.out.println("each.getText() = " + each.getText());
                 });
                 if (_signature instanceof Procedure) {
                     ErrorMessage errorMessage = checkSignature(_signature, actualParameterContextList, ctx);
-                    System.out.println("check signature");
-                    System.out.println("_signature = " + _signature);
-                    System.out.println("booleanMessage = " + errorMessage);
                     if (errorMessage.hasErrors()) {
                         reportError(ctx, errorMessage.getMessageSequence());
                     }
                 } else {
                     // check signature of runtime procedure
-                    System.out.println("check runtime signature");
                     ArrayList<Class<? extends TypeDescriptor>> _acutalParams = new ArrayList<>();
                     actualParameterContextList.forEach(each -> {
                         TypeDescriptor actual = visit(each);
@@ -1483,7 +1389,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                             _acutalParams.add(aClass);
                         }
                     });
-                    System.out.println("_acutalParams = " + _acutalParams);
                     Set<List<Class<? extends TypeDescriptor>>> formalParamsMap = ((RuntimeProcedure) _signature).getFormalParamsMap();
                     // only check if runtime proc/func has signatures defined
                     if (formalParamsMap != null && !formalParamsMap.contains(_acutalParams)) {
@@ -1495,7 +1400,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                     }
                 }
             }
-            System.out.println("*******************PROC CALL ENDS");
         }
 
         // if io procedure
@@ -1510,26 +1414,21 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
     @Override
     public TypeDescriptor visitReadProcedureStatement(PascalParser.ReadProcedureStatementContext ctx) {
-        System.out.println("readStatement ctx.getText() = " + ctx.getText());
         //List<PascalParser.InputValueContext> inputValueContexts = ctx.readParameters().inputValue();
         //for (PascalParser.InputValueContext each : inputValueContexts) {
         //    TypeDescriptor type = visit(each.variable());
         //}
         visit(ctx.readParameters());
-        System.out.println("readStatement ctx.getText() = " + ctx.getText());
-
         return null;
     }
 
     @Override
     public TypeDescriptor visitReadParameters(PascalParser.ReadParametersContext ctx) {
-        System.out.println("readparam ctx.getText() = " + ctx.getText());
         // if no operation here, token would be missing...
         for (PascalParser.InputValueContext each : ctx.inputValue()) {
             String id = each.variable().variableHead().getText().toLowerCase();
             retrieve(id, ctx);
         }
-        System.out.println("readparam ctx.getText() = " + ctx.getText());
         return null;
     }
 
@@ -1553,8 +1452,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 if (outputType instanceof Function) {
                     _outputType = ((Function) outputType).getResultType();
                 }
-                System.out.println("write each.getText() = " + each.getText());
-                System.out.println("_outputType = " + _outputType);
                 if (!isSimpleType(_outputType) && !(_outputType instanceof StringLiteral)) {
                     if (sb == null) {
                         sb = new StringBuilder();
@@ -1591,14 +1488,11 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     @Override
     public TypeDescriptor visitFunctionDesignator(PascalParser.FunctionDesignatorContext ctx) {
-        System.out.println("*******************FUNC CALL");
-        System.out.println("func designator ctx.getText() = " + ctx.getText());
         String id = ctx.identifier().getText();
         tableManager.displayAllTablesCurrentScope();
         //suppress errors
         TypeDescriptor signature = retrieve(id, false, ctx);
         TypeDescriptor _signature = signature;
-        System.out.println("signature = " + signature);
 
         tableManager.displayAllTablesCurrentScope();
 
@@ -1624,12 +1518,10 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 actualParameterContextList = ctx.parameterList().actualParameter();
             }
             ErrorMessage errorMessage = checkSignature(_signature, actualParameterContextList, ctx);
-            System.out.println("booleanMessage = " + errorMessage);
             if (errorMessage.hasErrors()) {
                 reportError(ctx, errorMessage.getMessageSequence());
             }
         }
-        System.out.println("*******************Function CALL ENDS");
         return ((Function) _signature).getResultType();
     }
 
@@ -1860,7 +1752,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     @Override
     public TypeDescriptor visitVariable(PascalParser.VariableContext ctx) {
-        System.out.println("variable ctx.getText() = " + ctx.getText());
         structuredTypeId = ctx.variableHead().identifier().getText();
         // retrieve current
         structuredTypeToBeCheckNext = retrieve(structuredTypeId, ctx);
@@ -1886,12 +1777,10 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
         // if any errors, report in this node and throw errorType to upper node, suppressing the errors
         for (ParseTree eachChild : children) {
-            System.out.println("structuredTypeToBeCheckNext before= " + structuredTypeToBeCheckNext);
 
             if (eachChild instanceof TerminalNode) {
                 Token symbol = ((TerminalNode) eachChild).getSymbol();
                 if (symbol.getText().equals("^")) {
-                    System.out.println("dereference");
                     if (structuredTypeToBeCheckNext instanceof PointerType) {
                         structuredTypeToBeCheckNext = ((PointerType) structuredTypeToBeCheckNext).getPointedType();
                     } else {
@@ -1902,17 +1791,14 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 }
             } else structuredTypeToBeCheckNext = visit(eachChild);
 
-            System.out.println("structuredTypeToBeCheckNext updated= " + structuredTypeToBeCheckNext);
 
             if (structuredTypeToBeCheckNext instanceof ErrorType) {
                 return structuredTypeToBeCheckNext;
             }
         }
-        System.out.println("var ctx.getText() = " + ctx.parent.getText());
         if (returnAddressType) {
             structuredTypeToBeCheckNext = new AddressType();
         }
-        System.out.println("return structuredTypeToBeCheckNext = " + structuredTypeToBeCheckNext);
 
         return structuredTypeToBeCheckNext;
     }
@@ -1951,9 +1837,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     @Override
     public TypeDescriptor visitArrayScripting(PascalParser.ArrayScriptingContext ctx) {
-        System.out.println("current scaript ctx.getText() = " + ctx.getText());
         List<PascalParser.ExpressionContext> expression = ctx.expression();
-        System.out.println("arraylists structuredTypeToBeCheckNext = " + structuredTypeToBeCheckNext);
         if (structuredTypeToBeCheckNext instanceof ArrayType
                 || structuredTypeToBeCheckNext instanceof FormalParam) {
 
@@ -1974,10 +1858,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
                 List<TypeDescriptor> indexList = _arrayType.getIndexList();
                 structuredTypeToBeCheckNext = getArrayContent(0, _arrayType);
-                System.out.println("updated if structuredTypeToBeCheckNext = " + structuredTypeToBeCheckNext);
-
-                System.out.println("indexList looks = " + indexList);
-                System.out.println("indexList.size() = " + indexList.size());
                 // there are various combinations of indexing,
                 // but if number of expr > size of indexList, directly report error
                 //if (expression.size() > indexList.size() || indexCount > indexList.size()) {
@@ -1988,8 +1868,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
                 TypeDescriptor expressionType = visit(eachExpr);
                 TypeDescriptor declaredType = indexList.get(0);//get first
-                System.out.println("declaredType = " + declaredType);
-                System.out.println("expressionType = " + expressionType);
                 if (!expressionType.equiv(declaredType) || (
                         declaredType instanceof Character && expressionType instanceof StringLiteral
                 )) {
@@ -2025,110 +1903,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         return ErrorType.INVALID_ARRAY_TYPE;
     }
 
-
-    //@Override
-    //public TypeDescriptor visitArrayScripting(PascalParser.ArrayScriptingContext ctx) {
-    //    RuleContext parent = ctx.parent;
-    //    System.out.println("parent getText = " + parent.getText());
-    //    if (parent instanceof PascalParser.VariableContext) {
-    //        PascalParser.VariableContext _parent = (PascalParser.VariableContext) parent;
-    //        // get the array identifier
-    //        String id = _parent
-    //                .variableHead()
-    //                .identifier()
-    //                .getText().toLowerCase();
-    //        TypeDescriptor arrayType = retrieve(id, ctx);
-    //        System.out.println("retrieve arrayType = " + arrayType);
-    //        // perform array type index range checking
-    //        // index order follow "parenthesis first, expression(inside the parenthesis) next"
-    //        // FIXME Nested type ,must extract the host type for further checking
-    //        if (arrayType instanceof ArrayType
-    //                || arrayType instanceof FormalParam) {
-    //            ArrayType _arrayType = null;
-    //
-    //            if (arrayType instanceof ArrayType) _arrayType = (ArrayType) arrayType;
-    //            if (arrayType instanceof FormalParam) {
-    //                if (((FormalParam) arrayType).getHostType() instanceof ArrayType) {
-    //                    _arrayType = (ArrayType) ((FormalParam) arrayType).getHostType();
-    //                } else {
-    //                    reportError(ctx, "Invalid array scripting operation [%s]. [%s] is not an array type.\nActual: %s",
-    //                            _parent.getText(), id, arrayType);
-    //                    return ErrorType.INVALID_ARRAY_TYPE;
-    //                }
-    //            }
-    //            List<TypeDescriptor> indexList = _arrayType.getIndexList();
-    //            StringBuilder stringBuilder = new StringBuilder();
-    //
-    //            List<PascalParser.ExpressionContext> expressionContextList = ctx.expression();
-    //
-    //            // there are various combinations of indexing,
-    //            // but if number of expr > size of indexList, directly report error
-    //            if (expressionContextList.size() > indexList.size() || indexCount > indexList.size()) {
-    //                reportError(ctx, "Invalid array scripting operation [%s]. Operations dimension cannot match the declaration [%s]",
-    //                        _parent.getText(), _arrayType);
-    //                return ErrorType.INVALID_ARRAY_SCRIPTING;
-    //            }
-    //
-    //            for (int i = 0; i < expressionContextList.size(); i++) {
-    //                TypeDescriptor expressionType = visit(expressionContextList.get(i));
-    //                System.out.println("expressionType = " + expressionType);
-    //                // if index type cannot match where as it declared, reporting the error
-    //                TypeDescriptor declaredType = indexList.get(indexCount++);
-    //                System.out.println("declaredType = " + declaredType);
-    //
-    //                if (!expressionType.equiv(declaredType) || (
-    //                        declaredType instanceof Character && expressionType instanceof StringLiteral
-    //                )) {
-    //
-    //                    if (expressionType instanceof StringLiteral) {
-    //                        String stringContent = ((StringLiteral) expressionType).getValue().replace("'", "");
-    //                        if (stringContent.length() == 1) continue;
-    //                    }
-    //
-    //                    if (declaredType instanceof Subrange) {
-    //                        if (isValidSubrange((Subrange) declaredType, expressionType)) {
-    //                            continue;
-    //                        }
-    //
-    //                        // right expression evaluated to null, i.e. RUNTIME CHECK
-    //                        //FIXME
-    //                        if (expressionType instanceof IntegerBaseType && ((IntegerBaseType) expressionType).getValue() == null) {
-    //                            //return null;
-    //                            continue;
-    //                        }
-    //                    }
-    //
-    //                    if (stringBuilder.length() == 0) {
-    //                        stringBuilder.append(String.format("Invalid array scripting operation [%s].",
-    //                                _parent.getText()));
-    //                    }
-    //
-    //                    stringBuilder.append(String.format(
-    //                            "\n- Pos[%d]\n" +
-    //                                    "Expected: %s,\nActual: %s",
-    //                            indexCount - 1, declaredType, expressionType
-    //                    ));
-    //                }
-    //            }
-    //
-    //            // if any errors
-    //            if (stringBuilder.length() > 0) {
-    //                reportError(ctx, stringBuilder.toString());
-    //                return ErrorType.INVALID_ARRAY_SCRIPTING;
-    //            }
-    //
-    //            int arrayIndexCount = arrayIndexCount(_parent);
-    //            TypeDescriptor arrayContent = getArrayContent(arrayIndexCount, _arrayType);
-    //            System.out.println("arrayContent = " + arrayContent);
-    //            return arrayContent;
-    //        }
-    //    }
-    //    return null;
-    //}
-
     /**
-     * Check whether given fieldName is a valid record field
-     *
      * @param recordType - record type to be check
      * @param fieldName  - field name
      * @return ErrorType - is invalid, TypeDescriptor - is valid
@@ -2196,8 +1971,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                     expectedLength = upperValue - lowerValue + 1;
                     // check whether right operand is a string type with the same length
                     int actualLength = right.getValue().replace("'", "").length();
-                    System.out.println("expectedLength = " + expectedLength);
-                    System.out.println("actualLength = " + actualLength);
                     if (expectedLength.intValue() != actualLength) {
                         stringBuilder.append(String.format("Illegal string assignment [%s] with incompatible length.\nExpected: %s,\nActual: %s",
                                 ctx, expectedLength, actualLength));
@@ -2214,7 +1987,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     @Override
     public TypeDescriptor visitAssignmentStatement(PascalParser.AssignmentStatementContext ctx) {
         String assignmentCtx = ctx.getText();
-        System.out.println("ctx.getText() = " + assignmentCtx);
 
         String id = ctx.variable().variableHead().getText();
         String expression = ctx.expression().getText();
@@ -2240,7 +2012,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             // check whether array scripting is valid, if any
             _leftType = visit(ctx.variable());
         }
-        System.out.println("_leftType = " + _leftType);
 
         if (_leftType.equiv(ErrorType.UNDEFINED_TYPE) && !typeTable.containsKey(id)) {
             reportError(ctx, "%s is undeclared", id);
@@ -2263,7 +2034,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         }
 
         TypeDescriptor rightType = visit(ctx.expression());
-        System.out.println("expression rightType = " + rightType);
 
         // if expected enumerated type, suppress errors
         // i.e. skip visit expression node in trivial way
@@ -2271,7 +2041,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         if (_leftType instanceof EnumeratedType) {
             EnumeratedType __leftType = (EnumeratedType) _leftType;
             Map<String, Integer> valueMap = __leftType.getValueMap();
-            System.out.println("valueMap.containsKey(expression.toLowerCase()) = " + valueMap.containsKey(expression.toLowerCase()));
 
             String expressionValue = null;
 
@@ -2397,10 +2166,8 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             // check result type of a Function
             // this assignment only allowed within Function body
             if (_leftType instanceof Function) {
-                System.out.println("func _leftType = " + _leftType);
                 Function function = (Function) _leftType;
                 TypeDescriptor resultType = function.getResultType();
-                System.out.println("rightType = " + rightType);
                 if (!resultType.equiv(rightType)) {
 
                     //TODO realint, charstr - func
@@ -2438,7 +2205,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 return null;
             }
 
-            System.out.println("ctx.getText(); = " + assignmentCtx);
             reportError(ctx, "Illegal assignment [%s] with incompatible types.\nExpected(lType): %s,\nActual(rType): %s",
                     assignmentCtx, _leftType.toString(), rightType.toString());
         }
@@ -2461,9 +2227,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             return valueMap.containsKey(rightValue.toLowerCase());
         }
 
-        System.out.println("hostType = " + hostType);
-        System.out.println("rightType class = " + rightType);
-        System.out.println("rightType = " + rightType.getClass());
         // check other ordinal types
         if (rightType.getClass() == hostType) {
             if (rightType instanceof Boolean) {
@@ -2483,9 +2246,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
                 Long lowerValue = ((IntegerBaseType) lowerBound).getValue();
                 Long upperValue = ((IntegerBaseType) upperBound).getValue();
-                System.out.println("rightValue = " + rightValue);
-                System.out.println("lowerValue = " + lowerValue);
-                System.out.println("upperValue = " + upperValue);
                 return rightValue >= lowerValue && rightValue <= upperValue;
             }
 
@@ -2494,12 +2254,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 String rightValue = ((StringLiteral) rightType).getValue();
                 String lowerValue = ((StringLiteral) lowerBound).getValue();
                 String upperValue = ((StringLiteral) upperBound).getValue();
-                //System.out.println("lowerValue = " + lowerValue);
-                //System.out.println("upperValue = " + upperValue);
-                //System.out.println("rightValue = " + rightValue);
-                //System.out.println("rightValue.compareTo(upperValue = " + rightValue.compareTo(upperValue));
-                //System.out.println("rightValue.compareTo(lowerValue) = " + rightValue.compareTo(lowerValue));
-                return rightValue.compareTo(lowerValue) >= 0 && rightValue.compareTo(upperValue) <= 0;
             }
         } else if (hostType == StringLiteral.class && rightType instanceof Character) {
             return true;
@@ -2517,9 +2271,9 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     @Override
     public TypeDescriptor visitIfStatement(PascalParser.IfStatementContext ctx) {
         TypeDescriptor type = visit(ctx.expression());
-        System.out.println("if expression type = " + type);
         if (!(type instanceof Boolean)) {
-            reportError(ctx, "Invalid condition type of if statement [%s] which must be boolean type.\nActual: %s",
+            reportError(ctx,
+                    "Invalid condition type of if statement [%s] which must be boolean type.\nActual: %s",
                     ctx.expression().getText(), type);
         }
         ctx.statement().forEach(this::visit);
@@ -2552,10 +2306,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     @Override
     public TypeDescriptor visitCaseStatement(PascalParser.CaseStatementContext ctx) {
-        System.out.println("***********CASE STATEMENT STARTS");
-        System.out.println("ctx.getText() = " + ctx.getText());
         TypeDescriptor expression = visit(ctx.expression());
-        System.out.println("case expression = " + expression);
 
         // pure string as the case expression is not standard
         if (expression instanceof StringLiteral) {
@@ -2570,8 +2321,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             List<PascalParser.ConstantContext> constantList = caseListElementContext.constList().constant();
             for (PascalParser.ConstantContext eachConstant : constantList) {
                 TypeDescriptor each = visit(eachConstant);
-                System.out.println("each vs expression = " + each + " " + expression);
-                System.out.println("expression.equiv(each) = " + expression.equiv(each));
 
                 // check type compatibility
                 if (expression instanceof Subrange) {
@@ -2595,7 +2344,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             visit(caseListElementContext.statement());
         }
 
-        System.out.println("***********CASE STATEMENT ENDS");
         return null;
     }
 
@@ -2676,7 +2424,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      * @return
      */
     private boolean isOrdinalType(TypeDescriptor type) {
-        System.out.println("type isordinal = " + type);
         if (type instanceof Subrange) {
             // if subrange type defined, already pass the bounds checking,
             // choose the first bound as the host type instance
@@ -2701,17 +2448,12 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     @Override
     public TypeDescriptor visitExpression(PascalParser.ExpressionContext ctx) {
-        System.out.println();
-        System.out.println("********Expression Starts********");
-        System.out.println("expression ctx.getText() = " + ctx.getText());
         TypeDescriptor lType = visit(ctx.simpleExpression());
         TypeDescriptor rType = null;
 
         if (ctx.e2 != null) {
             rType = visit(ctx.e2);
             String operator = ctx.relationalOperator.getText();
-            System.out.println("lType = " + lType);
-            System.out.println("rType = " + rType);
 
             // suppress errors
             if (rType.equiv(ErrorType.INVALID_EXPRESSION)) {
@@ -2720,7 +2462,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
             // check whether operands are simple types
             if (!(isSimpleType(lType)) && !(lType instanceof StringLiteral)) {
-                System.out.println("not a simple type lType = " + lType);
                 reportError(ctx, "Illegal expression [%s]. Relational operator [%s] cannot be applied on left operand [%s].\nLtype: %s",
                         ctx.getText(), operator, ctx.simpleExpression().getText(), lType);
                 // suppress error
@@ -2787,7 +2528,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     @Override
     public TypeDescriptor visitSimpleExpression(PascalParser.SimpleExpressionContext ctx) {
-        System.out.println("check simple expr ctx.getText() = " + ctx.getText());
         TypeDescriptor lType = visit(ctx.term());
         TypeDescriptor _lType = lType;
 
@@ -2819,8 +2559,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
             //below are arithmetic operation, operands must be number
 
-            System.out.println("leftType ctx.term().getText() = " + ctx.term().getText());
-            System.out.println("lT = " + _lType);
             // if left operand is not int nor real
             if (!(_lType instanceof IntegerBaseType) && !(_lType instanceof FloatBaseType)) {
 
@@ -2875,9 +2613,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 return new FloatBaseType();
                 //}  else return IntegerBaseType.copy(defaultIntegerType);
             } else {
-                System.out.println("ctx.getText() = " + ctx.getText());
-                System.out.println("_lType = " + _lType);
-                System.out.println("_rType = " + _rType);
 
                 // subrange, params evaluation would be evaluated at the runtime
                 if (!(_lType instanceof Subrange) && !(_rType instanceof Subrange)
@@ -3029,10 +2764,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     @Override
     public TypeDescriptor visitSignedFactor(PascalParser.SignedFactorContext ctx) {
         TypeDescriptor factor = visit(ctx.factor());
-        System.out.println("visitSignedFactor = " + ctx.getText());
-        System.out.println("ctx.factor().getClass() = " + ctx.factor().getClass());
 
-        System.out.println("factor type = " + factor);
         // involves monadic arithmetic expression, check the operand factor
         // i.e. signedFactor
         if (ctx.monadicOperator != null) {
@@ -3044,24 +2776,18 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 //TODO suppress errors
                 return ErrorType.INVALID_MONADIC_OPERATION;
             } else if (factor instanceof IntegerBaseType) {
-                System.out.println("ctx.factor().getText() = " + ctx.factor().getText());
-                System.out.println("signed factor = " + factor);
                 Long numberValue = ((IntegerBaseType) factor).getValue();
                 RuleContext parentContext = ctx.parent.parent.parent.parent;
 
                 // update numberValue accords to the monadic operator
                 switch (monadicOp) {
                     case "-":
-                        System.out.println("numberValue -> = " + numberValue);
                         if (numberValue != null) numberValue = -numberValue;
-                        System.out.println("-numberValue -> = " + numberValue);
                         break;
                     case "+":
                         break;
                 }
 
-                System.out.println("current numberValue = " + numberValue);
-                System.out.println("parentContextTT = " + parentContext.getClass());
                 // if is the last constant node, gathering all the errors if any
                 if (!(parentContext instanceof PascalParser.FactorExprContext)) {
                     if (!hasNoOverflow(numberValue)) return ErrorType.INTEGER_OVERFLOW;
@@ -3073,8 +2799,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                     // ((IntegerBaseType) factor).setValue(numberValue);
                     // FIXME:this might cause potential problems
                     //
-                    System.out.println("pass to upper node = " + ((IntegerBaseType) factor).getValue());
-                    System.out.println("factor updated = " + factor);
                     //IntegerBaseType updatedNumber = new IntegerBaseType();
                     //updatedNumber.setValue(numberValue);
                     IntegerBaseType copy = IntegerBaseType.copy((IntegerBaseType) factor);
@@ -3091,7 +2815,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 if (ctx.factor() instanceof PascalParser.FactorVarContext) {
                     numberValue = ((IntegerBaseType) factor).getValue();
                 }
-                System.out.println("numberValue = " + numberValue);
 
                 // if numberValue == null, then it should be checked at runtime
                 if (numberValue != null && !hasNoOverflowOrUnderflow(numberValue, true, false)) {
@@ -3105,12 +2828,10 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
     private int arrayIndexCount(PascalParser.VariableContext ctx) {
         int count = 0;
-        System.out.println("ctx.getText() = " + ctx.getText());
         List<PascalParser.ArrayScriptingContext> arrayScriptingContexts = ctx.arrayScripting();
         for (PascalParser.ArrayScriptingContext arrayScriptingContext : arrayScriptingContexts) {
             count += arrayScriptingContext.expression().size();
         }
-        System.out.println("index count-> " + count);
         return count;
     }
 
@@ -3125,17 +2846,14 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         TypeDescriptor componentType = arrayType.getComponentType();
         List<TypeDescriptor> indexList = arrayType.getIndexList();
         int indexListSize = indexList.size();
-        System.out.println("indexListSize = " + indexListSize);
         if (arrayIndexCount == indexListSize - 1) {
             return componentType;
         }
         //concatenate and return the new array type
         List<TypeDescriptor> newIndexList = new ArrayList<>(List.copyOf(indexList));
-        System.out.println("old newIndexList = " + newIndexList);
         for (int i = 0; i <= arrayIndexCount; i++) {
             newIndexList.remove(i);
         }
-        System.out.println("newIndexList = " + newIndexList);
         return new ArrayType(componentType, newIndexList);
     }
 
@@ -3157,14 +2875,11 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     @Override
     public TypeDescriptor visitFactorVar(PascalParser.FactorVarContext ctx) {
         // suppress errors
-        System.out.println("factor Var ctx.getText() = " + ctx.getText());
-        System.out.println("ctx.variable().children.size() = " + ctx.variable().children.size());
 
         if (ctx.variable().children.size() > 1 || ctx.variable().variableHead().AT() != null) {
             return visit(ctx.variable());
         }
         TypeDescriptor type = retrieve(ctx.getText(), false, ctx);
-        System.out.println("type = " + type);
         return type;
     }
 
@@ -3175,9 +2890,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
     @Override
     public TypeDescriptor visitFactorFuncDesignator(PascalParser.FactorFuncDesignatorContext ctx) {
-        System.out.println("factor func Designator");
         TypeDescriptor returnType = visit(ctx.functionDesignator());
-        System.out.println("returnType = " + returnType);
         return returnType;
     }
 

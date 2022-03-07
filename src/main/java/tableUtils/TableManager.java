@@ -1,8 +1,10 @@
 package tableUtils;
 
 import ast.visitor.PascalParser;
+import ch.qos.logback.classic.Logger;
 import org.antlr.v4.runtime.ParserRuleContext;
 import type.TypeDescriptor;
+import utils.log.GlobalLogger;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -23,9 +25,7 @@ public class TableManager<K, T> {
      */
     private Map<Class<? extends ParserRuleContext>, Table<K, T>> container = new LinkedHashMap<>();
 
-    private TableManager() {
-
-    }
+    private TableManager() { }
 
     /**
      * Getter for external access
@@ -37,10 +37,6 @@ public class TableManager<K, T> {
     public static <K, T> TableManager<K, T> getInstance() {
         return (TableManager<K, T>) instance;
     }
-
-    //public static TableManager<Object, TypeDescriptor> getInstance() {
-    //    return instance;
-    //}
 
     /**
      * Initialise a table safely,
@@ -75,6 +71,7 @@ public class TableManager<K, T> {
         if (container.containsKey(ctx)) return false;
 
         container.put(ctx, table);
+        GlobalLogger.info("New Table is initialised {} ");
         System.out.println("New Table Is Initialised");
         return true;
     }

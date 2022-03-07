@@ -1,7 +1,9 @@
 package tableUtils;
 
+import ch.qos.logback.classic.Logger;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import utils.log.GlobalLogger;
 
 import java.util.*;
 
@@ -24,7 +26,7 @@ public abstract class Table<K, T> {
      * Scope stack, support nested scopes
      * Each scope holds entry of current scope
      */
-    private Deque<Map<K,T>> scope_stack;
+    private Deque<Map<K, T>> scope_stack;
 
     /**
      * Table name
@@ -50,50 +52,39 @@ public abstract class Table<K, T> {
 
     /**
      * Initialise the table & tableName
+     *
      * @param tableName - table name
      */
     protected Table(String tableName) {
-        //scope_stack = new LinkedList<>();
-        //scope_stack.addLast(new LinkedHashMap<>());
-        // add a new table instance into the TableContainer
-        //tableManager.addTable(context, this);
-        //tableManager.showAllTables();
         this();
         this.tableName = tableName;
     }
 
     /**
      * Initialise the table & tableName & usage context
+     *
      * @param tableName - table name
-     * @param ctx - usage context
+     * @param ctx       - usage context
      */
     protected Table(String tableName, Class<? extends ParserRuleContext> ctx) {
-        //scope_stack = new LinkedList<>();
-        //scope_stack.addLast(new LinkedHashMap<>());
-        //this.tableName = tableName;
-        //this.context = ctx;
-        // add a new table instance into the TableContainer
-        //tableManager.addTable(context, this);
-        //tableManager.showAllTables();
-
         this(tableName);
         this.context = ctx;
         // add a new table instance into the TableContainer
         tableManager.addTable(context, this);
         tableManager.showAllTables();
-        System.out.println("tableName init = " + tableName);
     }
 
     /**
      * Add (id,attr) to this symbol table, either to the
      * local part (if enabled, choose the most recent one) or to the global part
      * (Otherwise). Return true if id is unique.
+     *
      * @param id
      * @param attr
      * @return
      */
     public boolean put(K id, T attr) {
-        Map<K,T> scope = getScope_stack().getLast();
+        Map<K, T> scope = getScope_stack().getLast();
         // if the identifier is not defined yet
         if (scope.get(id) == null) {
             scope.put(id, attr);
@@ -106,20 +97,21 @@ public abstract class Table<K, T> {
      * Get stored content in terms of identifier
      * Exhausted searching till identifier matched, returning corresponding content
      * Otherwise return null
+     *
      * @param id
      * @return
      */
     public T get(K id) {
         // try to retrieve the identifier in current (local, most recent) scope
         if (!getScope_stack().isEmpty()) {
-            Map<K,T> scope = getScope_stack().getLast();
+            Map<K, T> scope = getScope_stack().getLast();
             if (scope.containsKey(id)) {
                 // retrieve the identifier in the most recent scope
                 return scope.get(id);
             } else {
                 // try to retrieve the id in previous declared scopes from a reverse order
                 // (most recent first)
-                Iterator<Map<K,T>> scopeStackDescendingIterator = getScope_stack().descendingIterator();
+                Iterator<Map<K, T>> scopeStackDescendingIterator = getScope_stack().descendingIterator();
                 scopeStackDescendingIterator.next(); // skip current scope
                 while (scopeStackDescendingIterator.hasNext()) {
                     //System.out.printf("No declaration in current scope - [depth %d], try to retrieve from former scope\n", getScope_stack().size() - 1);
@@ -128,12 +120,13 @@ public abstract class Table<K, T> {
                 }
             }
         }
-        System.out.println("Searching exhausted, no declaration found!");
+        GlobalLogger.debug("Searching exhausted, no declaration found!");
         return null;
     }
 
     /**
      * Check whether the specific key exists in the table
+     *
      * @param id
      * @return
      */
@@ -143,9 +136,10 @@ public abstract class Table<K, T> {
 
     /**
      * Get all the mappings in the current scope
+     *
      * @return
      */
-    public Map<K,T> getAllVarInCurrentScope() {
+    public Map<K, T> getAllVarInCurrentScope() {
         return scope_stack.getLast();
     }
 
@@ -154,7 +148,8 @@ public abstract class Table<K, T> {
      */
     public void enterLocalScope() {
         // One new table entry (a map) corresponds to one new scope
-        System.out.println("Enter new local scope, last depth = " + (getScope_stack().size() - 1));
+        GlobalLogger.debug("Enter new local scope, last depth = {}"
+                , () -> getScope_stack().size() - 1);
         getScope_stack().addLast(new LinkedHashMap<>());
     }
 
@@ -176,21 +171,25 @@ public abstract class Table<K, T> {
         int size = getScope_stack().size();
         // if size=1, then is at the global scope
         String isGlobal = size == 1 ? "global" : "local";
-        System.out.println("\n===========");
-        System.out.printf("Table name: [%s] - Symbols of current scope - %s - [depth %d] \n",
-                tableName, isGlobal, size - 1);
+
+        GlobalLogger.debug("\n===========");
+        GlobalLogger.debug("Table name: [{}] - Symbols of current scope - {} - [depth {}]",
+                ()->tableName, ()->isGlobal, ()->size - 1);
+        //System.out.printf("Table name: [%s] - Symbols of current scope - %s - [depth %d] \n",
+        //        tableName, isGlobal, size - 1);
         Map<K, T> currentScope = getScope_stack().getLast();
         currentScope.forEach((id, type) -> {
-            System.out.println("id = " + id + " ,type = " + type);
+            GlobalLogger.debug("id = {}, type = {}", ()->id, ()->type);
+            //System.out.println("id = " + id + " ,type = " + type);
         });
-        System.out.println("===========\n");
+        GlobalLogger.debug("===========\n");
     }
 
     public int sizeOfCurrentScope() {
         return scope_stack.getLast().size();
     }
 
-    public Deque<Map<K,T>> getScope_stack() {
+    public Deque<Map<K, T>> getScope_stack() {
         return scope_stack;
     }
 
@@ -200,6 +199,6 @@ public abstract class Table<K, T> {
 
     @Override
     public String toString() {
-        return ReflectionToStringBuilder.toStringExclude(this,"scope_stack" );
+        return ReflectionToStringBuilder.toStringExclude(this, "scope_stack");
     }
 }
