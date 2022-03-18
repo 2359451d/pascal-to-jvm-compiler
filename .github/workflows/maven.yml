@@ -26,11 +26,10 @@ jobs:
           distribution: 'adopt'
           cache: maven
 
-      - name: Build with Maven (Test skipped)
-        run: mvn -B package --file pom.xml -DskipTests=true
-
 #      - name: Test with Maven
 #        run: mvn test
+      - name: Driver Arguments Unit Test with Maven
+        run: mvn -Dtest=PascalCompilerDriverArgsUnitTest test
       - name: Syntactic Unit Test with Maven
         run: mvn -Dtest=PascalCompilerDriverBuilderParseUnitTest test
 
@@ -47,6 +46,16 @@ jobs:
       - name: test JAR (Example source file)
         run: |
           java -jar ./target/pascal-to-jvm-compiler-jar-with-dependencies.jar check testArguments.pas
+
+      - name: Build with Maven (Test skipped)
+        run: mvn -B package --file pom.xml -DskipTests=true
+
+      - name: Temporarily save jar artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: jar-artifact
+          path: ${{ github.workspace }}/target/*.jar
+          retention-days: 1
 
   #single job called build
   dockerhub-deploy:
@@ -86,12 +95,12 @@ jobs:
       - name: Test Docker Run (Example source file)
         run: |
           docker run --rm -v $(pwd)/:/res \
-           ${{ env.TEST_TAG }} parse \
-           src/test/resources/driver/testPascalCompilerDriver/testCheckArguments/testArguments.pas
-#          docker run --rm ${{ env.TEST_TAG }}
+          ${{ env.TEST_TAG }} parse \
+          src/test/resources/driver/testPascalCompilerDriver/testCheckArguments/testArguments.pas
+
           docker run --rm -v $(pwd)/:/res \
           ${{ env.TEST_TAG }} check \
-           src/test/resources/driver/testPascalCompilerDriver/testCheck/testCheckWithSuccess/arithOperator.pas
+          src/test/resources/driver/testPascalCompilerDriver/testCheck/testCheckWithSuccess/arithOperator.pas
 
       - name: Build dockerfile (Multi-platform with push,Cached)
         uses: docker/build-push-action@v2
