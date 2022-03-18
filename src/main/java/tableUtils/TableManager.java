@@ -1,7 +1,6 @@
 package tableUtils;
 
 import ast.visitor.PascalParser;
-import ch.qos.logback.classic.Logger;
 import org.antlr.v4.runtime.ParserRuleContext;
 import type.TypeDescriptor;
 import utils.log.GlobalLogger;
@@ -66,13 +65,8 @@ public class TableManager<K, T> {
 
     public boolean addTable(Class<? extends ParserRuleContext> ctx, Table<K, T> table) {
         // exists duplicate key
-        System.out.println("container before addTable = " + container);
-        System.out.println("ctx = " + ctx);
         if (container.containsKey(ctx)) return false;
-
         container.put(ctx, table);
-        GlobalLogger.info("New Table is initialised {} ");
-        System.out.println("New Table Is Initialised");
         return true;
     }
 
@@ -130,11 +124,29 @@ public class TableManager<K, T> {
     }
 
     public void showAllTables() {
-        System.out.println(container);
+        GlobalLogger.debug("{}", ()->container);
     }
 
-    public void clearAllTables() {
+    public void resetContainer() {
         container.clear();
     }
+
+    public void resetAllTables() {
+        resetAndInitAllTables(false);
+    }
+
+    public void resetAndInitAllTables(boolean init) {
+        container.forEach((k,v)->{
+            v.resetTable();
+            if (init) {
+                v.initScope();
+            }
+        });
+    }
+
+    public void resetAndInitAllTables() {
+        resetAndInitAllTables(true);
+    }
+
 
 }

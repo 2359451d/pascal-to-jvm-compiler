@@ -50,7 +50,8 @@ public class PascalCompilerDriverBuilderCheckUnitTest {
         if (StringUtils.isBlank(path)) throw new Exception("No test resources found!");
         extension.addNewArgument(path);
         assertDoesNotThrow(() -> {
-            new PascalCompilerDriverBuilder(path).parse().check();
+            DriverArgument driverArgument = new DriverArgument(DriverCommand.CHECK, path);
+            new PascalCompilerDriverBuilder(driverArgument).parse().check();
         });
     }
 
@@ -74,7 +75,8 @@ public class PascalCompilerDriverBuilderCheckUnitTest {
         if (StringUtils.isBlank(path)) throw new Exception("No test resources found!");
         extension.addNewArgument(path);
         assertThrows(BuiltinException.CHECK_FAILED.getException().getClass(), () -> {
-            new PascalCompilerDriverBuilder(path).parse();
+            DriverArgument driverArgument = new DriverArgument(DriverCommand.CHECK, path);
+            new PascalCompilerDriverBuilder(driverArgument).parse().check();
         });
     }
 }

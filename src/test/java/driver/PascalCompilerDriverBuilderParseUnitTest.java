@@ -52,7 +52,8 @@ public class PascalCompilerDriverBuilderParseUnitTest {
         if (StringUtils.isBlank(path)) throw new Exception("No test resources found!");
         extension.addNewArgument(path);
         assertDoesNotThrow(() -> {
-            new PascalCompilerDriverBuilder(path).parse();
+            DriverArgument driverArgument = new DriverArgument(DriverCommand.PARSE, path);
+            new PascalCompilerDriverBuilder(driverArgument).parse();
         });
     }
 
@@ -73,12 +74,11 @@ public class PascalCompilerDriverBuilderParseUnitTest {
     @ParameterizedTest(name = "{index} - Source: {0}")
     @MethodSource("errorSourceFileListProvider")
     public void testParseWithError(String path) throws Exception {
-
-
         if (StringUtils.isBlank(path)) throw new Exception("No test resources found!");
         extension.addNewArgument(path);
         assertThrows(BuiltinException.PARSE_FAILED.getException().getClass(), () -> {
-            new PascalCompilerDriverBuilder(path).parse();
+            DriverArgument driverArgument = new DriverArgument(DriverCommand.PARSE, path);
+            new PascalCompilerDriverBuilder(driverArgument).parse();
         });
     }
 }

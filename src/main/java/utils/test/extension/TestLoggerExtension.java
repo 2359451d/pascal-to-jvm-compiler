@@ -1,7 +1,10 @@
 package utils.test.extension;
 
 import ch.qos.logback.classic.Level;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.*;
+import tableUtils.TableManager;
+import type.TypeDescriptor;
 import utils.log.GlobalLogger;
 import utils.log.TestLogger;
 import utils.test.TestUtils;
@@ -23,16 +26,18 @@ public class TestLoggerExtension implements BeforeEachCallback, AfterEachCallbac
     ;
     private String testMethodTimeSeparator = "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+";
     private String testClassSeparator = "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+";
+    private TableManager<Object, TypeDescriptor> tableManager;
 
     public TestLoggerExtension(String command) {
         this.command = command;
         this.argumentsList.add(command);
+        this.tableManager = TableManager.getInstance();
     }
 
     @Override
     public void beforeAll(ExtensionContext extensionContext) throws Exception {
-        // reset global logger level (only show ERROR)
-        GlobalLogger.setLevel(Level.ERROR);
+        // reset global logger level
+        GlobalLogger.setLevel(Level.INFO);
 
         // reset total testing time
         this.totalTestTime = 0L;
@@ -55,26 +60,34 @@ public class TestLoggerExtension implements BeforeEachCallback, AfterEachCallbac
     public void beforeEach(ExtensionContext extensionContext) throws Exception {
         TestLogger.info("++ Current Test Method - [{}] ++",
                 ()->extensionContext.getTestMethod().get().getName());
+        TestLogger.info("{}", extensionContext::getDisplayName);
         TestLogger.info(testBodySeparator);
         //System.out.printf("++ Current Test Method - [%s] ++\n", extensionContext.getTestMethod().get().getName());
         //System.out.println(testBodySeparator);
         if (argumentsList.size() > 1) argumentsList.remove(1);
+
+        // reset all the tables
+        tableManager.resetAndInitAllTables();
+
         eachStartTime = System.currentTimeMillis();
     }
 
-    private void printTimeInSeconds(long duration) {
-        TestLogger.info("{} seconds",()-> TimeUnit.MILLISECONDS.toSeconds(duration));
+    private void printFormattedTime(long duration) {
+        TestLogger.info("{} seconds = {} milliseconds",
+                ()-> TimeUnit.MILLISECONDS.toSeconds(duration),
+                ()-> duration
+        );
         //System.out.printf("%d seconds\n", TimeUnit.MILLISECONDS.toSeconds(duration));
     }
 
     @Override
     public void afterAll(ExtensionContext extensionContext) throws Exception {
         TestLogger.info("+-+-+- Total Execution Time of Test Class [{}] -+-+-+", ()->extensionContext.getDisplayName());
-        TestLogger.info("{} milliseconds = ", ()->totalTestTime);
+        //TestLogger.info("{} milliseconds = ", ()->totalTestTime);
 
         //System.out.printf("+-+-+- Total Execution Time of Test Class [%s] -+-+-+\n", extensionContext.getDisplayName());
         //System.out.printf("%d milliseconds = ", totalTestTime);
-        printTimeInSeconds(totalTestTime);
+        printFormattedTime(totalTestTime);
 
         TestLogger.info(testClassSeparator);
         //System.out.println(testClassSeparator);
@@ -94,7 +107,7 @@ public class TestLoggerExtension implements BeforeEachCallback, AfterEachCallbac
         //System.out.printf("++ Current Test Method Ends, Total Execution Time of Method [%s] ++\n",
         //        extensionContext.getTestMethod().get().getName());
         //System.out.printf("%d milliseconds = ", duration);
-        printTimeInSeconds(duration);
+        printFormattedTime(duration);
 
         TestLogger.info(testMethodTimeSeparator+"\n");
         //System.out.println(testMethodTimeSeparator);

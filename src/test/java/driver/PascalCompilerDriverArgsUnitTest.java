@@ -52,12 +52,12 @@ public class PascalCompilerDriverArgsUnitTest {
 
     @ParameterizedTest
     @MethodSource("invalidArgumentsListProvider")
-    public void testCheckArgumentsWithInvalidArguments(String input, PascalCompilerException ex) throws IOException, PascalCompilerException {
+    public void testCheckArgumentsWithInvalidArguments(String input, PascalCompilerException ex) throws IOException, IllegalArgumentException {
         String path = dir + input;
         String resourceToString = ResourceHelper.getResourceToString(getClass(), path);
         String[] arguments = JsonHelper.parseObjectToArray(resourceToString, String[].class,
                 sorter);
-        Throwable exception = assertThrows(ex.getClass(), () -> {
+        Throwable exception = assertThrows(PascalCompilerException.class, () -> {
             PascalCompilerDriver.checkArguments(arguments);
         });
         assertEquals(ex.getMessage(), exception.getMessage());
@@ -70,11 +70,12 @@ public class PascalCompilerDriverArgsUnitTest {
         String resourceToString = ResourceHelper.getResourceToString(getClass(), path);
         String[] arguments = JsonHelper.parseObjectToArray(resourceToString, String[].class,
                 sorter);
-        Map<String, String> argumentsMap = PascalCompilerDriver.checkArguments(arguments);
+        DriverArgument driverArgument = PascalCompilerDriver.checkArguments(arguments);
+        //Map<String, String> argumentsMap = (Map<String, String>) driverArgument;
         assertAll(
                 "check keys of arguments",
-                () -> assertTrue(argumentsMap.containsKey("command")),
-                () -> assertTrue(argumentsMap.containsKey("path"))
+                () -> assertNotNull(driverArgument.getDriverCommand()),
+                () -> assertNotNull(driverArgument.getPath())
         );
 
     }

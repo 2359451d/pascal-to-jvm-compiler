@@ -21,7 +21,6 @@ public class LoadStoreHelper extends AbstractHelper {
 
 
     public static void loadIntOrFloatLocal(MethodVisitor mv, TypeDescriptor type, int slotNumber) {
-        System.out.println("loadIntOrFloatLocal type = " + type);
         if (type instanceof IntegerBaseType || type instanceof Boolean
                 || type instanceof Character) {
             mv.visitVarInsn(Opcodes.ILOAD, slotNumber);

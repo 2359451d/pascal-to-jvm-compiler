@@ -1,5 +1,11 @@
 <configuration>
     <contextName>selenium-plugin</contextName>
+
+    <!--5 log levels: TRACE, DEBUG, INFO, WARN, ERROR-->
+
+    <property name="GLOBAL_LOG_PATTERN"
+              value="%highlight(%-5level) %cyan(%msg%n)"/>
+
     <!-- Logging configuration -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <Target>System.out</Target>
@@ -8,6 +14,9 @@
             <!--<pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%level] %msg%n</pattern>-->
             <pattern>[%level] %msg%n</pattern>
         </encoder>
+        <!--<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">-->
+        <!--    <pattern>${GLOBAL_LOG_PATTERN}</pattern>-->
+        <!--</encoder>-->
     </appender>
 
     <!--record any syntactic, semantic errors which would be sent to stderr-->

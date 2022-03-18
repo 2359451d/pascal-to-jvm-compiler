@@ -29,11 +29,20 @@ jobs:
       - name: Build with Maven (Test skipped)
         run: mvn -B package --file pom.xml -DskipTests=true
 
-      - name: Test with Maven
-        run: mvn test
+#      - name: Test with Maven
+#        run: mvn test
+      - name: Syntactic Unit Test with Maven
+        run: mvn -Dtest=PascalCompilerDriverBuilderParseUnitTest test
 
-      - name: Show Workspace Tree Before test
-        run: tree
+      - name: Contextual Unit Test with Maven
+        run: mvn -Dtest=PascalCompilerDriverBuilderCheckUnitTest test
+
+      #TODO
+#      - name: Code Generation Unit Test with Maven
+#        run: mvn -Dtest=PascalCompilerDriverBuilderRunUnitTest test
+
+#      - name: Show Workspace Tree Before test
+#        run: tree
 
       - name: test JAR (Example source file)
         run: |
@@ -76,10 +85,13 @@ jobs:
 
       - name: Test Docker Run (Example source file)
         run: |
-          docker run --rm -v $(pwd)/:/usr/local/project/resources \
+          docker run --rm -v $(pwd)/:/res \
            ${{ env.TEST_TAG }} parse \
            src/test/resources/driver/testPascalCompilerDriver/testCheckArguments/testArguments.pas
 #          docker run --rm ${{ env.TEST_TAG }}
+          docker run --rm -v $(pwd)/:/res \
+          ${{ env.TEST_TAG }} check \
+           src/test/resources/driver/testPascalCompilerDriver/testCheck/testCheckWithSuccess/arithOperator.pas
 
       - name: Build dockerfile (Multi-platform with push,Cached)
         uses: docker/build-push-action@v2

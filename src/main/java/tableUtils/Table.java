@@ -46,8 +46,8 @@ public abstract class Table<K, T> {
      */
     protected Table() {
         scope_stack = new LinkedList<>();
-        scope_stack.addLast(new LinkedHashMap<>());
-
+        //scope_stack.addLast(new LinkedHashMap<>());
+        initScope();
     }
 
     /**
@@ -72,6 +72,10 @@ public abstract class Table<K, T> {
         // add a new table instance into the TableContainer
         tableManager.addTable(context, this);
         tableManager.showAllTables();
+    }
+
+    public void initScope() {
+        this.scope_stack.addLast(new LinkedHashMap<>());
     }
 
     /**
@@ -120,7 +124,7 @@ public abstract class Table<K, T> {
                 }
             }
         }
-        GlobalLogger.debug("Searching exhausted, no declaration found!");
+        //GlobalLogger.debug("Searching exhausted, no declaration found!");
         return null;
     }
 
@@ -172,16 +176,19 @@ public abstract class Table<K, T> {
         // if size=1, then is at the global scope
         String isGlobal = size == 1 ? "global" : "local";
 
-        GlobalLogger.debug("\n===========");
+        GlobalLogger.debug("");
+        GlobalLogger.debug("===========");
         GlobalLogger.debug("Table name: [{}] - Symbols of current scope - {} - [depth {}]",
                 ()->tableName, ()->isGlobal, ()->size - 1);
         //System.out.printf("Table name: [%s] - Symbols of current scope - %s - [depth %d] \n",
         //        tableName, isGlobal, size - 1);
-        Map<K, T> currentScope = getScope_stack().getLast();
-        currentScope.forEach((id, type) -> {
-            GlobalLogger.debug("id = {}, type = {}", ()->id, ()->type);
-            //System.out.println("id = " + id + " ,type = " + type);
-        });
+        if (!getScope_stack().isEmpty()) {
+            Map<K, T> currentScope = getScope_stack().getLast();
+            currentScope.forEach((id, type) -> {
+                GlobalLogger.debug("id = {}, type = {}", ()->id, ()->type);
+                //System.out.println("id = " + id + " ,type = " + type);
+            });
+        }
         GlobalLogger.debug("===========\n");
     }
 
@@ -195,6 +202,10 @@ public abstract class Table<K, T> {
 
     public void setContext(Class<? extends ParserRuleContext> context) {
         this.context = context;
+    }
+
+    public void resetTable() {
+        this.scope_stack.clear();
     }
 
     @Override

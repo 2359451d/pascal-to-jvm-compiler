@@ -59,7 +59,6 @@ public class InstructionHelper extends AbstractHelper {
                                      boolean isInterface, Class<?>... arguments) {
         try {
             Method method = owner.getMethod(methodName, arguments);
-            System.out.println("method = " + method);
             mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL,
                     Type.getInternalName(owner),
                     methodName,
@@ -297,7 +296,6 @@ public class InstructionHelper extends AbstractHelper {
 
         Long intValue = ((IntegerBaseType) type).getValue();
         if (intValue == 0) {
-            System.out.println("loadint mv = " + mv);
             mv.visitInsn(Opcodes.ICONST_0);
         } else mv.visitLdcInsn(Math.toIntExact(intValue));
     }

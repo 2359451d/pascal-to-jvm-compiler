@@ -28,17 +28,23 @@ RUN echo 'alias antlr4="java -Xmx500M -cp '/usr/local/lib/antlr-4.9-complete.jar
     && mkdir -p /usr/local/ast
 
 #WORKDIR /usr/local/grammar
-RUN mkdir -p /usr/local/project && mkdir -p /usr/local/project/resources
+#RUN mkdir -p /usr/local/project && mkdir -p /usr/local/project/resources
+RUN mkdir -p /usr/local/project && mkdir -p /usr/local/project/resources && mkdir -p /res
+
+# set up project jar file
 WORKDIR /usr/local/project
 ADD ./target/pascal-to-jvm-compiler-jar-with-dependencies.jar pascal-to-jvm-compiler.jar
 ADD ./target/pascal-to-jvm-compiler.jar _pascal-to-jvm-compiler.jar
-COPY ./usage.sh usage.sh
+
+WORKDIR /usr/local/project/resources
+# set up jar file entrance script
+COPY ./usage.sh ./usage.sh
 # modify permission
 RUN chmod +x usage.sh
 
-WORKDIR /usr/local/project/resources
+WORKDIR /res
 
 #ENTRYPOINT ["/bin/bash","-c", "java -jar pascal_jvm_compiler.jar"]
-ENTRYPOINT ["../usage.sh"]
+ENTRYPOINT ["/usr/local/project/resources/usage.sh"]
 #ENTRYPOINT ["/bin/bash"]
 #CMD ["echo 'PLEASE specify args'"]
