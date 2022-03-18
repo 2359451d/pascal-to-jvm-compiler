@@ -4,6 +4,7 @@ import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
 import type.TypeDescriptor;
 import tableUtils.Table;
+import utils.log.GlobalLogger;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Set;
@@ -31,7 +32,9 @@ public class RunTimeLibManager {
         Set<Class<? extends RuntimeProcFuncBaseType>> allClasses =
                 reflections.getSubTypesOf(RuntimeProcFuncBaseType.class);
 
-        System.out.println("allClasses = " + allClasses);
+        GlobalLogger.debug("All the builtin classes to be scaned:\n{}",
+                ()->allClasses);
+
         allClasses.forEach(each->{
             try {
                 Class<?> superclass = each.getSuperclass();

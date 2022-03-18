@@ -3,6 +3,7 @@ package tableUtils;
 import ast.visitor.PascalParser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import type.TypeDescriptor;
+import utils.log.GlobalLogger;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -23,9 +24,7 @@ public class TableManager<K, T> {
      */
     private Map<Class<? extends ParserRuleContext>, Table<K, T>> container = new LinkedHashMap<>();
 
-    private TableManager() {
-
-    }
+    private TableManager() { }
 
     /**
      * Getter for external access
@@ -37,10 +36,6 @@ public class TableManager<K, T> {
     public static <K, T> TableManager<K, T> getInstance() {
         return (TableManager<K, T>) instance;
     }
-
-    //public static TableManager<Object, TypeDescriptor> getInstance() {
-    //    return instance;
-    //}
 
     /**
      * Initialise a table safely,
@@ -70,12 +65,8 @@ public class TableManager<K, T> {
 
     public boolean addTable(Class<? extends ParserRuleContext> ctx, Table<K, T> table) {
         // exists duplicate key
-        System.out.println("container before addTable = " + container);
-        System.out.println("ctx = " + ctx);
         if (container.containsKey(ctx)) return false;
-
         container.put(ctx, table);
-        System.out.println("New Table Is Initialised");
         return true;
     }
 
@@ -133,11 +124,29 @@ public class TableManager<K, T> {
     }
 
     public void showAllTables() {
-        System.out.println(container);
+        GlobalLogger.debug("{}", ()->container);
     }
 
-    public void clearAllTables() {
+    public void resetContainer() {
         container.clear();
     }
+
+    public void resetAllTables() {
+        resetAndInitAllTables(false);
+    }
+
+    public void resetAndInitAllTables(boolean init) {
+        container.forEach((k,v)->{
+            v.resetTable();
+            if (init) {
+                v.initScope();
+            }
+        });
+    }
+
+    public void resetAndInitAllTables() {
+        resetAndInitAllTables(true);
+    }
+
 
 }

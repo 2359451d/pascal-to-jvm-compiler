@@ -6,19 +6,23 @@ import ast.visitor.PascalLexer;
 import ast.visitor.PascalParser;
 import ast.visitor.impl.PascalCheckerVisitor;
 import ast.visitor.impl.PascalEncoderVisitor;
+import ast.visitor.listeners.CustomConsoleErrorListener;
+import ch.qos.logback.classic.Level;
 import exception.BuiltinException;
 import exception.PascalCompilerException;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
-import type.Type;
 import type.TypeDescriptor;
+import utils.log.GlobalLogger;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public class PascalCompilerDriverBuilder extends CompilerDriverBuilder {
 
@@ -33,52 +37,63 @@ public class PascalCompilerDriverBuilder extends CompilerDriverBuilder {
     private int contextualErrors;
 
     private String fileName;
+    private DriverCommand command;
+
 
     /**
      * Create a new Driver Builder, with default standard output
-     * @param fileName - Source file
+     *
      */
-    public PascalCompilerDriverBuilder(String fileName) {
-        this.fileName = fileName;
+    public PascalCompilerDriverBuilder(DriverArgument driverArgument) {
+        //this.fileName = fileName;
+        //this.driverInformation = new LinkedHashSet<>();
+        //// generate & stack prepared information(environment, etc.)
+        //generateEnvInformation(fileName);
+        this(null, driverArgument);
     }
 
     /**
      * Create a new Driver Builder with specific output
-     * @param outputStream - Specific output
-     * @param fileName - Source file
+     *
      */
-    public PascalCompilerDriverBuilder(OutputStream outputStream, String fileName) {
+    public PascalCompilerDriverBuilder(OutputStream outputStream, DriverArgument driverArgument) {
         this.setOut(outputStream);
-        this.fileName = fileName;
+        this.fileName = driverArgument.getPath();
+        this.command = driverArgument.getDriverCommand();
+        // generate & stack prepared information(environment, etc.)
+        generateEnvInformation(fileName);
     }
 
     /**
-     * Print out information of source file & environment
+     * Generate and stack information of source file & environment
+     *
      * @param path - Source file
      */
-    private void printInformation(String path) {
-        System.out.printf("Source file - %s\n", path);
-        System.out.printf("Environment information - OS: %s, Arch: %s, Java version: %s\n",
-                System.getProperty("os.name"),
-                System.getProperty("os.arch"),
-                System.getProperty("java.version"));
+    private void generateEnvInformation(String path) {
+        GlobalLogger.info("Source file - {}", () -> path);
+        GlobalLogger.info("Environment information - OS: {}, Arch: {}, Java version: {}",
+                () -> System.getProperty("os.name"),
+                () -> System.getProperty("os.arch"),
+                () -> System.getProperty("java.version"));
     }
 
     @Override
     public CompilerDriverBuilder parse() throws IOException, PascalCompilerException {
         lexer = new PascalCustomLexer(
                 CharStreams.fromFileName(fileName));
-
-        // print prepared information(environment, etc.)
-        printInformation(fileName);
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(CustomConsoleErrorListener.INSTANCE);
 
         tokens = new CommonTokenStream(lexer);
         parser = new PascalParser(tokens);
+        parser.removeErrorListeners();
+        parser.addErrorListener(CustomConsoleErrorListener.INSTANCE);
         tree = parser.program();
-        showSyntacticErrors();
+        generateSyntacticInformation();
 
         if (syntaxErrors > 0 || tokenErrors > 0) {
             //throw new PascalCompilerException("Syntactic analysis failed...");
+            GlobalLogger.setLevel(Level.INFO);
             throw BuiltinException.PARSE_FAILED.getException();
         }
 
@@ -89,16 +104,18 @@ public class PascalCompilerDriverBuilder extends CompilerDriverBuilder {
     public CompilerDriverBuilder check() throws PascalCompilerException, IOException {
         if (tokens == null || tree == null) {
             //throw new PascalCompilerException("Syntactic analysis not being executed yet...");
+            GlobalLogger.setLevel(Level.INFO);
             throw BuiltinException.PARSE_NOT_START.getException();
         }
 
         checker = new PascalCheckerVisitor(tokens);
         checker.visit(tree);
-        showContextualErrors();
+        generateContextualInformation();
 
         //PascalCheckerVisitor _checker = (PascalCheckerVisitor) checker;
         if (contextualErrors > 0) {
             //throw new PascalCompilerException("Contextual analysis failed...");
+            GlobalLogger.setLevel(Level.INFO);
             throw BuiltinException.CHECK_FAILED.getException();
         }
 
@@ -109,18 +126,17 @@ public class PascalCompilerDriverBuilder extends CompilerDriverBuilder {
     public CompilerDriverBuilder run() throws PascalCompilerException, IOException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         if (tokens == null || tree == null) {
             //throw new PascalCompilerException("Syntactic analysis not being executed yet...");
+            GlobalLogger.setLevel(Level.INFO);
             throw BuiltinException.PARSE_NOT_START.getException();
         }
 
-        Path parentDir = Path.of(fileName).getParent();
-        System.out.println("parentDir = " + parentDir);
 
+        Path parentDir = Path.of(fileName).getParent();
         runner = new PascalEncoderVisitor(parentDir.toString(), tokens);
         runner.visit(tree);
         PascalEncoderVisitor.run();
         return this;
     }
-
 
 
     private void println(String str) throws IOException {
@@ -144,25 +160,29 @@ public class PascalCompilerDriverBuilder extends CompilerDriverBuilder {
         }
     }
 
-    private void showSyntacticErrors() throws IOException {
-        if (parser == null && checker == null) {
-            // REMARK: not a exception
-            println("Compilation not start yet, nothing to be shown...");
-            return;
-        }
+    private void generateSyntacticInformation() throws IOException {
         syntaxErrors = parser.getNumberOfSyntaxErrors();
         tokenErrors = ((PascalCustomLexer) lexer).getTokenErrors();
-        println("Syntactic analysis Results: ");
-        println(tokenErrors + " token recognition errors");
-        println(syntaxErrors + " syntactic errors");
+        if (command.equals(DriverCommand.PARSE) || syntaxErrors > 0 || tokenErrors > 0) {
+            GlobalLogger.info("Syntactic analysis Results: ");
+            GlobalLogger.info("{} token recognition errors", () -> tokenErrors);
+            GlobalLogger.info("{} syntactic errors", () -> syntaxErrors);
+        }
+        //println("Syntactic analysis Results: ");
+        //println(tokenErrors + " token recognition errors");
+        //println(syntaxErrors + " syntactic errors");
     }
 
-    private void showContextualErrors() throws IOException {
+    private void generateContextualInformation() throws IOException {
         if (checker != null) {
             PascalCheckerVisitor _checker = (PascalCheckerVisitor) checker;
             contextualErrors = _checker.getNumberOfContextualErrors();
-            println("Contextual analysis Results: ");
-            println(contextualErrors + " contextual errors");
+            //println("Contextual analysis Results: ");
+            //println(contextualErrors + " contextual errors");
+            if (command.equals(DriverCommand.CHECK) || contextualErrors>0) {
+                GlobalLogger.info("Contextual analysis results: ");
+                GlobalLogger.info("{} contextual errors", () -> contextualErrors);
+            }
         }
     }
 
@@ -177,28 +197,6 @@ public class PascalCompilerDriverBuilder extends CompilerDriverBuilder {
     public int getContextualErrors() {
         return contextualErrors;
     }
-
-    /**
-    public void showResults() throws IOException {
-        if (parser == null && checker == null) {
-            println("Compilation not start yet, nothing to be shown...");
-            return;
-        }
-
-        int syntaxErrors = parser.getNumberOfSyntaxErrors();
-        int tokenErrors = ((PascalCustomLexer) lexer).getTokenErrors();
-        println("Syntactic analysis Results: ");
-        println(tokenErrors + " token recognition errors");
-        println(syntaxErrors + " syntactic errors");
-
-        if (checker != null) {
-            PascalCheckerVisitor _checker = (PascalCheckerVisitor) checker;
-            int contextualErrors = _checker.getNumberOfContextualErrors();
-            println("Contextual analysis Results: ");
-            println(contextualErrors + " contextual errors");
-        }
-    }
- **/
 
 }
 

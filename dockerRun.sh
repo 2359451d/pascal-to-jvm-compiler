@@ -1,7 +1,19 @@
 #!/bin/bash
-# run example (Once finished, container would be destroyed directly)
-# start a new container, assuming source files is from current path
-# default container workdir is /usr/local/project/resources
-docker run --rm -v $(pwd)/:/usr/local/project/resources \
- --name ptj2 pascal-to-jvm-compiler parse \
- src/test/resources/driver/testPascalCompilerDriver/testCheckArguments/testArguments.pas
+
+# Usage: ./dockerRun.sh <command> <absolute_path_to_the_file>
+# Available Commands:
+# - parse
+# - check
+# - run
+
+_command=$1
+_fullPath=$2
+_path=${_fullPath%/*}
+_fileName=${_fullPath##*/}
+
+#echo $_path
+#echo $_fileName
+
+docker run --rm -v "$_path":/res \
+ --name ptj barlinbento/pascal-to-jvm-compiler "$_command" \
+ "$_fileName"

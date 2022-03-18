@@ -17,6 +17,10 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
+/**
+ * Driver Arguments Unit Test Cases
+ *
+ */
 @TestResourcePath("testPascalCompilerDriver/testCheckArguments/")
 public class PascalCompilerDriverArgsUnitTest {
 
@@ -31,9 +35,6 @@ public class PascalCompilerDriverArgsUnitTest {
                 "command", "path"
         });
     }
-
-    //private static final PascalCompilerException invalidCommandException = new PascalCompilerException("Invalid command. Available Usage: parse, check");
-    //private static final PascalCompilerException invalidPathException = new PascalCompilerException("Invalid file path");
 
     private static Stream<Arguments> invalidArgumentsListProvider() {
         return Stream.of(
@@ -51,12 +52,12 @@ public class PascalCompilerDriverArgsUnitTest {
 
     @ParameterizedTest
     @MethodSource("invalidArgumentsListProvider")
-    public void testCheckArgumentsWithInvalidArguments(String input, PascalCompilerException ex) throws IOException, PascalCompilerException {
+    public void testCheckArgumentsWithInvalidArguments(String input, PascalCompilerException ex) throws IOException, IllegalArgumentException {
         String path = dir + input;
         String resourceToString = ResourceHelper.getResourceToString(getClass(), path);
         String[] arguments = JsonHelper.parseObjectToArray(resourceToString, String[].class,
                 sorter);
-        Throwable exception = assertThrows(ex.getClass(), () -> {
+        Throwable exception = assertThrows(PascalCompilerException.class, () -> {
             PascalCompilerDriver.checkArguments(arguments);
         });
         assertEquals(ex.getMessage(), exception.getMessage());
@@ -69,11 +70,12 @@ public class PascalCompilerDriverArgsUnitTest {
         String resourceToString = ResourceHelper.getResourceToString(getClass(), path);
         String[] arguments = JsonHelper.parseObjectToArray(resourceToString, String[].class,
                 sorter);
-        Map<String, String> argumentsMap = PascalCompilerDriver.checkArguments(arguments);
+        DriverArgument driverArgument = PascalCompilerDriver.checkArguments(arguments);
+        //Map<String, String> argumentsMap = (Map<String, String>) driverArgument;
         assertAll(
                 "check keys of arguments",
-                () -> assertTrue(argumentsMap.containsKey("command")),
-                () -> assertTrue(argumentsMap.containsKey("path"))
+                () -> assertNotNull(driverArgument.getDriverCommand()),
+                () -> assertNotNull(driverArgument.getPath())
         );
 
     }
@@ -89,56 +91,5 @@ public class PascalCompilerDriverArgsUnitTest {
             PascalCompilerDriver.main(arguments);
         });
     }
-
-
-    // test cases
-    //@Parameterized.Parameters(name = "{index}: resourceName:{0}")
-    //public static Object[] data() {
-    //    return new Object[]{
-    //            "invalidCommand.json",
-    //            "invalidPath.json",
-    //            "validParseArguments.json"
-    //    };
-    //}
-
-    //@Parameterized.Parameter
-    //public String input;
-    //
-    //@Test
-    //public void test() throws Exception {
-    //    String path = dir + input;
-    //    String resourceToString = ResourceHelper.getResourceToString(getClass(), path);
-    //    String[] arguments = JsonHelper.parseObjectToArray(resourceToString, String[].class,
-    //            sorter);
-    //    PascalCompilerDriver.main(arguments);
-    //}
-
-
-    //@Test
-    //public void testRunWithInvalidCommand() throws Exception {
-    //    String path = dir + "invalidCommand.json";
-    //    String resourceToString = ResourceHelper.getResourceToString(getClass(), path);
-    //    String[] arguments = JsonHelper.parseObjectToArray(resourceToString, String[].class,
-    //            sorter);
-    //    PascalCompilerDriver.main(arguments);
-    //}
-    //
-    //@Test
-    //public void testRunWithInvalidPath() throws Exception {
-    //    String path = dir + "invalidPath.json";
-    //    String resourceToString = ResourceHelper.getResourceToString(getClass(), path);
-    //    String[] arguments = JsonHelper.parseObjectToArray(resourceToString, String[].class,
-    //            sorter);
-    //    PascalCompilerDriver.main(arguments);
-    //}
-    //
-    //@Test
-    //public void testRunWithValidArguments() throws Exception {
-    //    String path = dir + "validarguments.json";
-    //    String resourceToString = ResourceHelper.getResourceToString(getClass(), path);
-    //    String[] arguments = JsonHelper.parseObjectToArray(resourceToString, String[].class,
-    //            sorter);
-    //    PascalCompilerDriver.main(arguments);
-    //}
 
 }

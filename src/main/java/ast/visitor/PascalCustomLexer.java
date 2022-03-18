@@ -22,4 +22,6 @@ public class PascalCustomLexer extends PascalLexer {
         return _tokenErrors;
     }
 
+
+
 }

@@ -1,0 +1,63 @@
+<configuration>
+    <contextName>selenium-plugin</contextName>
+
+    <!--5 log levels: TRACE, DEBUG, INFO, WARN, ERROR-->
+
+    <property name="GLOBAL_LOG_PATTERN"
+              value="%highlight(%-5level) %cyan(%msg%n)"/>
+
+    <!-- Logging configuration -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <Target>System.out</Target>
+        <filter class="utils.log.StdOutFilter"/>
+        <encoder>
+            <!--<pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%level] %msg%n</pattern>-->
+            <pattern>[%level] %msg%n</pattern>
+        </encoder>
+        <!--<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">-->
+        <!--    <pattern>${GLOBAL_LOG_PATTERN}</pattern>-->
+        <!--</encoder>-->
+    </appender>
+
+    <!--record any syntactic, semantic errors which would be sent to stderr-->
+    <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
+        <Target>System.err</Target>
+        <!-- deny all events with a level below error -->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <encoder>
+            <!--<pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%level] [%thread] %logger{10} [%file:%line] %msg%n</pattern>-->
+            <pattern>[%level] %msg%n</pattern>
+        </encoder>
+    </appender>
+
+
+
+    <!--Global logger-->
+    <logger name="utils.log.GlobalLogger" level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <!--<property name="TEST_LOG_PATTERN"-->
+    <!--          value="%highlight(TEST-%-5level) %boldMagenta(%logger{50}) %cyan(%msg%n)"/>-->
+    <property name="TEST_LOG_PATTERN"
+              value="%highlight(TEST-%-5level) %cyan(%msg%n)"/>
+    <appender name="TESTSTDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <Target>System.out</Target>
+        <filter class="utils.log.StdOutFilter"/>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${TEST_LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+    <!--Testing suite logger-->
+    <logger name="utils.log.TestLogger" level="INFO">
+        <appender-ref ref="TESTSTDOUT"/>
+    </logger>
+
+    <!--default logging level set to INFO -->
+    <!--developing profile - to see more detailed debugging info, set to DEBUG-->
+    <root level="INFO">
+        <appender-ref ref="STDERR"/>
+    </root>
+</configuration>

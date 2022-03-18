@@ -25,7 +25,6 @@ public class LocalsTable<K, T extends LocalVariableInformation> extends Table<K,
     @Override
     public void enterLocalScope() {
         super.enterLocalScope();
-        System.out.println("Locals enter scope");
         this.lengthStack.addLast(0);
     }
 
@@ -69,12 +68,8 @@ public class LocalsTable<K, T extends LocalVariableInformation> extends Table<K,
      * * @param length
      */
     public boolean put(K id, int length, boolean isStatic) {
-        System.out.println("current local table size "+ this.sizeOfCurrentScope());
-
         int start = this.length();
-        System.out.println("start = " + start);
         updateLength(length); //update length as new local put
-        System.out.println("length after update = " + this.length());
         return put(id,start,length,isStatic);
     }
 

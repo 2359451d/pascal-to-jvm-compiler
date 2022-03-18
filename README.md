@@ -190,6 +190,21 @@ Examples:
 
 TBC
 
+* mvn test
+
+test suites and resources
+
+* main test suites and test cases can be found under `src/test/java`
+* basic test suites are designed for testing:
+  * **driver arguments**
+  * **parse** (syntactic analysis)
+  * **check** (semantic analysis)
+  * **run** (code generation)
+* resources of each purpose can be found within corresponding directories under `src/test/resources`
+  * e.g. dir of source testing pascal program resources of semantic analysis - `src/test/resources/driver/testPascalCompilerDriver/testCheck`
+
+# CI/CD
+
 # --------------DRAFT------------------
 
 # Regenerate Compiler Components (Lexer & Parser)

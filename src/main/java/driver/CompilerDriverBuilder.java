@@ -1,6 +1,7 @@
 package driver;
 
 import exception.PascalCompilerException;
+import utils.log.GlobalLogger;
 
 import java.io.IOException;
 import java.io.OutputStream;
