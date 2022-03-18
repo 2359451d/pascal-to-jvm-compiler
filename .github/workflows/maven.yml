@@ -86,12 +86,12 @@ jobs:
       - name: Test Docker Run (Example source file)
         run: |
           docker run --rm -v $(pwd)/:/res \
-           ${{ env.TEST_TAG }} parse \
-           src/test/resources/driver/testPascalCompilerDriver/testCheckArguments/testArguments.pas
-#          docker run --rm ${{ env.TEST_TAG }}
+          ${{ env.TEST_TAG }} parse \
+          src/test/resources/driver/testPascalCompilerDriver/testCheckArguments/testArguments.pas
+
           docker run --rm -v $(pwd)/:/res \
           ${{ env.TEST_TAG }} check \
-           src/test/resources/driver/testPascalCompilerDriver/testCheck/testCheckWithSuccess/arithOperator.pas
+          src/test/resources/driver/testPascalCompilerDriver/testCheck/testCheckWithSuccess/arithOperator.pas
 
       - name: Build dockerfile (Multi-platform with push,Cached)
         uses: docker/build-push-action@v2
