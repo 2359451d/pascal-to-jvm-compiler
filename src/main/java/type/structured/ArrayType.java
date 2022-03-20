@@ -61,9 +61,7 @@ public class ArrayType extends StructuredBaseType {
 
         for (int i = 0; i < this.indexList.size(); i++) {
             TypeDescriptor thisType = this.indexList.get(i);
-            System.out.println("thisType = " + thisType);
             TypeDescriptor thatType = thatIndexList.get(i);
-            System.out.println("thatType = " + thatType);
 
             // if left is EnumeratedType then right type(subrange) must cover all the enum identifiers
             if (thisType instanceof EnumeratedType && thatType instanceof Subrange) {
@@ -117,12 +115,6 @@ public class ArrayType extends StructuredBaseType {
         TypeDescriptor rightTypeUpperBound = rightType.getUpperBound();
 
         // TODO Enumerated subrange ???
-
-        System.out.println("array type leftTypeHostType = " + leftTypeHostType);
-        System.out.println("rightTypeHostType = " + rightTypeHostType);
-
-        System.out.println("leftType = " + leftType);
-        System.out.println("array type rightType  = " + rightType);
 
         // check other ordinal types
         if (rightTypeHostType == leftTypeHostType) {

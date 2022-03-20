@@ -1,0 +1,1 @@
+arrayTestA003.pas(31,14) Error: Incompatible types: got "Array[0..1] Of Array[1..10] Of LongInt" expected "Array[0..1] Of Array[1..10] Of Real"

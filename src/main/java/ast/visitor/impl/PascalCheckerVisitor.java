@@ -2,6 +2,7 @@ package ast.visitor.impl;
 
 import ast.visitor.PascalBaseVisitor;
 import ast.visitor.PascalParser;
+import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -41,6 +42,7 @@ import tableUtils.Table;
 import tableUtils.TableManager;
 import tableUtils.TypeTable;
 import utils.ErrorMessage;
+import utils.log.ErrorReporter;
 import utils.log.GlobalLogger;
 
 import java.util.*;
@@ -84,7 +86,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         int finishLine = finish.getLine();
         int finishCol = finish.getCharPositionInLine();
         // lazy logging
-        GlobalLogger.error("{}:{}-{}:{} {}",
+        ErrorReporter.error("{}:{}-{}:{} {}",
                 ()->startLine,
                 ()->startCol,
                 ()->finishLine,
@@ -545,7 +547,8 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             valueMap.put(id,
                     i);
             // insert each enumerated identifier into the symbol table
-            symbolTable.put(id, new EnumeratedIdentifier(enumeratedType, id));
+            //symbolTable.put(id, new EnumeratedIdentifier(enumeratedType, id));
+            define(id,new EnumeratedIdentifier(enumeratedType, id),ctx);
         }
         enumeratedType.setValueMap(valueMap);
 
@@ -1843,7 +1846,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
             for (PascalParser.ExpressionContext eachExpr : expression) {
                 ArrayType _arrayType = null;
-
                 if (structuredTypeToBeCheckNext instanceof ArrayType)
                     _arrayType = (ArrayType) structuredTypeToBeCheckNext;
                 if (structuredTypeToBeCheckNext instanceof FormalParam) {
@@ -1865,14 +1867,13 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 //            ctx.parent.getText(), structuredTypeToBeCheckNext);
                 //    return ErrorType.INVALID_ARRAY_SCRIPTING;
                 //}
-
                 TypeDescriptor expressionType = visit(eachExpr);
                 TypeDescriptor declaredType = indexList.get(0);//get first
+
                 if (!expressionType.equiv(declaredType) || (
                         declaredType instanceof Character && expressionType instanceof StringLiteral
                 )) {
                     // updated if match to perform further checking
-
                     if (expressionType instanceof StringLiteral) {
                         String stringContent = ((StringLiteral) expressionType).getValue().replace("'", "");
                         if (stringContent.length() == 1) continue;
@@ -1893,7 +1894,8 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
                     reportError(ctx, "Illegal operation [%s%s] with invalid array scripting [%s].\nExpected: %s.\nActual: %s",
                             structuredTypeId, ctx.parent.getText(), ctx.getText(), declaredType, expressionType);
-                    return ErrorType.INVALID_ARRAY_SCRIPTING;
+                    //return ErrorType.INVALID_ARRAY_SCRIPTING;
+                    return structuredTypeToBeCheckNext;
                 }
             }
             return structuredTypeToBeCheckNext;
@@ -2019,10 +2021,10 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         }
 
         // suppress errors as already reported in other nodes
-        if (_leftType.equiv(ErrorType.INVALID_ARRAY_SCRIPTING)
-                || _leftType.equiv(ErrorType.INVALID_RECORD_FIELD)) {
-            return null;
-        }
+        //if (_leftType.equiv(ErrorType.INVALID_ARRAY_SCRIPTING)
+        //        || _leftType.equiv(ErrorType.INVALID_RECORD_FIELD)) {
+        //    return null;
+        //}
 
         // if left identifier is an defined type identifier or enumerated type identifier
         // report errors
@@ -2043,11 +2045,12 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             Map<String, Integer> valueMap = __leftType.getValueMap();
 
             String expressionValue = null;
+            System.out.println("rightType = " + rightType);
 
             if (rightType instanceof EnumeratedIdentifier) {
                 expressionValue = ((EnumeratedIdentifier) rightType).getValue();
             } else if (rightType instanceof EnumeratedType) {
-                if (_leftType.equiv(rightType)) return null;
+                if (__leftType.equiv(rightType)) return null;
             } else if (rightType instanceof ErrorType) {
                 //    suppress errors
                 return null;
@@ -2056,13 +2059,18 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             }
 
             if (!valueMap.containsKey(expressionValue)) {
-                TypeDescriptor typeDescriptor = symbolTable.get(expression.toLowerCase());
+                //TypeDescriptor typeDescriptor = symbolTable.get(expression.toLowerCase());
+                TypeDescriptor typeDescriptor = retrieve(expression.toLowerCase(),false,ctx);
+
                 // if enumerated constant defined
                 if (typeDescriptor instanceof EnumeratedIdentifier) {
                     EnumeratedIdentifier constant = (EnumeratedIdentifier) typeDescriptor;
                     if (constant.isConstant() && valueMap.containsKey(constant.getValue())) return null;
                 }
-                reportError(ctx, "Illegal enumerated type assignment [%s]. Right operand [%s] is not valid.\nExpected: %s,\nActual: %s",
+                if (typeDescriptor.equiv(ErrorType.UNDEFINED_TYPE)) {
+                    reportError(ctx, "Illegal enumerated type assignment [%s]. Right operand [%s] is not valid.\nExpected: %s,\nActual: %s",
+                            assignmentCtx, expression, valueMap.keySet(), rightType);
+                }else reportError(ctx, "Illegal enumerated type assignment [%s]. Right operand [%s] is not valid.\nExpected: %s,\nActual: %s",
                         assignmentCtx, expression, valueMap.keySet(), typeDescriptor);
             }
             return null;

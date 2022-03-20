@@ -1,0 +1,2 @@
+/mnt/d/Workspace/L4-Source-Repo/src/test/resources/driver/testPascalCompilerDriver/testCheck/testCheckWithError/addAssignment001.pas: In main program:
+/mnt/d/Workspace/L4-Source-Repo/src/test/resources/driver/testPascalCompilerDriver/testCheck/testCheckWithError/addAssignment001.pas:11: error: incompatible types in assignment

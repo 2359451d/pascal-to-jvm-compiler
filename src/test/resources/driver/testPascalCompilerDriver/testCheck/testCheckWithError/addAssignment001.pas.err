@@ -1,0 +1,2 @@
+Compiling /mnt/d/Workspace/L4-Source-Repo/src/test/resources/driver/testPascalCompilerDriver/testCheck/testCheckWithError/addAssignment001.pas
+addAssignment001.pas(11,11) Error: Incompatible types: got "ShortInt" expected "Boolean"

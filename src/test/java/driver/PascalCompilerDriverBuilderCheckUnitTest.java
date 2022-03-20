@@ -63,7 +63,9 @@ public class PascalCompilerDriverBuilderCheckUnitTest {
         String fullPath = newPath.toString();
         File[] files = TestUtils.getAllFilesInDir(fullPath);
         return files == null ? Stream.of(Arguments.of(""))
-                : Arrays.stream(files).map(each -> Arguments.of(each.getPath()));
+                : Arrays.stream(files)
+                .filter(each->each.getName().endsWith(".pas"))
+                .map(each -> Arguments.of(each.getPath()));
     }
 
     /**

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.*;
 import tableUtils.TableManager;
 import type.TypeDescriptor;
+import utils.log.ErrorReporter;
 import utils.log.GlobalLogger;
 import utils.log.TestLogger;
 import utils.test.TestUtils;
@@ -58,6 +59,9 @@ public class TestLoggerExtension implements BeforeEachCallback, AfterEachCallbac
 
     @Override
     public void beforeEach(ExtensionContext extensionContext) throws Exception {
+        //ErrorReporter.info("{}", () -> testBodySeparator);
+        ErrorReporter.info("{}", extensionContext::getDisplayName);
+
         TestLogger.info("++ Current Test Method - [{}] ++",
                 ()->extensionContext.getTestMethod().get().getName());
         TestLogger.info("{}", extensionContext::getDisplayName);

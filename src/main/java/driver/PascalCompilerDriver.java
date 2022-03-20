@@ -6,6 +6,8 @@ import exception.PascalCompilerException;
 import org.apache.commons.lang3.StringUtils;
 import utils.log.GlobalLogger;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
@@ -44,6 +46,8 @@ public class PascalCompilerDriver {
             //throw new PascalCompilerException("Invalid file path. Please specify valid path");
             throw BuiltinException.INVALID_PATH.getException();
         }
+        final boolean exists = new File(path).exists();
+        if (!exists) throw new PascalCompilerException(new FileNotFoundException("File not found: "+path).getMessage());
 
         return new DriverArgument(driverCommand,path);
     }

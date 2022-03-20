@@ -4,7 +4,7 @@ package exception;
  * Existing built-in exception for reuse
  */
 public enum BuiltinException {
-    INVALID_COMMAND(new PascalCompilerException("Invalid command. Available Usage: parse, check")),
+    INVALID_COMMAND(new PascalCompilerException("Invalid command. Available Usage: parse, check, run")),
     INVALID_PATH(new PascalCompilerException("Invalid file path. Please specify valid path")),
 
     PARSE_NOT_START(new PascalCompilerException("Syntactic analysis not being executed yet...")),
