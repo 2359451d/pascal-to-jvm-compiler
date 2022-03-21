@@ -1,25 +1,0 @@
-P5 Pascal compiler vs. 1.4
-Pascal-P5 complies with the requirements of level 0 of ISO/IEC 7185.
-
-
-     1      -56 program addAssignment001; 
-     2      -56 var 
-     3      -56   first, second, sum: integer; 
-     4      -56   str: packed array [1..6] of char; 
-     5      -56   flag: Boolean; 
-     6      -56 begin 
-     7        3   first := 1; 
-     8        7   second :=2; 
-     9        9   str := 'string'; 
-    10       12   flag := true; 
-    11       15   flag := 1;{illegal assignment} 
-    11   ****              ^129
-    12       16   sum := first+second; 
-    13       20 end.
-
-Errors in program: 1
-
-Error numbers in listing:
--------------------------
-129  Type conflict of operands
-

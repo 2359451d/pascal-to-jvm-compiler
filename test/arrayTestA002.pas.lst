@@ -1,0 +1,8 @@
+Free Pascal Compiler version 3.2.2 [2021/05/16] for x86_64
+Copyright (c) 1993-2021 by Florian Klaempfl and others
+Target OS: Linux for x86-64
+Compiling ./test/arrayTestA002.pas
+arrayTestA002.pas(31,17) Error: Incompatible types: got "Single" expected "LongInt"
+arrayTestA002.pas(32,4) Fatal: There were 1 errors compiling module, stopping
+Fatal: Compilation aborted
+Error: /usr/local/bin/ppcx64 returned an error exitcode
