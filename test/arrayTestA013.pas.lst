@@ -1,8 +1,5 @@
-Free Pascal Compiler version 3.2.2 [2021/05/16] for x86_64
-Copyright (c) 1993-2021 by Florian Klaempfl and others
-Target OS: Linux for x86-64
-Compiling ./test/arrayTestA013.pas
-arrayTestA013.pas(32,11) Error: Incompatible types: got "<enumeration type>" expected "weather"
-arrayTestA013.pas(33,4) Fatal: There were 1 errors compiling module, stopping
-Fatal: Compilation aborted
-Error: /usr/local/bin/ppcx64 returned an error exitcode
+./test/arrayTestA013.pas:1: warning: unknown compiler directive `mode iso'
+./test/arrayTestA013.pas:2: warning: unknown compiler directive `rangechecks on'
+./test/arrayTestA013.pas:18: warning: identifiers should not end with an underscore
+./test/arrayTestA013.pas: In main program:
+./test/arrayTestA013.pas:32: error: type mismatch in array index

@@ -32,14 +32,6 @@
         </encoder>
     </appender>
 
-    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <file>errors.log</file>
-        <append>false</append>
-        <encoder>
-            <pattern>[%level] %msg%n</pattern>
-        </encoder>
-    </appender>
-
     <!--Global logger-->
     <logger name="utils.log.GlobalLogger" level="INFO">
         <appender-ref ref="STDOUT"/>
@@ -49,7 +41,18 @@
     <logger name="utils.log.ErrorReporter" level="INFO">
         <appender-ref ref="STDERR"/>
         <appender-ref ref="STDOUT"/>
-        <!--<appender-ref ref="FILE"/>-->
+    </logger>
+
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>regressErrors.log</file>
+        <append>false</append>
+        <encoder>
+            <pattern>[%level] %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="utils.log.RegressionTestErrorReporter" level="INFO">
+        <appender-ref ref="FILE"/>
     </logger>
 
     <!--<property name="TEST_LOG_PATTERN"-->

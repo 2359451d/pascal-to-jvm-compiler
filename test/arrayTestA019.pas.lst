@@ -1,9 +1,5 @@
-Free Pascal Compiler version 3.2.2 [2021/05/16] for x86_64
-Copyright (c) 1993-2021 by Florian Klaempfl and others
-Target OS: Linux for x86-64
-Compiling ./test/arrayTestA019.pas
-arrayTestA019.pas(33,15) Warning: Variable "arrEnum2" does not seem to be initialized
-arrayTestA019.pas(34,19) Error: Incompatible types: got "weather2" expected "weather"
-arrayTestA019.pas(35,4) Fatal: There were 1 errors compiling module, stopping
-Fatal: Compilation aborted
-Error: /usr/local/bin/ppcx64 returned an error exitcode
+./test/arrayTestA019.pas:1: warning: unknown compiler directive `mode iso'
+./test/arrayTestA019.pas:2: warning: unknown compiler directive `rangechecks on'
+./test/arrayTestA019.pas:19: warning: identifiers should not end with an underscore
+./test/arrayTestA019.pas: In main program:
+./test/arrayTestA019.pas:34: error: incompatible types in assignment

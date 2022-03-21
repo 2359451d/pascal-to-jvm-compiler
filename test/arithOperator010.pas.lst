@@ -1,8 +1,2 @@
-Free Pascal Compiler version 3.2.2 [2021/05/16] for x86_64
-Copyright (c) 1993-2021 by Florian Klaempfl and others
-Target OS: Linux for x86-64
-Compiling ./test/arithOperator010.pas
-arithOperator010.pas(14,8) Error: Incompatible types: got "Boolean" expected "Int64"
-arithOperator010.pas(16) Fatal: There were 1 errors compiling module, stopping
-Fatal: Compilation aborted
-Error: /usr/local/bin/ppcx64 returned an error exitcode
+./test/arithOperator010.pas: In main program:
+./test/arithOperator010.pas:14: error: wrong type of argument to unary `-'

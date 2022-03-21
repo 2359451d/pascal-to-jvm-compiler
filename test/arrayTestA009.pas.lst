@@ -1,8 +1,4 @@
-Free Pascal Compiler version 3.2.2 [2021/05/16] for x86_64
-Copyright (c) 1993-2021 by Florian Klaempfl and others
-Target OS: Linux for x86-64
-Compiling ./test/arrayTestA009.pas
-arrayTestA009.pas(30,18) Error: range check error while evaluating constants (11 must be between 1 and 10)
-arrayTestA009.pas(31,4) Fatal: There were 1 errors compiling module, stopping
-Fatal: Compilation aborted
-Error: /usr/local/bin/ppcx64 returned an error exitcode
+./test/arrayTestA009.pas:1: warning: unknown compiler directive `mode iso'
+./test/arrayTestA009.pas:2: warning: unknown compiler directive `rangechecks on'
+./test/arrayTestA009.pas: In main program:
+./test/arrayTestA009.pas:30: error: constant out of range

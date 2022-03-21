@@ -1,12 +1,12 @@
 **************************************************
 Log file generated for compiler [gpc]
 Tese Case Count: [34], Matched: [32], Unmatched: [2]
-20220321-13:13:12 ---> 20220321-13:13:18 Total:6 seconds finished
+20220321-02:41:17 ---> 20220321-02:41:24 Total:7 seconds finished
 **************************************************
 
 ===Unmatched Source Name: ./test/arrayTestA011.pas===
 --- ./test/arrayTestA011.pas.err	2022-03-21 02:33:21.279320700 +0000
-+++ ./test/arrayTestA011.pas.lst	2022-03-21 13:13:00.853506600 +0000
++++ ./test/arrayTestA011.pas.lst	2022-03-21 02:41:05.876572800 +0000
 @@ -1 +1,5 @@
 -arrayTestA011.pas(32,20) Error: Incompatible types: got "Single" expected "Array[1..10] Of LongInt"
 +./test/arrayTestA011.pas:1: warning: unknown compiler directive `mode iso'
@@ -17,7 +17,7 @@ Tese Case Count: [34], Matched: [32], Unmatched: [2]
 
 ===Unmatched Source Name: ./test/arrayTestA022.pas===
 --- ./test/arrayTestA022.pas.err	2022-03-21 02:33:22.254320300 +0000
-+++ ./test/arrayTestA022.pas.lst	2022-03-21 13:13:02.665677200 +0000
++++ ./test/arrayTestA022.pas.lst	2022-03-21 02:41:07.932785300 +0000
 @@ -1 +1,4 @@
 -arrayTestA022.pas(32,17) Error: Can't read or write variables of this type
 +./test/arrayTestA022.pas:16: warning: identifiers should not end with an underscore

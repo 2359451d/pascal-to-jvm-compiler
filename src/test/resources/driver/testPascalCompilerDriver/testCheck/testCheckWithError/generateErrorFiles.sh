@@ -21,9 +21,15 @@ do
     # echo $i
     #  capture error files, sort and supress errors (i.e. keep error line unique)
     if [[ $i == *.pas ]] ;then
-        echo "error file generating: $i ..."
         $compiler -$flags $i > $i.err_
         (head -n -2 $i.err_ | grep Error | sort -nu) > $i.err
+
+        # if should compiled with errors
+        if [[ ! -z $i.err ]];then
+            echo "error file generating: $i ..."
+        else
+            rm $i.err
+        fi
         
         # clean up
         rm $i.err_ 

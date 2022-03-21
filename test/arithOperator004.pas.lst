@@ -1,8 +1,2 @@
-Free Pascal Compiler version 3.2.2 [2021/05/16] for x86_64
-Copyright (c) 1993-2021 by Florian Klaempfl and others
-Target OS: Linux for x86-64
-Compiling ./test/arithOperator004.pas
-arithOperator004.pas(13,11) Error: Operator is not overloaded: "ShortInt" + "Boolean"
-arithOperator004.pas(15) Fatal: There were 1 errors compiling module, stopping
-Fatal: Compilation aborted
-Error: /usr/local/bin/ppcx64 returned an error exitcode
+./test/arithOperator004.pas: In main program:
+./test/arithOperator004.pas:13: error: invalid operands to `+'

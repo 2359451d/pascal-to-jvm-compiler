@@ -1,9 +1,5 @@
-Free Pascal Compiler version 3.2.2 [2021/05/16] for x86_64
-Copyright (c) 1993-2021 by Florian Klaempfl and others
-Target OS: Linux for x86-64
-Compiling ./test/arrayTestA012.pas
-arrayTestA012.pas(31,13) Warning: Variable "arrVar3_" does not seem to be initialized
-arrayTestA012.pas(32,14) Error: Incompatible types: got "Single" expected "Array[0..1] Of Array[1..10] Of LongInt"
-arrayTestA012.pas(33,4) Fatal: There were 1 errors compiling module, stopping
-Fatal: Compilation aborted
-Error: /usr/local/bin/ppcx64 returned an error exitcode
+./test/arrayTestA012.pas:1: warning: unknown compiler directive `mode iso'
+./test/arrayTestA012.pas:2: warning: unknown compiler directive `rangechecks on'
+./test/arrayTestA012.pas:18: warning: identifiers should not end with an underscore
+./test/arrayTestA012.pas: In main program:
+./test/arrayTestA012.pas:32: error: incompatible types in assignment
