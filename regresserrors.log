@@ -6,6 +6,15 @@
 
 [INFO] ===============================
 [INFO] Contextual Regression Unit Test - [PascalCompilerDriverBuilderCheckUnitTest.java]
-[INFO] Test Case Count: [148], Matched: [147], Unmatched: [1]
+[INFO] Test Case Count: [189], Matched: [188], Unmatched: [1]
+[INFO] ===============================
+
+[INFO] +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+[INFO] Log File Generated for Syntactic Regression Unit Test - [PascalCompilerDriverBuilderParseUnitTest.java]
+[INFO] +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+[INFO] ===============================
+[INFO] Syntactic Regression Unit Test - [PascalCompilerDriverBuilderParseUnitTest.java]
+[INFO] Test Case Count: [3], Matched: [3], Unmatched: [0]
 [INFO] ===============================
 

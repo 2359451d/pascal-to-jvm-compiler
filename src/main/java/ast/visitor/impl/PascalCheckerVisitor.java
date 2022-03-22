@@ -263,7 +263,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         // after finishing all the type definition part
         // check whether there exist any invalid pointer type (report errors if any)
         if (!pointedTypeTrackingMap.isEmpty()) {
-            System.out.println("pointedTypeTrackingMap not empty= " + pointedTypeTrackingMap);
             pointedTypeTrackingMap.forEach((k, v) -> {
                 reportError(v.getRight(), "%s is undeclared", k);
             });
@@ -314,9 +313,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         Map<Object, TypeDescriptor> allVarInCurrentScope = typeTable.getAllVarInCurrentScope();
         TypeDescriptor type = visit(ctx.type_());
         define(id, type, ctx);
-        System.out.println("type define id = " + id);
-        System.out.println("type = " + type);
-
         //POINTER to POINTER (two level pointer)
         // if id in the pointed type map, then pre-defined pointer type is valid
         // update the hostType of the stored placeholder pointer
@@ -780,7 +776,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
             TypeDescriptor retrieve = retrieve(text, false, ctx);
             if (retrieve!=null && !(retrieve instanceof ErrorType)) {
-                System.out.println("retrieve = " + retrieve);
                 return new PointerType(retrieve);
             }
 
@@ -915,7 +910,8 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         }
         tableManager.allTablesExitNewScope();
         Procedure procedure = new Procedure(formalParams);
-        return procedure;
+        define(id, new FormalParam(procedure, id, null), ctx);
+        return null;
     }
 
 
@@ -1184,9 +1180,8 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             List<PascalParser.FormalParameterSectionContext> formalParameterSectionList = ctx.formalParameterList().formalParameterSection();
             for (PascalParser.FormalParameterSectionContext paramSection : formalParameterSectionList) {
                 // define parameter group in current scope of type Param(Type,String:label)
-                TypeDescriptor visit = visit(paramSection);
+                visit(paramSection);
             }
-            tableManager.showAllTables();
 
             // all formal params set up
             Map<Object, TypeDescriptor> allParams = symbolTable.getAllVarInCurrentScope();
@@ -1529,7 +1524,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
         // Only report while function id is defined but is used with other type: proc .etc
         if (!(_signature.equiv(ErrorType.UNDEFINED_TYPE)) && !isFunction(_signature)) {
-            reportError(ctx, "%d is not a valid function.", id);
+            reportError(ctx, "%s is not a valid function.", id);
             return ErrorType.INVALID_FUNCTION_TYPE;
         }
 
@@ -1843,17 +1838,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 Token symbol = ((TerminalNode) eachChild).getSymbol();
                 if (symbol.getText().equals("^")) {
                     if (structuredTypeToBeCheckNext instanceof PointerType) {
-                        Map<Object, TypeDescriptor> allVarInCurrentScope = symbolTable.getAllVarInCurrentScope();
-                        allVarInCurrentScope.forEach((k, v) -> {
-                            System.out.println("k = " + k);
-                            System.out.println("v = " + v);
-                        });
-                        System.out.println("all types");
-                        allVarInCurrentScope = typeTable.getAllVarInCurrentScope();
-                        allVarInCurrentScope.forEach((k, v) -> {
-                            System.out.println("k = " + k);
-                            System.out.println("v = " + v);
-                        });
                         structuredTypeToBeCheckNext = ((PointerType) structuredTypeToBeCheckNext).getPointedType();
                     } else {
                         structuredTypeToBeCheckNext = ErrorType.INVALID_DEREFERENCE_OPERATION;
@@ -2107,6 +2091,9 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         }
 
         TypeDescriptor rightType = visit(ctx.expression());
+        if (rightType instanceof FormalParam) {
+            rightType = ((FormalParam) rightType).getHostType();
+        }
 
         // if expected enumerated type, suppress errors
         // i.e. skip visit expression node in trivial way
@@ -2220,6 +2207,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             if (rightType instanceof IntegerBaseType && ((IntegerBaseType) rightType).getValue() == null) {
                 return null;
             }
+
             reportError(ctx, "invalid subrange [%s],\nExpected: %s,\nActual: %s",
                     assignmentCtx, _leftType, rightType);
             return null;
@@ -2316,10 +2304,14 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         if (rightType.getClass() == hostType ||
                 (rightType.getClass() == IntegerBaseType.class && hostType == Integer32.class)) {
             if (rightType instanceof Boolean) {
-                boolean rightValue = ((Boolean) rightType).getValue();
-                boolean lowerValue = ((Boolean) lowerBound).getValue();
-                boolean upperValue = ((Boolean) upperBound).getValue();
-                return rightValue == lowerValue || rightValue == upperValue;
+                java.lang.Boolean rightValue = ((Boolean) rightType).getValue();
+                java.lang.Boolean lowerValue = ((Boolean) lowerBound).getValue();
+                java.lang.Boolean upperValue = ((Boolean) upperBound).getValue();
+
+                // if right is null, then would be checked at the runtime
+                if (rightValue==null) return true;
+
+                return (rightValue == lowerValue || rightValue == upperValue);
             }
 
             if (rightType instanceof IntegerBaseType) {
@@ -2576,6 +2568,8 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 return ErrorType.INVALID_EXPRESSION;
             }
 
+            System.out.println("lType = " + lType);
+            System.out.println("rType = " + rType);
             // relational expression
             if (!lType.equiv(rType)) {
                 if (lType instanceof FloatBaseType || rType instanceof FloatBaseType) {
@@ -2584,7 +2578,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 }
                 if (lType instanceof Character || rType instanceof Character) {
                     //if (lType.equiv(Type.STRING_LITERAL) || rType.equiv(Type.STRING_LITERAL)) return Type.BOOLEAN;
-                    if (lType instanceof StringLiteral || rType instanceof StringLiteral) return new Boolean();
+                    //if (lType instanceof StringLiteral || rType instanceof StringLiteral) return new Boolean();
                 }
                 // FIXME: nested type classes, might be refactored
                 if (lType instanceof Subrange) {
@@ -2774,7 +2768,10 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             // extract hostType if nestedType
             TypeDescriptor _lType = lType;
             if (lType instanceof NestedBaseType) {
-                _lType = ((NestedBaseType) _lType).getHostType();
+                _lType = ((NestedBaseType) lType).getHostType();
+            }
+            if (lType instanceof Subrange) {
+                _lType = ((Subrange) lType).getLowerBound();
             }
 
             // TODO SUbrange, ArrayType,
@@ -2782,6 +2779,9 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             TypeDescriptor _rType = rType;
             if (rType instanceof NestedBaseType) {
                 _rType = ((NestedBaseType) rType).getHostType();
+            }
+            if (rType instanceof Subrange) {
+                 _rType= ((Subrange) rType).getLowerBound();
             }
 
             // other multiplicative operators(arithmetic)
@@ -2992,11 +2992,11 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         return visit(ctx.expression());
     }
 
-    @Override
-    public TypeDescriptor visitFactorFuncDesignator(PascalParser.FactorFuncDesignatorContext ctx) {
-        TypeDescriptor returnType = visit(ctx.functionDesignator());
-        return returnType;
-    }
+    //@Override
+    //public TypeDescriptor visitFactorFuncDesignator(PascalParser.FactorFuncDesignatorContext ctx) {
+    //    TypeDescriptor returnType = visit(ctx.functionDesignator());
+    //    return returnType;
+    //}
 
     /**
      * NOT factor #notFactor

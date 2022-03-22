@@ -1,4 +1,4 @@
-program showRelations;
+program relationalOperator001;
 var
   a, b: integer;
 

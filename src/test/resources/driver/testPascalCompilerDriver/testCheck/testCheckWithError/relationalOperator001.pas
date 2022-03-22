@@ -3,7 +3,7 @@
  * User: Lenovo
  * Date: 2021/12/4
  *)
-program arithOperator012;
+program relationalOperator001;
 var
   flag : Boolean;
 begin

@@ -3,7 +3,7 @@
  * User: Lenovo
  * Date: 29/12/2021
  *)
-program subrangeTest;
+program subrangeTest001;
 type
   weather = (sunny,rainy);
   DaysOfWeek = (Sunday, Monday, Tuesday, Wednesday,
