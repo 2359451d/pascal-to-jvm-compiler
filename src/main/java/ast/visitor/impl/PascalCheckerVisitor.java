@@ -1310,7 +1310,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                     name));
             stringBuilder.append(String.format("\nExpected: [size: %d],", formalParameters.size()));
 
-            System.out.println("formalParameters = " + formalParameters);
             formalParameters.forEach(each -> {
                 stringBuilder.append("\n- ").append(each);
             });
@@ -2073,7 +2072,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         // report errors
         if (_leftType instanceof EnumeratedIdentifier || typeTable.containsKey(id)) {
             if (_leftType.equiv(ErrorType.UNDEFINED_TYPE)) _leftType = typeTable.get(id);
-            reportError(ctx, "Illegal assignment [%s]. Assigning value to identifier [%s - type: %s]\nis not allowed",
+            reportError(ctx, "Illegal assignment [%s]. Assigning value to identifier [%s] is not allowed.\n Type: %s",
                     ctx.getText(), id, _leftType);
             return null;
         }
@@ -2269,6 +2268,10 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         TypeDescriptor lowerBound = leftType.getLowerBound();
         TypeDescriptor upperBound = leftType.getUpperBound();
 
+        if (rightType instanceof Subrange) {
+            return leftType.equiv(rightType);
+        }
+
         // check whether rightType is valid value of the enumerated subrange
         if (hostType == EnumeratedType.class) {
             // if right is not a enumerated value, directly return false
@@ -2281,7 +2284,8 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         }
 
         // check other ordinal types
-        if (rightType.getClass() == hostType) {
+        if (rightType.getClass() == hostType ||
+                (rightType.getClass()==IntegerBaseType.class && hostType==Integer32.class)) {
             if (rightType instanceof Boolean) {
                 boolean rightValue = ((Boolean) rightType).getValue();
                 boolean lowerValue = ((Boolean) lowerBound).getValue();
