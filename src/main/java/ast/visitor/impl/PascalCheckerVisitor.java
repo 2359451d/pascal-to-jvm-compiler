@@ -2,8 +2,6 @@ package ast.visitor.impl;
 
 import ast.visitor.PascalBaseVisitor;
 import ast.visitor.PascalParser;
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
@@ -31,7 +29,6 @@ import type.primitive.integer.DefaultIntegerType;
 import type.primitive.integer.Integer32;
 import type.primitive.integer.IntegerBaseType;
 import type.procOrFunc.Function;
-import type.procOrFunc.ProcFuncBaseType;
 import type.procOrFunc.Procedure;
 import type.structured.ArrayType;
 import type.structured.File;
@@ -43,7 +40,6 @@ import tableUtils.TableManager;
 import tableUtils.TypeTable;
 import utils.ErrorMessage;
 import utils.log.ErrorReporter;
-import utils.log.GlobalLogger;
 
 import java.util.*;
 
@@ -1455,7 +1451,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 if (outputType instanceof Function) {
                     _outputType = ((Function) outputType).getResultType();
                 }
-                if (!isSimpleType(_outputType) && !(_outputType instanceof StringLiteral)) {
+                if (!isSimpleType(_outputType) && !(isStringType(_outputType))) {
                     if (sb == null) {
                         sb = new StringBuilder();
                         sb.append(
@@ -2045,7 +2041,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             Map<String, Integer> valueMap = __leftType.getValueMap();
 
             String expressionValue = null;
-            System.out.println("rightType = " + rightType);
 
             if (rightType instanceof EnumeratedIdentifier) {
                 expressionValue = ((EnumeratedIdentifier) rightType).getValue();
@@ -2053,7 +2048,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 if (__leftType.equiv(rightType)) return null;
             } else if (rightType instanceof ErrorType) {
                 //    suppress errors
-                return null;
+                //return null;
             } else {
                 expressionValue = expression.toLowerCase();
             }
@@ -2157,7 +2152,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         // direct string type assignment where the string must has the same length
         if (_leftType instanceof ArrayType && rightType instanceof StringLiteral) {
             ErrorMessage validStringAssignment = isValidStringAssignment((ArrayType) _leftType, (StringLiteral) rightType, assignmentCtx);
-            if (validStringAssignment.hasErrors()) reportError(ctx, validStringAssignment.toString());
+            if (validStringAssignment.hasErrors()) reportError(ctx, validStringAssignment.getMessageSequence().toString());
             return null;
         }
 
@@ -2258,12 +2253,15 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             }
 
             // char subrange
-            if (rightType instanceof StringLiteral) {
-                String rightValue = ((StringLiteral) rightType).getValue();
-                String lowerValue = ((StringLiteral) lowerBound).getValue();
-                String upperValue = ((StringLiteral) upperBound).getValue();
+            if (rightType instanceof Character) {
+                java.lang.Character rightValue = ((Character) rightType).getValue();
+                java.lang.Character lowerValue = ((Character) lowerBound).getValue();
+                java.lang.Character upperValue = ((Character) upperBound).getValue();
+                //if null, checked at the runtime
+                if (rightValue==null) return true;
+                return rightValue >= lowerValue && rightValue <= upperValue;
             }
-        } else if (hostType == StringLiteral.class && rightType instanceof Character) {
+        } else if (hostType == Character.class && rightType instanceof Character) {
             return true;
         }
         return false;
@@ -2445,6 +2443,15 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 || type instanceof Boolean || type instanceof EnumeratedIdentifier);
     }
 
+    private boolean isStringType(TypeDescriptor type) {
+        if (type instanceof StringLiteral) return true;
+        if (type instanceof ArrayType) {
+            return ((ArrayType) type).getComponentType() instanceof Character
+            && ((ArrayType) type).isPacked();
+        }
+        return false;
+    }
+
     /**
      * expression
      * : simpleExpression (relationaloperator expression)?
@@ -2469,19 +2476,16 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             }
 
             // check whether operands are simple types
-            if (!(isSimpleType(lType)) && !(lType instanceof StringLiteral)) {
+            if (!(isSimpleType(lType)) && !(isStringType(lType))) {
                 reportError(ctx, "Illegal expression [%s]. Relational operator [%s] cannot be applied on left operand [%s].\nLtype: %s",
                         ctx.getText(), operator, ctx.simpleExpression().getText(), lType);
                 // suppress error
                 return ErrorType.INVALID_EXPRESSION;
             }
 
-            if (!(isSimpleType(rType)) && !(rType instanceof StringLiteral)) {
+            if (!(isSimpleType(rType)) && !(isStringType(rType))) {
                 reportError(ctx, "Illegal expression [%s]. Relational operator [%s] cannot be applied on left operand [%s].\nLtype: %s",
                         ctx.getText(), operator, ctx.e2.getText(), rType);
-                //reportError(ctx, String.format("Illegal expression [%s]: Relational operator [%s] cannot" +
-                //                " be applied on right operand [%s - type: %s]",
-                //        ctx.getText(), operator, ctx.e2.getText(), rType));
                 // suppress error
                 return ErrorType.INVALID_EXPRESSION;
             }
@@ -2514,8 +2518,8 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                     if (type.equiv(lType)) return new Boolean();
                 }
 
-                reportError(ctx, "Expression [" + ctx.getText() + "] types are incompatible! lType: " +
-                        lType + " rType: " + rType);
+                reportError(ctx,"Expression [%s] types are incompatible.\nLtype: %s,\nRtype: %s",
+                        ctx.getText(), lType, rType);
                 return ErrorType.INVALID_EXPRESSION;
             }
 
@@ -2984,7 +2988,11 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     //}
     @Override
     public TypeDescriptor visitString(PascalParser.StringContext ctx) {
-        return new StringLiteral(ctx.getText());
+        String text = ctx.getText();
+        String replace = text.replace("'", "");
+        int length = replace.length();
+        if (length==1) return new Character(replace.charAt(0));
+        return new StringLiteral(replace);
     }
 
     @Override

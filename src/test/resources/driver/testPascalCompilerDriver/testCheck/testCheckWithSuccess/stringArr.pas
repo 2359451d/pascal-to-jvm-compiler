@@ -3,7 +3,7 @@
  * User: Lenovo
  * Date: 19/03/2022
  *)
-program stringArr(output);
+program stringArr;
 var
   charArr1, charArr2: packed array [1..5] of Char;
 begin

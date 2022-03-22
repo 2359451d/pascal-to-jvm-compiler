@@ -57,7 +57,6 @@ begin
   for i := 'a' to 'e' do
   begin
     n := n + 5;
-
     a[i] := n;
   end;
 end.

@@ -1,6 +1,7 @@
 package driver;
 
 import annotation.TestResourcePath;
+import exception.BuiltinException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -16,8 +17,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Contextual Analysis Regression Unit Test Cases
@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class PascalCompilerDriverBuilderCheckUnitTest {
 
     private static String successDir = "testCheckWithSuccess";
-    //private static String errorDir = "testCheckWithError";
+    private static String errorDir = "testCheckWithError";
 
     @RegisterExtension
     static UnitTestLoggerExtension extension = new UnitTestLoggerExtension("check",
@@ -62,27 +62,27 @@ public class PascalCompilerDriverBuilderCheckUnitTest {
     /**
      * Boxing all the source files that contains contextual errors into Arguments
      */
-    //private static Stream<Arguments> errorSourceFileListProvider() {
-    //    StringBuilder newPath = TestUtils.appendNewSubdirectory(extension.getBase(), errorDir);
-    //    String fullPath = newPath.toString();
-    //    File[] files = TestUtils.getAllFilesInDir(fullPath);
-    //    return files == null ? Stream.of(Arguments.of(""))
-    //            : Arrays.stream(files)
-    //            .filter(each->each.getName().endsWith(".pas"))
-    //            .map(each -> Arguments.of(each.getPath()));
-    //}
-    //
-    ///**
-    // * Test batch source files with contextual errors thrown
-    // */
-    //@ParameterizedTest(name = "{index} - Source: {0}")
-    //@MethodSource("errorSourceFileListProvider")
-    //public void testCheckWithError(String path) throws Exception {
-    //    if (StringUtils.isBlank(path)) throw new Exception("No test resources found!");
-    //    extension.addNewArgument(path);
-    //    assertThrows(BuiltinException.CHECK_FAILED.getException().getClass(), () -> {
-    //        DriverArgument driverArgument = new DriverArgument(DriverCommand.CHECK, path);
-    //        new PascalCompilerDriverBuilder(driverArgument).parse().check();
-    //    });
-    //}
+    private static Stream<Arguments> errorSourceFileListProvider() {
+        StringBuilder newPath = TestUtils.appendNewSubdirectory(extension.getBase(), errorDir);
+        String fullPath = newPath.toString();
+        File[] files = TestUtils.getAllFilesInDir(fullPath);
+        return files == null ? Stream.of(Arguments.of(""))
+                : Arrays.stream(files)
+                .filter(each->each.getName().endsWith(".pas"))
+                .map(each -> Arguments.of(each.getPath()));
+    }
+
+    /**
+     * Test batch source files with contextual errors thrown
+     */
+    @ParameterizedTest(name = "{index} - Source: {0}")
+    @MethodSource("errorSourceFileListProvider")
+    public void testCheckWithError(String path) throws Exception {
+        if (StringUtils.isBlank(path)) throw new Exception("No test resources found!");
+        extension.addNewArgument(path);
+        assertThrows(BuiltinException.CHECK_FAILED.getException().getClass(), () -> {
+            DriverArgument driverArgument = new DriverArgument(DriverCommand.CHECK, path);
+            new PascalCompilerDriverBuilder(driverArgument).parse().check();
+        });
+    }
 }

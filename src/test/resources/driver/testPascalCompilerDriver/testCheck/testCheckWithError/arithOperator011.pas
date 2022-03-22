@@ -3,11 +3,11 @@
  * User: Lenovo
  * Date: 2021/12/4
  *)
-program arithOperator010;
+program arithOperator011;
 var
-  f: Integer;
+  f: real;
 begin
   {some statements below are not valid}
-  f:= -1;
-  f:= -true;{Not work, operand must be int or real}
+  f:= -1.0;
+  f:= -false;{Not work, operand must be int or real}
 end.

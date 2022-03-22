@@ -9,6 +9,7 @@ import type.primitive.Boolean;
 import type.primitive.Character;
 import type.primitive.integer.DefaultIntegerType;
 import type.primitive.integer.IntegerBaseType;
+import utils.ErrorMessage;
 
 import java.util.List;
 import java.util.Map;
@@ -48,6 +49,11 @@ public class ArrayType extends StructuredBaseType {
 
     @Override
     public boolean equiv(TypeDescriptor type) {
+
+        if (type instanceof StringLiteral) {
+            return isValidStringAssignment(this, (StringLiteral) type);
+        }
+
         if (!(type instanceof ArrayType)) return false;
         ArrayType that = (ArrayType) type;
         TypeDescriptor thatComponentType = that.getComponentType();
@@ -56,6 +62,7 @@ public class ArrayType extends StructuredBaseType {
 
         if (this.componentType.getClass() != thatComponentType.getClass()
                 && this.isPacked == thatPacked) return false;
+
 
         if (this.indexList.size() != thatIndexList.size()) return false;
 
@@ -67,7 +74,7 @@ public class ArrayType extends StructuredBaseType {
             if (thisType instanceof EnumeratedType && thatType instanceof Subrange) {
                 if (!checkEnumeratedAndSubrangeEquality((EnumeratedType) thisType, (Subrange) thatType)) return false;
             } else if (thisType instanceof Subrange && thatType instanceof EnumeratedType) {
-                if (!checkEnumeratedAndSubrangeEquality((EnumeratedType) thatType,(Subrange) thisType)) return false;
+                if (!checkEnumeratedAndSubrangeEquality((EnumeratedType) thatType, (Subrange) thisType)) return false;
             } else if (thisType instanceof Subrange && thatType instanceof Subrange) {
                 // further checking lower & upper bounds of subrange type
                 Subrange _thisType = (Subrange) thisType;
@@ -78,17 +85,47 @@ public class ArrayType extends StructuredBaseType {
         return true;
     }
 
+    private boolean isValidStringAssignment(ArrayType left, StringLiteral right) {
+        StringBuilder stringBuilder = new StringBuilder();
+        TypeDescriptor componentType = (left).getComponentType();
+        if (!left.isPacked() && !(componentType instanceof Character)) return false;
+
+        TypeDescriptor type = left.getIndexList().get(0);
+        if (type instanceof Subrange) {
+            TypeDescriptor lowerBound = ((Subrange) type).getLowerBound();
+            TypeDescriptor upperBound = ((Subrange) type).getUpperBound();
+            // calculate the expected string length
+            Long expectedLength = null;
+            if (lowerBound instanceof IntegerBaseType && upperBound instanceof IntegerBaseType) {
+                Long lowerValue = ((IntegerBaseType) lowerBound).getValue();
+                Long upperValue = ((IntegerBaseType) upperBound).getValue();
+                if (lowerValue != 1) {
+                    return false;
+                }
+                expectedLength = upperValue - lowerValue + 1;
+                // check whether right operand is a string type with the same length
+                int actualLength = right.getValue().replace("'", "").length();
+                if (expectedLength != null && expectedLength.intValue() != actualLength) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Check enumerated and subrange types equality
+     *
      * @param enumerated - enumerated type
-     * @param subrange - subrange type
+     * @param subrange   - subrange type
      * @return boolean - true: are equal, false: not equal
      */
     private boolean checkEnumeratedAndSubrangeEquality(EnumeratedType enumerated, Subrange subrange) {
         TypeDescriptor thatLowerBound = subrange.getLowerBound();
         TypeDescriptor thatUpperBound = subrange.getUpperBound();
         Map<String, Integer> valueMap = enumerated.getValueMap();
-        if (! (thatLowerBound instanceof EnumeratedIdentifier) || ! (thatUpperBound instanceof EnumeratedIdentifier))
+        if (!(thatLowerBound instanceof EnumeratedIdentifier) || !(thatUpperBound instanceof EnumeratedIdentifier))
             return true;
         String lowerValue = ((EnumeratedIdentifier) thatLowerBound).getValue();
         String upperValue = ((EnumeratedIdentifier) thatUpperBound).getValue();
@@ -97,11 +134,11 @@ public class ArrayType extends StructuredBaseType {
         if (!valueMap.containsKey(lowerValue) || !valueMap.containsKey(upperValue)) return false;
 
         // lower bound should correspond to 0
-        if (valueMap.get(lowerValue)!=0) return false;
+        if (valueMap.get(lowerValue) != 0) return false;
 
         // upper bound should correspond to the largest ordinal number
         // i.e. valueMap size - 1
-        if (valueMap.get(upperValue)!=valueMap.size()-1) return false;
+        if (valueMap.get(upperValue) != valueMap.size() - 1) return false;
         return true;
     }
 

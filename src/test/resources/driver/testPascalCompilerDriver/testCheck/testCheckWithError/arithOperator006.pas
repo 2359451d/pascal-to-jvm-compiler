@@ -9,7 +9,6 @@ var
   d: real;
   e,f: Integer;
 begin
-  {some statements below are not valid}
-
+  f := 10 * 10;
   f := 10 * 10.0;{Not work, right is real, but left is int}
 end.
