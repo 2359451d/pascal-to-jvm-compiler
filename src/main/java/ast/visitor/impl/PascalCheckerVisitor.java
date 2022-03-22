@@ -11,7 +11,8 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import runtime.RunTimeLibManager;
+import runtime.RuntimeFunction;
+import runtime.RuntimeLibManager;
 import runtime.RuntimeProcedure;
 import type.*;
 import type.enumerated.EnumeratedIdentifier;
@@ -132,7 +133,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         // Add predefined procedures to the type table.
         //BuiltInUtils.fillTable(symbolTable);
         symbolTable.put("maxint", DefaultIntegerType.of((long) Integer.MAX_VALUE, true));
-        RunTimeLibManager.fillTable(symbolTable);
+        RuntimeLibManager.fillTable(symbolTable);
     }
 
     private void define(String id, TypeDescriptor type,
@@ -453,12 +454,11 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         TypeDescriptor unsignedNumber = visit(ctx.unsignedNumber());
         String monadicOperator = ctx.sign().getText();
         // Only check, if right operand is integer
-        if (!(unsignedNumber instanceof IntegerBaseType)) {
+        if (unsignedNumber instanceof IntegerBaseType) {
             Long numberValue = ((IntegerBaseType) unsignedNumber).getValue();
             switch (monadicOperator) {
                 case "-":
                     numberValue = -numberValue;
-                    System.out.println("numberValue = " + numberValue);
                     if (!hasNoUnderflow(numberValue)) {
                         reportError(ctx, "Illegal constant definition [%s] with right operand [%s]" +
                                         "which must be between [%d] and [%d]",
@@ -475,7 +475,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                         //break;
                     }
             }
-            return ErrorType.INVALID_CONSTANT_TYPE;
+            return new Integer32(numberValue);
         }
         return unsignedNumber;
     }
@@ -1342,6 +1342,10 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         return errorMessage;
     }
 
+    private boolean isProcedure(TypeDescriptor type) {
+        return type instanceof Procedure || type instanceof RuntimeProcedure;
+    }
+
     /**
      * procedureStatement
      * : identifier (LPAREN parameterList RPAREN)?
@@ -1370,11 +1374,12 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             }
 
             // Only report while proc id is defined but is used with other type
-            if (!(_signature.equiv(ErrorType.UNDEFINED_TYPE)) && !(_signature instanceof Procedure || _signature instanceof RuntimeProcedure)) {
+            if (!(_signature.equiv(ErrorType.UNDEFINED_TYPE)) && !isProcedure(_signature)) {
                 reportError(ctx, "Illegal procedure statement [%s] which is not a procedure",
                         ctx.getText());
                 return ErrorType.INVALID_PROCEDURE_TYPE;
-            } else if (_signature instanceof Procedure || _signature instanceof RuntimeProcedure) {
+            } else if (isProcedure(_signature)) {
+
                 //check signatures if has actual parameters
                 List<PascalParser.ActualParameterContext> actualParameterContextList = new ArrayList<>();
                 if (ctx.parameterList() != null) {
@@ -1382,12 +1387,15 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 }
                 actualParameterContextList.forEach(each -> {
                 });
+
+                // if is a trivial procedure
                 if (_signature instanceof Procedure) {
                     ErrorMessage errorMessage = checkSignature(_signature, actualParameterContextList, ctx);
                     if (errorMessage.hasErrors()) {
                         reportError(ctx, errorMessage.getMessageSequence());
                     }
-                } else {
+                } else if (_signature instanceof RuntimeProcedure) {
+
                     // check signature of runtime procedure
                     ArrayList<Class<? extends TypeDescriptor>> _acutalParams = new ArrayList<>();
                     actualParameterContextList.forEach(each -> {
@@ -1422,10 +1430,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
     @Override
     public TypeDescriptor visitReadProcedureStatement(PascalParser.ReadProcedureStatementContext ctx) {
-        //List<PascalParser.InputValueContext> inputValueContexts = ctx.readParameters().inputValue();
-        //for (PascalParser.InputValueContext each : inputValueContexts) {
-        //    TypeDescriptor type = visit(each.variable());
-        //}
         visit(ctx.readParameters());
         return null;
     }
@@ -1479,11 +1483,9 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         return null;
     }
 
-    //@Override
-    //public TypeDescriptor visitOutputValue(PascalParser.OutputValueContext ctx) {
-    //    List<PascalParser.ExpressionContext> expression = ctx.expression();
-    //    expression.forEach(visit);
-    //}
+    private boolean isFunction(TypeDescriptor type) {
+        return type instanceof Function || type instanceof RuntimeFunction;
+    }
 
     /**
      * Function Call
@@ -1516,10 +1518,13 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         }
 
         // Only report while function id is defined but is used with other type: proc .etc
-        if (!(_signature.equiv(ErrorType.UNDEFINED_TYPE)) && !(_signature instanceof Function)) {
-            reportError(ctx, id + " is not a function. Returns no value.");
+        if (!(_signature.equiv(ErrorType.UNDEFINED_TYPE)) && !isFunction(_signature)) {
+            reportError(ctx, "%d is not a valid function.", id);
             return ErrorType.INVALID_FUNCTION_TYPE;
-        } else if (_signature instanceof Function) {
+        }
+
+        // if is trivial function
+        if (_signature instanceof Function) {
             //check signatures
             List<PascalParser.ActualParameterContext> actualParameterContextList = new ArrayList<>();
             if (ctx.parameterList() != null) {
@@ -1529,8 +1534,41 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             if (errorMessage.hasErrors()) {
                 reportError(ctx, errorMessage.getMessageSequence());
             }
+            return ((Function) _signature).getResultType();
         }
-        return ((Function) _signature).getResultType();
+
+        // if Runtime function
+        if (_signature instanceof RuntimeFunction) {
+            // check signature of runtime procedure
+            ArrayList<Class<? extends TypeDescriptor>> _acutalParams = new ArrayList<>();
+            List<PascalParser.ActualParameterContext> actualParameterContextList = null;
+            if (ctx.parameterList() != null) {
+                actualParameterContextList = ctx.parameterList().actualParameter();
+            }
+            if (actualParameterContextList !=null) {
+                actualParameterContextList.forEach(each -> {
+                    TypeDescriptor actual = visit(each);
+                    if (actual instanceof ActualParam) {
+                        Class<? extends TypeDescriptor> aClass = ((ActualParam) actual).getHostType().getClass();
+                        _acutalParams.add(aClass);
+                    }
+                });
+            }
+
+            Set<List<Class<? extends TypeDescriptor>>> formalParamsMap = ((RuntimeFunction) _signature).getFormalParamsMap();
+            TypeDescriptor resultType = ((RuntimeFunction) _signature).getResultType();
+            // only check if runtime proc/func has signatures defined
+            if (formalParamsMap != null && !formalParamsMap.contains(_acutalParams)) {
+                StringBuilder sb = new StringBuilder(String.format("Actual parameter cannot match the formal parameter of the runtime function [%s].\nGiven actual parameters:\n%s.\nAvailable signatures:", id, _acutalParams));
+                formalParamsMap.forEach(each -> {
+                    sb.append(String.format("\n%s", each));
+                });
+                reportError(ctx, sb.toString());
+            }
+
+            return resultType;
+        }
+        return null;
     }
 
     /**
@@ -2103,8 +2141,8 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         }
 
         if (rightType.equiv(ErrorType.INVALID_MONADIC_OPERATION)) {
-            reportError(ctx, "Illegal assignment [%s], monadic operator cannot be applied on right operand: %s ",
-                    assignmentCtx, expression);
+            reportError(ctx, "Illegal assignment [%s], monadic operator cannot be applied on right operand: %s.\nRtype: %s",
+                    assignmentCtx, expression, rightType);
             return null;
         }
 
@@ -2135,8 +2173,9 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 rightType.equiv(ErrorType.INTEGER_UNDERFLOW)
         ) {
             reportError(ctx, "Illegal assignment [%s] with invalid constant right operand [%s] " +
-                            "which must be between [%d] and [%d]",
-                    assignmentCtx, expression, defaultIntegerType.MIN_VALUE, defaultIntegerType.MAX_VALUE);
+                            "which must be between [%d] and [%d].\nRtype:%s",
+                    assignmentCtx, expression, defaultIntegerType.MIN_VALUE, defaultIntegerType.MAX_VALUE,
+                    rightType);
             return null;
         }
 
@@ -2796,11 +2835,9 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         // i.e. signedFactor
         if (ctx.monadicOperator != null) {
             String monadicOp = ctx.monadicOperator.getText();
+            if (factor instanceof ErrorType && ctx.parent.parent.parent.parent instanceof PascalParser.AssignmentStatementContext) return factor;
 
             if (!(factor instanceof IntegerBaseType) && !(factor instanceof FloatBaseType)) {
-                //reportError(ctx, "Monadic arithmetic operator " + monadicOp +
-                //        " cannot be applied on the operand: " + factor);
-                //TODO suppress errors
                 return ErrorType.INVALID_MONADIC_OPERATION;
             } else if (factor instanceof IntegerBaseType) {
                 Long numberValue = ((IntegerBaseType) factor).getValue();
@@ -2817,10 +2854,10 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
                 // if is the last constant node, gathering all the errors if any
                 //if (!(parentContext instanceof PascalParser.FactorExprContext)) {
-                if (!hasNoOverflow(numberValue)) return ErrorType.INTEGER_OVERFLOW;
-                if (!hasNoUnderflow(numberValue)) return ErrorType.INTEGER_UNDERFLOW;
+                if (!hasNoOverflow(numberValue) && ctx.parent.parent.parent.parent instanceof PascalParser.AssignmentStatementContext) return ErrorType.INTEGER_OVERFLOW;
+                if (!hasNoUnderflow(numberValue) && ctx.parent.parent.parent.parent instanceof PascalParser.AssignmentStatementContext) return ErrorType.INTEGER_UNDERFLOW;
                 // no errors directly return factor
-                return factor;
+                return new Integer32(numberValue);
                 //} else {
                 //    // FIXME:this might cause potential problems
                 //    IntegerBaseType copy = IntegerBaseType.copy((IntegerBaseType) factor);
@@ -2834,8 +2871,9 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         if (factor instanceof IntegerBaseType) {
             // integer overflow checking
             Long numberValue = null;
-            // if right operand is var
-            if (ctx.factor() instanceof PascalParser.FactorVarContext) {
+            // if right operand is var or unsigned constant
+            if (ctx.factor() instanceof PascalParser.FactorVarContext ||
+                ctx.factor() instanceof PascalParser.FactorUnConstContext) {
                 numberValue = ((IntegerBaseType) factor).getValue();
             }
 
@@ -2848,6 +2886,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 // error reported in assignment node
                 return ErrorType.INTEGER_UNDERFLOW;
             }
+            return new Integer32(numberValue);
         }
         return factor;
     }
@@ -2940,11 +2979,13 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     @Override
     public TypeDescriptor visitUnsignedConstant(PascalParser.UnsignedConstantContext ctx) {
         if (ctx.NIL() != null) return new NilType();
-        if (ctx.unsignedNumber()!=null) return visit(ctx.unsignedNumber());
-        if (ctx.constantChr()!=null) return visit(ctx.constantChr());
-        if (ctx.string()!=null ) return visit(ctx.string());
+        if (ctx.unsignedNumber() != null) return visit(ctx.unsignedNumber());
+        if (ctx.constantChr() != null) return visit(ctx.constantChr());
+        if (ctx.string() != null) return visit(ctx.string());
         return null;
     }
+
+
 
     /**
      * unsignedNumber

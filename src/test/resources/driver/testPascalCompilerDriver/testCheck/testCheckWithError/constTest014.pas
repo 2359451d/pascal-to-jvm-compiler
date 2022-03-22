@@ -4,11 +4,9 @@
  * Date: 29/12/2021
  *)
 program constTest;
-const
-  strConst = 'ABC';
 var
-  charVar: char;
+  int1: Integer;
 begin
-  charVar := 'A';
-  charVar := strConst; {Illegal}
+  int1 := -(+2147483648); {works}
+  int1 := -(-(+2147483648)); {overflows}
 end.

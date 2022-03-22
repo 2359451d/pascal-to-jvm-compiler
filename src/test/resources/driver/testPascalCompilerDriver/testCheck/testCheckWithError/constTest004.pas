@@ -5,10 +5,8 @@
  *)
 program constTest;
 const
-  strConst = 'ABC';
-var
-  charVar: char;
+  maxintConst = MaxInt;
+  minIntConst = -2147483648 ;
+  notWorkIntConst = 2147483648;{Overflows}
 begin
-  charVar := 'A';
-  charVar := strConst; {Illegal}
 end.
