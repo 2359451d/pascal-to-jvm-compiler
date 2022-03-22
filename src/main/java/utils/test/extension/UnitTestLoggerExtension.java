@@ -84,9 +84,6 @@ public class UnitTestLoggerExtension implements BeforeEachCallback, AfterEachCal
         TestLogger.info(testBodySeparator);
         if (argumentsList.size() > 1) argumentsList.remove(1);
 
-        // reset all the tables
-        tableManager.resetAndInitAllTables();
-
         eachStartTime = System.currentTimeMillis();
     }
 

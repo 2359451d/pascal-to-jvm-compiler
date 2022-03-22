@@ -2,19 +2,10 @@
 [INFO] Log File Generated for Contextual Regression Unit Test - [PascalCompilerDriverBuilderCheckUnitTest.java]
 [INFO] +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
-[INFO] Failed Test Case: 38 - Source: src\test\resources\driver\testPascalCompilerDriver\testCheck\testCheckWithError\arrayTestA024.pas
+[INFO] Failed Test Case: 39 - Source: src\test\resources\driver\testPascalCompilerDriver\testCheck\testCheckWithError\arrayTestA024.pas
 
 [INFO] ===============================
 [INFO] Contextual Regression Unit Test - [PascalCompilerDriverBuilderCheckUnitTest.java]
-[INFO] Test Case Count: [49], Matched: [48], Unmatched: [1]
-[INFO] ===============================
-
-[INFO] +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-[INFO] Log File Generated for Syntactic Regression Unit Test - [PascalCompilerDriverBuilderParseUnitTest.java]
-[INFO] +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-
-[INFO] ===============================
-[INFO] Syntactic Regression Unit Test - [PascalCompilerDriverBuilderParseUnitTest.java]
-[INFO] Test Case Count: [2], Matched: [2], Unmatched: [0]
+[INFO] Test Case Count: [59], Matched: [58], Unmatched: [1]
 [INFO] ===============================
 

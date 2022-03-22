@@ -25,6 +25,7 @@ import type.primitive.Boolean;
 import type.primitive.Character;
 import type.primitive.floating.DefaultFloatType;
 import type.primitive.floating.FloatBaseType;
+import type.primitive.floating.Real;
 import type.primitive.integer.DefaultIntegerType;
 import type.primitive.integer.Integer32;
 import type.primitive.integer.IntegerBaseType;
@@ -64,10 +65,9 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
     // Constructor
     public PascalCheckerVisitor(CommonTokenStream toks) {
+        tableManager.resetContainer();
         tokens = toks;
         symbolTable = new SymbolTable<>();
-        //symbolTable = tableManager.createTableSafely("symbol table",
-        //SymbolTable.class, Object.class, TypeDescriptor);
         typeTable = new TypeTable<>();
     }
 
@@ -83,11 +83,11 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         int finishCol = finish.getCharPositionInLine();
         // lazy logging
         ErrorReporter.error("{}:{}-{}:{} {}",
-                ()->startLine,
-                ()->startCol,
-                ()->finishLine,
-                ()->finishCol,
-                ()->message);
+                () -> startLine,
+                () -> startCol,
+                () -> finishLine,
+                () -> finishCol,
+                () -> message);
         errorCount++;
     }
 
@@ -402,7 +402,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     @Override
     public TypeDescriptor visitUnsignedNumberConst(PascalParser.UnsignedNumberConstContext ctx) {
         TypeDescriptor unsignedNumber = visit(ctx.unsignedNumber());
-        if (!(unsignedNumber instanceof IntegerBaseType)) {
+        if (unsignedNumber instanceof IntegerBaseType) {
             Long numberValue = ((IntegerBaseType) unsignedNumber).getValue();
             if (!hasNoOverflow(numberValue)) {
                 reportError(ctx, "Illegal constant definition [%s] with right operand [%s] " +
@@ -458,23 +458,24 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             switch (monadicOperator) {
                 case "-":
                     numberValue = -numberValue;
+                    System.out.println("numberValue = " + numberValue);
                     if (!hasNoUnderflow(numberValue)) {
                         reportError(ctx, "Illegal constant definition [%s] with right operand [%s]" +
                                         "which must be between [%d] and [%d]",
                                 ctx.getParent().getText(), numberValue, defaultIntegerType.MIN_VALUE, defaultIntegerType.MAX_VALUE);
-                        //return ErrorType.INTEGER_UNDERFLOW;
-                        break;
+                        return ErrorType.INTEGER_UNDERFLOW;
+                        //break;
                     }
                 case "+":
                     if (!hasNoOverflow(numberValue)) {
                         reportError(ctx, "Illegal constant definition [%s] with right operand [%s]" +
                                         "which must be between [%d] and [%d]",
                                 ctx.getParent().getText(), numberValue, defaultIntegerType.MIN_VALUE, defaultIntegerType.MAX_VALUE);
-                        //return ErrorType.INTEGER_OVERFLOW;
-                        break;
+                        return ErrorType.INTEGER_OVERFLOW;
+                        //break;
                     }
             }
-            //return ErrorType.INVALID_CONSTANT_TYPE;
+            return ErrorType.INVALID_CONSTANT_TYPE;
         }
         return unsignedNumber;
     }
@@ -544,7 +545,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                     i);
             // insert each enumerated identifier into the symbol table
             //symbolTable.put(id, new EnumeratedIdentifier(enumeratedType, id));
-            define(id,new EnumeratedIdentifier(enumeratedType, id),ctx);
+            define(id, new EnumeratedIdentifier(enumeratedType, id), ctx);
         }
         enumeratedType.setValueMap(valueMap);
 
@@ -852,6 +853,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      */
     @Override
     public TypeDescriptor visitFuncParam(PascalParser.FuncParamContext ctx) {
+
         tableManager.allTablesEnterNewScope();
 
         // Function id, ignore case
@@ -864,7 +866,10 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             formalParameterSectionContexts.forEach(this::visit);
             symbolTable.getAllVarInCurrentScope().forEach((k, v) -> formalParams.add(v));
         }
+        tableManager.displayAllTablesCurrentScope();
+
         tableManager.allTablesExitNewScope();
+
         Function function = new Function(formalParams, resultType);
         define(id, new FormalParam(function, id, null), ctx);
 
@@ -1162,19 +1167,20 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             }
         }
         ArrayList<TypeDescriptor> params = new ArrayList<>();
-
         tableManager.allTablesEnterNewScope();
-
         // if the procedure has formal parameters
         if (ctx.formalParameterList() != null) {
             List<PascalParser.FormalParameterSectionContext> formalParameterSectionList = ctx.formalParameterList().formalParameterSection();
             for (PascalParser.FormalParameterSectionContext paramSection : formalParameterSectionList) {
                 // define parameter group in current scope of type Param(Type,String:label)
-                visit(paramSection);
+                TypeDescriptor visit = visit(paramSection);
             }
+            tableManager.showAllTables();
+
             // all formal params set up
             Map<Object, TypeDescriptor> allParams = symbolTable.getAllVarInCurrentScope();
             allParams.forEach((k, v) -> params.add(v));
+
         } else if (isFunctionImpl) {
             // visit all the parameters from prototype trackingmap
             ParserRuleContext functionPrototypePairRight = functionPrototypePair.getRight();
@@ -1204,6 +1210,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         }
 
         tableManager.allTablesExitNewScope();
+
         if (!isFunctionImpl) define(id, function, ctx);
         return null;
     }
@@ -1302,6 +1309,8 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                     "The number of actual parameters cannot match the signature of [%s]!",
                     name));
             stringBuilder.append(String.format("\nExpected: [size: %d],", formalParameters.size()));
+
+            System.out.println("formalParameters = " + formalParameters);
             formalParameters.forEach(each -> {
                 stringBuilder.append("\n- ").append(each);
             });
@@ -2055,7 +2064,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
             if (!valueMap.containsKey(expressionValue)) {
                 //TypeDescriptor typeDescriptor = symbolTable.get(expression.toLowerCase());
-                TypeDescriptor typeDescriptor = retrieve(expression.toLowerCase(),false,ctx);
+                TypeDescriptor typeDescriptor = retrieve(expression.toLowerCase(), false, ctx);
 
                 // if enumerated constant defined
                 if (typeDescriptor instanceof EnumeratedIdentifier) {
@@ -2065,8 +2074,9 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 if (typeDescriptor.equiv(ErrorType.UNDEFINED_TYPE)) {
                     reportError(ctx, "Illegal enumerated type assignment [%s]. Right operand [%s] is not valid.\nExpected: %s,\nActual: %s",
                             assignmentCtx, expression, valueMap.keySet(), rightType);
-                }else reportError(ctx, "Illegal enumerated type assignment [%s]. Right operand [%s] is not valid.\nExpected: %s,\nActual: %s",
-                        assignmentCtx, expression, valueMap.keySet(), typeDescriptor);
+                } else
+                    reportError(ctx, "Illegal enumerated type assignment [%s]. Right operand [%s] is not valid.\nExpected: %s,\nActual: %s",
+                            assignmentCtx, expression, valueMap.keySet(), typeDescriptor);
             }
             return null;
         }
@@ -2152,7 +2162,8 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         // direct string type assignment where the string must has the same length
         if (_leftType instanceof ArrayType && rightType instanceof StringLiteral) {
             ErrorMessage validStringAssignment = isValidStringAssignment((ArrayType) _leftType, (StringLiteral) rightType, assignmentCtx);
-            if (validStringAssignment.hasErrors()) reportError(ctx, validStringAssignment.getMessageSequence().toString());
+            if (validStringAssignment.hasErrors())
+                reportError(ctx, validStringAssignment.getMessageSequence().toString());
             return null;
         }
 
@@ -2258,7 +2269,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 java.lang.Character lowerValue = ((Character) lowerBound).getValue();
                 java.lang.Character upperValue = ((Character) upperBound).getValue();
                 //if null, checked at the runtime
-                if (rightValue==null) return true;
+                if (rightValue == null) return true;
                 return rightValue >= lowerValue && rightValue <= upperValue;
             }
         } else if (hostType == Character.class && rightType instanceof Character) {
@@ -2447,7 +2458,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         if (type instanceof StringLiteral) return true;
         if (type instanceof ArrayType) {
             return ((ArrayType) type).getComponentType() instanceof Character
-            && ((ArrayType) type).isPacked();
+                    && ((ArrayType) type).isPacked();
         }
         return false;
     }
@@ -2518,7 +2529,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                     if (type.equiv(lType)) return new Boolean();
                 }
 
-                reportError(ctx,"Expression [%s] types are incompatible.\nLtype: %s,\nRtype: %s",
+                reportError(ctx, "Expression [%s] types are incompatible.\nLtype: %s,\nRtype: %s",
                         ctx.getText(), lType, rType);
                 return ErrorType.INVALID_EXPRESSION;
             }
@@ -2658,6 +2669,10 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
      * - div
      * - mod
      * - and (logical)
+     * <p>
+     * term
+     * : signedFactor (multiplicativeOperator=(STAR| SLASH| DIV| MOD| AND) term)?
+     * ;
      *
      * @param ctx
      * @return
@@ -2716,26 +2731,27 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                         reportError(ctx, "All the operands of integer division must be Integer.\nLtype: %s\nRtype: %s",
                                 lType, rType);
                     }
-                    return IntegerBaseType.copy(defaultIntegerType);
+                    return new Integer32();
                 case "/":
-                    // real division, operands could be int/real
-                    return DefaultFloatType.instance;
+                    //if (_lType instanceof FloatBaseType || _rType instanceof FloatBaseType) {
+                    return new Real();
+                //}
+                // real division, operands could be int/real
+                //return DefaultFloatType.instance;
                 case "mod":
                 case "MOD":
                     // modulus reminder division, operands must be integer
                     if (!(_lType instanceof IntegerBaseType) || !(_rType instanceof IntegerBaseType)) {
                         reportError(ctx, "All the operands of modulus must be Integer.\nLtype: %s,\nRtype: %s",
                                 lType, rType);
-                        //reportError(ctx, "The operands of modulus must be Integer: " +
-                        //        "with lType: " + lType +
-                        //        " with rType: " + rType);
                     }
-                    return IntegerBaseType.copy(defaultIntegerType);
+                    //return IntegerBaseType.copy(defaultIntegerType);
+                    return new Integer32();
                 default:
                     // other multiplicative operators: * return specific type
                     if (_lType instanceof FloatBaseType || _rType instanceof FloatBaseType)
-                        return DefaultFloatType.instance;
-                    else return IntegerBaseType.copy(defaultIntegerType);
+                        return new Real();
+                    else return new Integer32();
             }
         }
         return lType;
@@ -2776,7 +2792,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     @Override
     public TypeDescriptor visitSignedFactor(PascalParser.SignedFactorContext ctx) {
         TypeDescriptor factor = visit(ctx.factor());
-
         // involves monadic arithmetic expression, check the operand factor
         // i.e. signedFactor
         if (ctx.monadicOperator != null) {
@@ -2801,38 +2816,37 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 }
 
                 // if is the last constant node, gathering all the errors if any
-                if (!(parentContext instanceof PascalParser.FactorExprContext)) {
-                    if (!hasNoOverflow(numberValue)) return ErrorType.INTEGER_OVERFLOW;
-                    if (!hasNoUnderflow(numberValue)) return ErrorType.INTEGER_UNDERFLOW;
-                    // no errors directly return factor
-                    return factor;
-                } else {
-                    // update value(copy) and return this node to be processed in the upper node
-                    // ((IntegerBaseType) factor).setValue(numberValue);
-                    // FIXME:this might cause potential problems
-                    //
-                    //IntegerBaseType updatedNumber = new IntegerBaseType();
-                    //updatedNumber.setValue(numberValue);
-                    IntegerBaseType copy = IntegerBaseType.copy((IntegerBaseType) factor);
-                    copy.setValue(numberValue);
-                    return copy;
-                }
+                //if (!(parentContext instanceof PascalParser.FactorExprContext)) {
+                if (!hasNoOverflow(numberValue)) return ErrorType.INTEGER_OVERFLOW;
+                if (!hasNoUnderflow(numberValue)) return ErrorType.INTEGER_UNDERFLOW;
+                // no errors directly return factor
+                return factor;
+                //} else {
+                //    // FIXME:this might cause potential problems
+                //    IntegerBaseType copy = IntegerBaseType.copy((IntegerBaseType) factor);
+                //    copy.setValue(numberValue);
+                //    return copy;
+                //}
             }
-        } else {
-            // unsigned factor
-            if (factor instanceof IntegerBaseType) {
-                // integer overflow checking
-                Long numberValue = null;
-                // if right operand is var
-                if (ctx.factor() instanceof PascalParser.FactorVarContext) {
-                    numberValue = ((IntegerBaseType) factor).getValue();
-                }
+        }
 
-                // if numberValue == null, then it should be checked at runtime
-                if (numberValue != null && !hasNoOverflowOrUnderflow(numberValue, true, false)) {
-                    // error reported in assignment node
-                    return ErrorType.INTEGER_OVERFLOW;
-                }
+        // unsigned factor
+        if (factor instanceof IntegerBaseType) {
+            // integer overflow checking
+            Long numberValue = null;
+            // if right operand is var
+            if (ctx.factor() instanceof PascalParser.FactorVarContext) {
+                numberValue = ((IntegerBaseType) factor).getValue();
+            }
+
+            // if numberValue == null, then it should be checked at runtime
+            if (numberValue != null && !hasNoOverflowOrUnderflow(numberValue, true, false)) {
+                // error reported in assignment node
+                return ErrorType.INTEGER_OVERFLOW;
+            }
+            if (numberValue != null && !hasNoOverflowOrUnderflow(numberValue, false, true)) {
+                // error reported in assignment node
+                return ErrorType.INTEGER_UNDERFLOW;
             }
         }
         return factor;
@@ -2926,7 +2940,10 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
     @Override
     public TypeDescriptor visitUnsignedConstant(PascalParser.UnsignedConstantContext ctx) {
         if (ctx.NIL() != null) return new NilType();
-        return super.visitUnsignedConstant(ctx);
+        if (ctx.unsignedNumber()!=null) return visit(ctx.unsignedNumber());
+        if (ctx.constantChr()!=null) return visit(ctx.constantChr());
+        if (ctx.string()!=null ) return visit(ctx.string());
+        return null;
     }
 
     /**
@@ -2944,10 +2961,13 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
             case PascalParser.NUM_INT:
                 //return Integer32.of(String.valueOf(ctx.NUM_INT()));
                 // integer literal set to be constant
-                return DefaultIntegerType.of(String.valueOf(ctx.NUM_INT()), true);
+                Integer32 integer32 = new Integer32(String.valueOf(ctx.NUM_INT().getText()), true);
+                return integer32;
             case PascalParser.NUM_REAL:
                 //return Type.REAL;
-                return DefaultFloatType.instance;
+                Real real = new Real(String.valueOf(ctx.NUM_REAL().getText()));
+                real.setConstant(true);
+                return real;
         }
         return null;
     }
@@ -2991,7 +3011,7 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
         String text = ctx.getText();
         String replace = text.replace("'", "");
         int length = replace.length();
-        if (length==1) return new Character(replace.charAt(0));
+        if (length == 1) return new Character(replace.charAt(0));
         return new StringLiteral(replace);
     }
 
