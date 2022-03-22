@@ -1,1 +1,0 @@
-addAssignment002.pas(12,11) Error: Incompatible types: got "ShortInt" expected "BitPacked Array[1..6] Of Char"

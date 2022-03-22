@@ -17,12 +17,12 @@ public class IntegerBaseType extends Primitive<Long> {
 
     public IntegerBaseType() {
         super("int");
-        this.value = 0L;
+        this.value = null;
     }
 
     public IntegerBaseType(String type) {
         super(type);
-        this.value = 0L;
+        this.value = null;
     }
 
     public IntegerBaseType(String type, Long value) {
