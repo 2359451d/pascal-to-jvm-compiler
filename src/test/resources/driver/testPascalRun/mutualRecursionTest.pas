@@ -3,9 +3,7 @@
  * User: Lenovo
  * Date: 16/01/2022
  *)
-{$mode iso}
-{$RANGECHECKS on}
-program mutualRecursionTest;
+program mutualRecursionTest(output);
 
 {M definition comes after F which uses it}
 function M(n : Integer) : Integer; forward;

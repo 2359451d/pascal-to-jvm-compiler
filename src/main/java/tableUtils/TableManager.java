@@ -37,32 +37,6 @@ public class TableManager<K, T> {
         return (TableManager<K, T>) instance;
     }
 
-    /**
-     * Initialise a table safely,
-     * If
-     //* @param tableClass
-     //* @return
-     */
-    //public Table<K, T> createTableSafely(String tableName, Class<?> tableClass, K key, T value) {
-    //    // if table with specific class does not exist in the container
-    //    // create a new one, and return it back
-    //    Table<K, T> table = selectTableByClass((Class<? extends Table<K, T>>) tableClass);
-    //    if (table ==null) {
-    //        try {
-    //            Type genericSuperclass = tableClass.getGenericSuperclass();
-    //            Type[] actualTypeArguments = ((ParameterizedType) genericSuperclass).getActualTypeArguments();
-    //            System.out.println("actualTypeArguments = " + actualTypeArguments);
-    //            Table<K,T> _table = (Table<K, T>) tableClass.getDeclaredConstructor(String.class, Class.class).
-    //                    newInstance(tableName, tableClass);
-    //            return _table;
-    //        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
-    //            e.printStackTrace();
-    //        }
-    //    }
-    //
-    //    return table;
-    //}
-
     public boolean addTable(Class<? extends ParserRuleContext> ctx, Table<K, T> table) {
         // exists duplicate key
         if (container.containsKey(ctx)) return false;

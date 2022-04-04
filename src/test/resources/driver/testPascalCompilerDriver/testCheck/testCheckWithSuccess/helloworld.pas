@@ -1,4 +1,4 @@
-program HelloWorld;
+program helloworld;
 begin
   {h%}
   write('Hello World.', 'print something');

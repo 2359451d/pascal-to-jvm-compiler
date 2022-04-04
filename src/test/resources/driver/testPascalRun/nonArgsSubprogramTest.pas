@@ -3,9 +3,7 @@
  * User: Lenovo
  * Date: 16/01/2022
  *)
-{$mode iso}
-{$RANGECHECKS on}
-program nonArgsSubprogramTest;
+program nonArgsSubprogramTest(input, output);
 
 {forward}
 function return2:Integer; forward;

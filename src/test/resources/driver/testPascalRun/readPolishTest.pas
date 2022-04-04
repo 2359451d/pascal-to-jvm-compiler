@@ -6,7 +6,6 @@ bool1, bool2:Boolean;
 real1, real2:Real;
 
 begin
-  Readln(first, char1); {must convert to 2 read statements}
   WriteLn('first->', first);
   WriteLn('char1->',char1);
 end.

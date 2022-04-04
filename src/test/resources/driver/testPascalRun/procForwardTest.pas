@@ -3,7 +3,7 @@
  * User: Lenovo
  * Date: 27/02/2022
  *)
-program procForwardTest;
+program procForwardTest(input, output);
 
 Procedure First (n : Integer); forward;
 Procedure Second;

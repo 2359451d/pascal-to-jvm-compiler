@@ -3,7 +3,7 @@
  * User: Lenovo
  * Date: 14/02/2022
  *)
-program printProcTest;
+program printProcTest(input, output);
 
 var
   globalInt:Integer;

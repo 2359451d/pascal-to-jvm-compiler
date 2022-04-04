@@ -5,11 +5,8 @@
  *)
 program arithOperator001;
 var
-  a,b,c : integer;
-  d: real;
-  e,f: Integer;
+ f: Integer;
 begin
-  {some statements below are not valid}
-
+  f := 1;
   f := 10 / 10; {Not work, since the result of real division is real}
 end.

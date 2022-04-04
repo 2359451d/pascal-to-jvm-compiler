@@ -3,8 +3,7 @@
  * User: Lenovo
  * Date: 21/02/2022
  *)
-{$mode iso}
-program if1Test;
+program if1Test(output);
 var intvar:Integer;
 begin
   {intvar := 9;}

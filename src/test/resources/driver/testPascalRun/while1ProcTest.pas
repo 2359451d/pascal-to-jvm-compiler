@@ -3,7 +3,7 @@
  * User: Lenovo
  * Date: 27/02/2022
  *)
-program while1ProcTest;
+program while1ProcTest(output);
 var
   a: integer;
 

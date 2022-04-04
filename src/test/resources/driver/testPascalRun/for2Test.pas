@@ -3,7 +3,7 @@
  * User: Lenovo
  * Date: 22/02/2022
  *)
-program for2Test;
+program for2Test(output);
 var
   a: integer;
 

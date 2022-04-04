@@ -4,6 +4,7 @@ import annotation.TestResourcePath;
 import exception.BuiltinException;
 import exception.PascalCompilerException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -19,9 +20,9 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 /**
  * Driver Arguments Unit Test Cases
- *
  */
 @TestResourcePath("testPascalCompilerDriver/testCheckArguments/")
+@Tag("driver_usage")
 public class PascalCompilerDriverArgsUnitTest {
 
     private String dir;

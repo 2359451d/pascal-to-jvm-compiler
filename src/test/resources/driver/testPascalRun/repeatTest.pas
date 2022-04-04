@@ -3,7 +3,7 @@
  * User: Lenovo
  * Date: 2021/12/6
  *)
-program repeatTest;
+program repeatTest(output);
 var
   a: Integer;
 

@@ -132,7 +132,13 @@ public class PascalCompilerDriverBuilder extends CompilerDriverBuilder {
 
 
         Path parentDir = Path.of(fileName).getParent();
-        runner = new PascalEncoderVisitor(parentDir.toString(), tokens);
+        Path fileName = Path.of(this.fileName).getFileName();
+        if (parentDir != null) {
+            runner = new PascalEncoderVisitor(parentDir.toString(), fileName.toString().split("\\.")[0], tokens,
+                    command.getCommandName());
+        } else {
+            runner = new PascalEncoderVisitor(null, fileName.toString().split("\\.")[0], tokens, command.getCommandName());
+        }
         runner.visit(tree);
         PascalEncoderVisitor.run();
         return this;

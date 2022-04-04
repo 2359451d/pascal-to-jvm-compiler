@@ -3,7 +3,7 @@
  * User: Lenovo
  * Date: 22/02/2022
  *)
-program if2Test;
+program if2Test(output);
 var
   { local variable definition }
   a : integer;

@@ -3,8 +3,7 @@
  * User: Lenovo
  * Date: 14/02/2022
  *)
-{$mode iso}
-program logicalOpTest;
+program logicalOpTest(output);
 var
 bool1: Boolean;
 int1: Integer;

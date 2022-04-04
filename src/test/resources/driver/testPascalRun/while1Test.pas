@@ -3,7 +3,7 @@
  * User: Lenovo
  * Date: 22/02/2022
  *)
-program while1Test;
+program while1Test(output);
 var
   a: integer;
 

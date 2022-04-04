@@ -44,7 +44,7 @@ public class EnumeratedIdentifier extends BaseType {
         }
         EnumeratedIdentifier that = (EnumeratedIdentifier) type;
         // check whether the enumerated identifier is of the same kind
-        return this.belongsTo.equiv(that.getBelongsTo()) && this.value.equals(that.value);
+        return this.belongsTo.equiv(that.getBelongsTo()) ;
     }
 
     @Override

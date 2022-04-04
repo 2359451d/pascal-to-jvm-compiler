@@ -38,4 +38,6 @@ begin
   f:= -1;{works}
   d:= +1; {works, though left is real, right is int}
   d:= -1.0;{works}
+
+  f := -1+1+1+1*1 div 1;
 end.

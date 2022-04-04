@@ -3,7 +3,7 @@
  * User: Lenovo
  * Date: 13/02/2022
  *)
-program mulTest;
+program mulTest(output);
 var intVar, intVar2,intVar3:Integer;
 realVar:Real;
 begin

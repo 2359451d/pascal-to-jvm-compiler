@@ -4,9 +4,7 @@
  * Date: 02/01/2022
  *)
 //{$mode tp}
-{$mode iso}
-{$rangeChecks on}
-program enumTest;
+program enumTest(output);
 type
   cardsuit = (clubs, diamonds, hearts, spades);
 //  intType = Integer;

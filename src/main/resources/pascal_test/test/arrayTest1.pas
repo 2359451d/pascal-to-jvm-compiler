@@ -56,6 +56,8 @@ begin
   enum := arrEnum[sunny];
   enum := arrEnum; {invalid, right operand is array of weather}
   enum := arrEnum[heart]; {Invalid array scripting operation pos 0}
+  enum := arrEnum2[sunny1]; {Incompatible types: got "<enumeration type>" expected "weather"}
+  enum := arrEnum2[sunny]; {Incompatible types: got "<enumeration type>" expected "weather",arrEnum2: (sunny1, cloudy1)}
 
   x[0][1] := 100;
   x[0, 2] := 1000;

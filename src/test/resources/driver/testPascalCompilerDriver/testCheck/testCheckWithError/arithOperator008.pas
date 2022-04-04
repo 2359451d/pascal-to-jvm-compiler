@@ -5,12 +5,8 @@
  *)
 program arithOperator008;
 var
-  a,b,c : integer;
-  d: real;
-  e,f: Integer;
+  f: Integer;
 begin
-  {some statements below are not valid}
-
+  f := 10 + (10 + 1);
   f := 10 + (10.0 + 1);{Not work, right is real, left is int}
-
 end.

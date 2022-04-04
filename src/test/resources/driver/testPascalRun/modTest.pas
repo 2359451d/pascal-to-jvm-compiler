@@ -3,7 +3,7 @@
  * User: Lenovo
  * Date: 13/02/2022
  *)
-program modTest;
+program modTest(output);
 var intVar1,intVar2:Integer;
 realVar:Real;
 begin

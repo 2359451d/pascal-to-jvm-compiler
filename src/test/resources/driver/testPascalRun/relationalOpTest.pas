@@ -3,7 +3,7 @@
  * User: Lenovo
  * Date: 14/02/2022
  *)
-program relationalOpTest;
+program relationalOpTest(output);
 var
   bool1: Boolean;
   int1: Integer;

@@ -19,7 +19,7 @@ type
 
 procedure printRecord(recordVar: Books;var boolVar:Boolean; var intVar: Integer);
 begin
-  recordVar.author:= 'changed';
+  recordVar.author:= '123456789';
   {WriteLn('Book author: ', recordVar.author);}
 end;
 

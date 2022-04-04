@@ -1,6 +1,8 @@
 package type;
 
 import type.primitive.Character;
+import type.primitive.integer.IntegerBaseType;
+import type.structured.ArrayType;
 
 public class StringLiteral extends BaseType {
 
@@ -27,7 +29,6 @@ public class StringLiteral extends BaseType {
     //    return Type.getDescriptor(String.class);
     //}
 
-
     @Override
     public Class<?> getDescriptorClass() {
         return String.class;
@@ -35,7 +36,35 @@ public class StringLiteral extends BaseType {
 
     @Override
     public boolean equiv(TypeDescriptor type) {
-        return type instanceof StringLiteral || type instanceof Character;
+        if (type instanceof StringLiteral) return true;
+        if (type instanceof ArrayType) {
+            TypeDescriptor componentType = ((ArrayType) type).getComponentType();
+            boolean packed = ((ArrayType) type).isPacked();
+            if (!(componentType instanceof Character && packed)) return false;
+
+            TypeDescriptor _type = ((ArrayType) type).getIndexList().get(0);
+            if (_type instanceof Subrange) {
+                TypeDescriptor lowerBound = ((Subrange) _type).getLowerBound();
+                TypeDescriptor upperBound = ((Subrange) _type).getUpperBound();
+                // calculate the expected string length
+                Long expectedLength = null;
+                if (lowerBound instanceof IntegerBaseType && upperBound instanceof IntegerBaseType) {
+                    Long lowerValue = ((IntegerBaseType) lowerBound).getValue();
+                    Long upperValue = ((IntegerBaseType) upperBound).getValue();
+                    if (lowerValue != 1) {
+                        return false;
+                    }
+                    expectedLength = upperValue - lowerValue + 1;
+                    // check whether right operand is a string type with the same length
+                    int actualLength = this.getValue().replace("'", "").length();
+                    if (expectedLength!=null && expectedLength.intValue() != actualLength) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
 }

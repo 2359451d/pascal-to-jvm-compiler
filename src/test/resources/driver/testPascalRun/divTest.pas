@@ -3,7 +3,7 @@
  * User: Lenovo
  * Date: 13/02/2022
  *)
-program divTest;
+program divTest(output);
 var
 realVar :Real;
 intVar1,intVar2:Integer;

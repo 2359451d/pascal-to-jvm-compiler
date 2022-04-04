@@ -25,7 +25,6 @@ public class File extends BaseType {
     public boolean equiv(TypeDescriptor type) {
         if (!(type instanceof File)) return false;
         File fileType = (File) type;
-        System.out.println("fileType.type.toString() = " + fileType.type.toString());
         return fileType.type.toString().equals(this.type.toString());
     }
 }

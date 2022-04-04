@@ -3,9 +3,7 @@
  * User: Lenovo
  * Date: 2021/12/6
  *)
-{$mode iso}
-{$RANGECHECKS on}
-program recursiveFuncTest;
+program recursiveFuncTest(output);
 var
   num, f: integer;
 function fact(x: integer): integer; (* calculates factorial of x - x! *)
@@ -16,8 +14,7 @@ begin
     fact := x * fact(x-1); (* recursive call *)
 end; { end of function fact}
 begin
-  writeln(' Enter a number: ');
-  readln(num);
+  num:=5;
   f := fact(num);
   writeln(' Factorial ', num, ' is: ' , f);
   WriteLn(fact(10));

@@ -12,7 +12,6 @@ public class RuntimeProcFuncBaseType extends BaseType {
 
     // procedure/function identifier
     protected String name;
-    //protected List<Class<? extends TypeDescriptor>> formalParams;
 
     // overloaded possibility, storing all the signatures in the set
     // ! NOTE: non-args procedures/functions set up empty Set rather than null

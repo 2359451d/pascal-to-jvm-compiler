@@ -95,10 +95,6 @@ jobs:
       - name: Test Docker Run (Example source file)
         run: |
           docker run --rm -v $(pwd)/:/res \
-          ${{ env.TEST_TAG }} parse \
-          src/test/resources/driver/testPascalCompilerDriver/testCheckArguments/testArguments.pas
-
-          docker run --rm -v $(pwd)/:/res \
           ${{ env.TEST_TAG }} check \
           src/test/resources/driver/testPascalCompilerDriver/testCheck/testCheckWithSuccess/arithOperator.pas
 

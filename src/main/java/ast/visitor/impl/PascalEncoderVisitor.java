@@ -2,6 +2,7 @@ package ast.visitor.impl;
 
 import ast.visitor.PascalBaseVisitor;
 import ast.visitor.PascalParser;
+import driver.PascalCompilerDriver;
 import driver.PascalCompilerDriverBuilder;
 import instruction.*;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -63,8 +64,11 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
     public static Class<?> classOwner;
     private static String baseDir = "";
     private static String outputPath = "";
+    private static String filename;
+    private static String command;
 
     private CommonTokenStream tokens;
+
 
     /**
      * Tables
@@ -79,13 +83,16 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         this.tokens = tokens;
     }
 
-    public PascalEncoderVisitor(String outputPath, CommonTokenStream tokens) {
+    public PascalEncoderVisitor(String outputPath, CommonTokenStream tokens, String command) {
+        this(outputPath, null, tokens, command);
+    }
+
+    public PascalEncoderVisitor(String outputPath, String filename, CommonTokenStream tokens, String command) {
         this(tokens);
         this.outputPath = outputPath;
-        //tableManager.clearAllTables();
-        //symbolTable = tableManager.createTableSafely("symbol table",
-        //        (Class<? extends Table<Object, TypeDescriptor>>) symbolTable.getClass());
-        //typeTable = new TypeTable<>();
+        this.filename = filename;
+        this.command = command;
+
         symbolTable = tableManager.selectTable(SymbolTable.context);
         typeTable = tableManager.selectTable(TypeTable.context);
         localVariableTable = new LocalsTable<>();
@@ -98,85 +105,6 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
     public static byte[] generateByteCode() {
         return classWriter.toByteArray();
     }
-
-    //public static class LocalVariableInformation{
-    //    private int slotNum;
-    //    private int length;
-    //    private boolean isStatic; // determine whether is static field
-    //
-    //    public LocalVariableInformation(int slotNum, int length, boolean isStatic) {
-    //        this.slotNum = slotNum;
-    //        this.length = length;
-    //        this.isStatic = isStatic;
-    //    }
-    //
-    //    public int getSlotNum() {
-    //        return slotNum;
-    //    }
-    //
-    //    public int getLength() {
-    //        return length;
-    //    }
-    //
-    //    public boolean isStatic() {
-    //        return isStatic;
-    //    }
-    //}
-    //
-    //public static class LocalsTable {
-    //    /**
-    //     * Id - startPos(slot), length
-    //     */
-    //    public Map<String, LocalVariableInformation> table;
-    //
-    //    public LocalsTable() {
-    //        this.table = new LinkedHashMap<>();
-    //    }
-    //
-    //    public boolean containsId(String id) {
-    //        return this.table.containsKey(id);
-    //    }
-    //
-    //    public int getSlot(String id) {
-    //        return containsId(id) ? table.get(id).getSlotNum():-999;
-    //    }
-    //
-    //    public boolean isStatic(String id) {
-    //        return containsId(id) && table.get(id).isStatic();
-    //    }
-    //
-    //    public void put(String id, int slotNum, int length, boolean isStatic) {
-    //        table.put(id, new LocalVariableInformation(slotNum,length,isStatic));
-    //    }
-    //
-    //    public void put(String id, int slotNum, int length) {
-    //        put(id, slotNum, length, false);
-    //    }
-    //
-    //    /**b
-    //     * Automatically calculate the start position
-    //     *
-    //     * @param id
-    //     * @param length
-    //     */
-    //    public void put(String id, int length, boolean isStatic) {
-    //        int start = length();
-    //        this.put(id, start, length, isStatic);
-    //    }
-    //
-    //    public void put(String id, int length) {
-    //        put(id,length,false);
-    //    }
-    //
-    //    public int length() {
-    //        return table.size();
-    //    }
-    //
-    //    public Map<String, LocalVariableInformation> getTable() {
-    //        return table;
-    //    }
-    //}
-
 
     /**
      * Custom ClassLoader to load class file
@@ -239,25 +167,33 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
     public static void run() throws NoSuchMethodException, IllegalAccessException, IOException {
         byte[] bytes = generateByteCode();
         // generate bytecode file
-        String outputfile = className + ".class";
-        Path path = Paths.get(outputPath, outputfile);
-        //FileOutputStream fos = new FileOutputStream(path.toString());
-        // TODO set to line above when finished
-        FileOutputStream fos = new FileOutputStream(outputfile);
+        String outputfile = null;
+        //if (filename != null) {
+        //    outputfile = filename + ".class";
+        //}
+        outputfile = className + ".class";
+
+        Path path = null;
+        if (outputPath!=null && outputfile != null) {
+            path = Paths.get(outputPath, outputfile);
+        } else if (outputfile!=null) path = Paths.get(outputfile);
+
+        FileOutputStream fos = new FileOutputStream(path.toString());
         fos.write(bytes);
         fos.close();
 
-        MyClassLoader cl = new MyClassLoader();
-        Class<?> clazz = cl.defineClass(className, bytes);
-        // get main mreethod
-        Method main = clazz.getMethod("main", String[].class);
-        // call main method
-        try {
-            main.invoke(null, new Object[]{new String[]{}});
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
+        if (command.equals("run")) {
+            MyClassLoader cl = new MyClassLoader();
+            Class<?> clazz = cl.defineClass(className, bytes);
+            // get main mreethod
+            Method main = clazz.getMethod("main", String[].class);
+            // call main method
+            try {
+                main.invoke(null, new Object[]{new String[]{}});
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            }
         }
-
     }
 
     void addStandardConstructor() {
@@ -410,7 +346,8 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
     }
 
 
-    Label repeatBlockStart=null;
+    Label repeatBlockStart = null;
+
     /**
      * repeatStatement
      * : REPEAT statements UNTIL expression
@@ -459,12 +396,18 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         TypeDescriptor initValueType = visit(ctx.forList().initialValue());
         if (isStaticField(counterId)) {
             InstructionHelper.putStatic(className, counterId, hostType);
+        } else {
+            int variableSlotNum = getVariableSlotNum(counterId);
+            LoadStoreHelper.storePrimitive(hostType,variableSlotNum);
         }
 
         setLabel(forExprStart);
         // push final value operand
         if (isStaticField(counterId)) {
             InstructionHelper.getStatic(className, counterId, hostType);
+        } else {
+            int variableSlotNum = getVariableSlotNum(counterId);
+            LoadStoreHelper.loadIntOrFloatLocal(hostType,variableSlotNum);
         }
         TypeDescriptor finalValueType = visit(ctx.forList().finalValue());
         JumpInstructionHelper.jumpInstruction(relationalOpMappingWithInt.get("<="), endFor);
@@ -476,7 +419,8 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         if (isStaticField(counterId)) {
             InstructionHelper.getStatic(className, counterId, hostType);
         } else {
-            //    TODO, local
+            int variableSlotNum = getVariableSlotNum(counterId);
+            LoadStoreHelper.loadIntOrFloatLocal(hostType,variableSlotNum);
         }
         // 2. load const 1
         InstructionHelper.loadTrueOrFalse(true);
@@ -486,6 +430,8 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
         if (isStaticField(counterId)) {
             InstructionHelper.putStatic(className, counterId, hostType);
         } else {
+            int variableSlotNum = getVariableSlotNum(counterId);
+            LoadStoreHelper.storePrimitive(hostType,variableSlotNum);
         }
         gotoLabel(forExprStart);
 
@@ -859,8 +805,10 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
                         id, typeDescriptor, null, null);
                 fieldVisitor.visitEnd();
             } else {
-                if (!(type instanceof FloatBaseType)) putLocals(id, 1, false);
-                else putLocals(id, 2);
+                if (!(type instanceof FloatBaseType)){
+                    putLocals(id, 1, false);
+                }
+                else{ putLocals(id, 2);}
 
                 if (type instanceof Primitive) {
                     InstructionHelper.loadIntOrReal(type);
@@ -868,9 +816,9 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 // store the local var based on the type descriptor
                 // use corresponding store instruction
                 int slotNum = getVariableSlotNum(id);
+                System.out.println("id = " + id);
+                System.out.println("slotNum = " + slotNum);
                 LoadStoreHelper.storePrimitive(type, slotNum);
-                //invoke(Instruction.STORE_REFERENCE);
-
             }
             // insert into symbol table
             define(id, type, ctx);
@@ -910,8 +858,10 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
             InstructionHelper.putStatic(className, id, lType);
             //methodVisitor.visitFieldInsn(Opcodes.PUTSTATIC, className, id, lType.getDescriptor());
         } else {
+            System.out.println("ctx.getText() = " + ctx.getText());
             // store value to local varaible
             int variableSlotNum = getVariableSlotNum(id);
+            System.out.println("variableSlotNum = " + variableSlotNum);
             LoadStoreHelper.storePrimitive(lType, variableSlotNum);
         }
         return null;
@@ -1120,12 +1070,14 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
 
             if (lType instanceof Primitive && rType instanceof Primitive) {
                 //if (fromIfStatement) invokeRelationalInstruction(relationalOperator, lType, rType, ifStatementContext);
-                if (fromRepeatStatement) invokeRelationalInstructionFromRepeat(relationalOperator,lType,rType);
-                else invokeRelationalInstruction(relationalOperator, lType, rType, ifStatementContext, whileStatementContext);
+                if (fromRepeatStatement) invokeRelationalInstructionFromRepeat(relationalOperator, lType, rType);
+                else
+                    invokeRelationalInstruction(relationalOperator, lType, rType, ifStatementContext, whileStatementContext);
             }
             if (lType instanceof StringLiteral || rType instanceof StringLiteral) {
-                if (fromRepeatStatement) invokeRelationalInstructionFromRepeat(relationalOperator,lType,rType);
-                else invokeRelationalInstruction(relationalOperator, lType, rType, ifStatementContext, whileStatementContext);
+                if (fromRepeatStatement) invokeRelationalInstructionFromRepeat(relationalOperator, lType, rType);
+                else
+                    invokeRelationalInstruction(relationalOperator, lType, rType, ifStatementContext, whileStatementContext);
             }
 
             return new Boolean();
@@ -1141,6 +1093,7 @@ public class PascalEncoderVisitor extends PascalBaseVisitor<TypeDescriptor> {
     }
 
     private Stack<TypeDescriptor> operandStack = new Stack<>();
+
     /**
      * additiveOperator=(PLUS| MINUS| OR)
      * TODO: OR

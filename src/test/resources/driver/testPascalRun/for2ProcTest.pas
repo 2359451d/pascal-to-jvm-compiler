@@ -3,7 +3,7 @@
  * User: Lenovo
  * Date: 22/02/2022
  *)
-program for2ProcTest;
+program for2ProcTest(output);
 var
   a: integer;
 realVar:Real;

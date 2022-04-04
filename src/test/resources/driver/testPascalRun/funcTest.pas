@@ -3,7 +3,7 @@
  * User: Lenovo
  * Date: 2021/12/12
  *)
-program funcTest;
+program funcTest(output);
 var
   a: Integer;
   b: Real;

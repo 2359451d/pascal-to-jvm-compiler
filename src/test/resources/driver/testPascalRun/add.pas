@@ -10,7 +10,9 @@ bool1, bool2:Boolean;
 real1, real2:Real;
 
 begin
-  Read(first, second); {must convert to 2 read statements}
+  {Read(first, second);} {must convert to 2 read statements}
+  first:=1;
+  second:=2;
   sum := first+second+first;
   writeln('sum is: ', sum);
   WriteLn('11+sum is', 11+sum);

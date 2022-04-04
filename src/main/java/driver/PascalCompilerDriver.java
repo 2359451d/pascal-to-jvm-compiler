@@ -6,10 +6,14 @@ import exception.PascalCompilerException;
 import org.apache.commons.lang3.StringUtils;
 import utils.log.GlobalLogger;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Main Driver Entrance of the compiler
@@ -44,6 +48,8 @@ public class PascalCompilerDriver {
             //throw new PascalCompilerException("Invalid file path. Please specify valid path");
             throw BuiltinException.INVALID_PATH.getException();
         }
+        final boolean exists = new File(path).exists();
+        if (!exists) throw new PascalCompilerException(new FileNotFoundException("File not found: "+path).getMessage());
 
         return new DriverArgument(driverCommand,path);
     }
@@ -72,13 +78,17 @@ public class PascalCompilerDriver {
             // throw PascalCompilerException, if syntactic analysis not being executed yet
             builder = new PascalCompilerDriverBuilder(driverArgument).parse().check();
         }
-        if (commandName.equals("run")) {
+        if (commandName.equals("run") || commandName.equals("compile")) {
             builder = new PascalCompilerDriverBuilder(driverArgument).parse().check().run();
         }
         return builder;
     }
 
     public static void main(String[] args) {
+        long jvmStartTime = ManagementFactory.getRuntimeMXBean().getUptime();
+        //long seconds = TimeUnit.MILLISECONDS.toSeconds(jvmStartTime);
+        //System.out.println("jvmStartTime = " + jvmStartTime);
+
         try {
             DriverArgument driverArgument = checkArguments(args);
             constructDriverAndBuild(driverArgument);

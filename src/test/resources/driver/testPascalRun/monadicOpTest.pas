@@ -3,7 +3,7 @@
  * User: Lenovo
  * Date: 13/02/2022
  *)
-program monadicOpTest;
+program monadicOpTest(output);
 var intVar1,intVar2:Integer;
   realVar:Real;
 begin

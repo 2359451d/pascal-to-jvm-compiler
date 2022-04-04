@@ -5,11 +5,9 @@
  *)
 program arithOperator010;
 var
-  a,b,c : integer;
-  d: real;
-  e,f: Integer;
+  f: Integer;
 begin
   {some statements below are not valid}
-
+  f:= -1;
   f:= -true;{Not work, operand must be int or real}
 end.
