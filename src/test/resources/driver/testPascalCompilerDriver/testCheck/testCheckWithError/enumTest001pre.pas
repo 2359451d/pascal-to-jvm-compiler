@@ -1,0 +1,17 @@
+(*
+ * Project: pascal_test
+ * User: Lenovo
+ * Date: 02/01/2022
+ *)
+{$mode iso}
+{$rangeChecks on}
+program enumTest001pre;
+type
+  cardsuit = (clubs, diamonds, hearts, spades);
+  weather = (sunny, rainy);
+var
+  card : cardsuit;
+begin
+  card := clubs;
+
+end.
