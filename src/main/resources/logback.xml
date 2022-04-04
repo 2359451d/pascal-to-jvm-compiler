@@ -33,7 +33,7 @@
     </appender>
 
     <!--Global logger-->
-    <logger name="utils.log.GlobalLogger" level="DEBUG">
+    <logger name="utils.log.GlobalLogger" level="INFO">
         <appender-ref ref="STDOUT"/>
     </logger>
 

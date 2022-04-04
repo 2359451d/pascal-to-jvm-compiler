@@ -1,3 +1,0 @@
-program testArguments;
-begin
-end.

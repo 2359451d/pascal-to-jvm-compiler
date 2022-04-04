@@ -295,6 +295,11 @@ public class InstructionHelper extends AbstractHelper {
         }
 
         Long intValue = ((IntegerBaseType) type).getValue();
+        if (intValue == null) {
+            mv.visitInsn(Opcodes.ICONST_0);
+            return;
+        }
+
         if (intValue == 0) {
             mv.visitInsn(Opcodes.ICONST_0);
         } else mv.visitLdcInsn(Math.toIntExact(intValue));

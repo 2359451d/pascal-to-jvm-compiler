@@ -4,6 +4,7 @@ public enum DriverCommand {
 
    PARSE("parse"),
    CHECK("check"),
+   COMPILE("compile"),
    RUN("run")
 
    ;

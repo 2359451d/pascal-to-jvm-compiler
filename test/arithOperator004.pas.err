@@ -1,1 +1,0 @@
-arithOperator004.pas(13,11) Error: Operator is not overloaded: "ShortInt" + "Boolean"

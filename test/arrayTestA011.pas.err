@@ -1,1 +1,0 @@
-arrayTestA011.pas(32,20) Error: Incompatible types: got "Single" expected "Array[1..10] Of LongInt"

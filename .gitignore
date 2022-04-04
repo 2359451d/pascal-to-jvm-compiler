@@ -16,4 +16,10 @@ target/*
 !target/pascal-to-jvm-compiler.jar
 out
 
+src/test/resources/driver/testPascalCompilerDriver/testCheck/testCheckWithError/*.err
+
+src/test/resources/bsi_tests/
+src/test/resources/gpcTest/
+src/test/resources/PAT/
+src/test/*.class
 

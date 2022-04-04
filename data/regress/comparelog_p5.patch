@@ -1,1104 +1,0 @@
-**************************************************
-Log file generated for compiler [p5]
-Tese Case Count: [34], Matched: [19], Unmatched: [15]
-20220321-02:35:12 ---> 20220321-02:35:23 Total:11 seconds finished
-**************************************************
-
-===Unmatched Source Name: ./test/arrayTestA006.pas===
---- ./test/arrayTestA006.pas.err	2022-03-21 02:33:21.033321200 +0000
-+++ ./test/arrayTestA006.pas.lst	2022-03-21 02:35:01.024384500 +0000
-@@ -1 +1,57 @@
--arrayTestA006.pas(30,24) Error: range check error while evaluating constants (51 must be between 1 and 50)
-+P5 Pascal compiler vs. 1.4
-+Pascal-P5 complies with the requirements of level 0 of ISO/IEC 7185.
-+
-+
-+     1      -56 {$mode iso} 
-+     2      -56 {$RANGECHECKS ON} 
-+     3      -56 program arrayTestA; 
-+     4      -56  
-+     5      -56 type 
-+     6      -56   weather = (sunny, cloudy); 
-+     7      -56   subrangeType = 1..50; 
-+     8      -56   array1dim = array ['a'..'e'] of integer; 
-+     9      -56   arrType = array [1..50] of Integer; 
-+    10      -56 var 
-+    11      -56   a: array1dim; 
-+    12      -56   i: char; 
-+    13      -56   n: integer; 
-+    14      -56   x: array [0..100] of array [1..50] of Integer; 
-+    15      -56   arrVar: arrType; 
-+    16      -56  
-+    17      -56   arrVar2, arrVar2a: array [Boolean, 1..10] of real; 
-+    18      -56   arrVar3: array [Boolean] of array [1..10] of Integer; 
-+    19      -56   arrVar4: array [1..9, 10..19] of array [Boolean, subrangeType] of Integer; 
-+    20      -56  
-+    21      -56   arrEnum: array [weather] of weather; 
-+    22      -56   arrEnum2: array [weather] of (sunny1, cloudy1); 
-+    23      -56  
-+    24      -56   enum: weather; 
-+    25      -56   card: (heart, cube); 
-+    26      -56  
-+    27      -56   charArr : array [char] of Integer; 
-+    28      -56  
-+    29      -56 begin 
-+    30        3   arrVar4[1, 12][true, 51] := 1; {invalid index 3, range should be 1..50} 
-+    31       24 end. 
-+a          unreferenced
-+arrEnum2   unreferenced
-+arrEnum    unreferenced
-+charArr    unreferenced
-+card       unreferenced
-+arrVar3    unreferenced
-+arrVar2a   unreferenced
-+arrVar2    unreferenced
-+arrVar     unreferenced
-+cube       unreferenced
-+heart      unreferenced
-+enum       unreferenced
-+cloudy1    unreferenced
-+n          unreferenced
-+i          unreferenced
-+cloudy     unreferenced
-+sunny1     unreferenced
-+sunny      unreferenced
-+x          unreferenced
-+
-+
-+Errors in program: 0
-
-===Unmatched Source Name: ./test/arrayTestA007.pas===
---- ./test/arrayTestA007.pas.err	2022-03-21 02:33:21.079320900 +0000
-+++ ./test/arrayTestA007.pas.lst	2022-03-21 02:35:01.350455900 +0000
-@@ -1 +1,56 @@
--arrayTestA007.pas(30,19) Error: range check error while evaluating constants (2 must be between 10 and 19)
-+P5 Pascal compiler vs. 1.4
-+Pascal-P5 complies with the requirements of level 0 of ISO/IEC 7185.
-+
-+
-+     1      -56 {$mode iso} 
-+     2      -56 {$RANGECHECKS ON} 
-+     3      -56 program arrayTestA; 
-+     4      -56  
-+     5      -56 type 
-+     6      -56   weather = (sunny, cloudy); 
-+     7      -56   subrangeType = 1..50; 
-+     8      -56   array1dim = array ['a'..'e'] of integer; 
-+     9      -56   arrType = array [1..50] of Integer; 
-+    10      -56 var 
-+    11      -56   a: array1dim; 
-+    12      -56   i: char; 
-+    13      -56   n: integer; 
-+    14      -56   x: array [0..100] of array [1..50] of Integer; 
-+    15      -56   arrVar: arrType; 
-+    16      -56  
-+    17      -56   arrVar2, arrVar2a: array [Boolean, 1..10] of real; 
-+    18      -56   arrVar3: array [Boolean] of array [1..10] of Integer; 
-+    19      -56   arrVar4: array [1..9, 10..19] of array [Boolean, subrangeType] of Integer; 
-+    20      -56  
-+    21      -56   arrEnum: array [weather] of weather; 
-+    22      -56   arrEnum2: array [weather] of (sunny1, cloudy1); 
-+    23      -56  
-+    24      -56   enum: weather; 
-+    25      -56   card: (heart, cube); 
-+    26      -56  
-+    27      -56   charArr : array [char] of Integer; 
-+    28      -56  
-+    29      -56 begin 
-+    30        3   n := arrVar4[1][2][true][50]; {invalid index 1, range should be 10..19} 
-+    31       24 end. 
-+a          unreferenced
-+arrEnum2   unreferenced
-+arrEnum    unreferenced
-+charArr    unreferenced
-+card       unreferenced
-+arrVar3    unreferenced
-+arrVar2a   unreferenced
-+arrVar2    unreferenced
-+arrVar     unreferenced
-+cube       unreferenced
-+heart      unreferenced
-+enum       unreferenced
-+cloudy1    unreferenced
-+i          unreferenced
-+cloudy     unreferenced
-+sunny1     unreferenced
-+sunny      unreferenced
-+x          unreferenced
-+
-+
-+Errors in program: 0
-
-===Unmatched Source Name: ./test/arrayTestA009.pas===
---- ./test/arrayTestA009.pas.err	2022-03-21 02:33:21.173319700 +0000
-+++ ./test/arrayTestA009.pas.lst	2022-03-21 02:35:01.935727300 +0000
-@@ -1 +1,57 @@
--arrayTestA009.pas(30,18) Error: range check error while evaluating constants (11 must be between 1 and 10)
-+P5 Pascal compiler vs. 1.4
-+Pascal-P5 complies with the requirements of level 0 of ISO/IEC 7185.
-+
-+
-+     1      -56 {$mode iso} 
-+     2      -56 {$RANGECHECKS ON} 
-+     3      -56 program arrayTestA; 
-+     4      -56  
-+     5      -56 type 
-+     6      -56   weather = (sunny, cloudy); 
-+     7      -56   subrangeType = 1..50; 
-+     8      -56   array1dim = array ['a'..'e'] of integer; 
-+     9      -56   arrType = array [1..50] of Integer; 
-+    10      -56 var 
-+    11      -56   a: array1dim; 
-+    12      -56   i: char; 
-+    13      -56   n: integer; 
-+    14      -56   x: array [0..100] of array [1..50] of Integer; 
-+    15      -56   arrVar: arrType; 
-+    16      -56  
-+    17      -56   arrVar2, arrVar2a: array [Boolean, 1..10] of real; 
-+    18      -56   arrVar3: array [Boolean] of array [1..10] of Integer; 
-+    19      -56   arrVar4: array [1..9, 10..19] of array [Boolean, subrangeType] of Integer; 
-+    20      -56  
-+    21      -56   arrEnum: array [weather] of weather; 
-+    22      -56   arrEnum2: array [weather] of (sunny1, cloudy1); 
-+    23      -56  
-+    24      -56   enum: weather; 
-+    25      -56   card: (heart, cube); 
-+    26      -56  
-+    27      -56   charArr : array [char] of Integer; 
-+    28      -56  
-+    29      -56 begin 
-+    30        3   arrVar3[false][11] := 1; {invalid index pos 1, should be of subrange 1..10} 
-+    31       16 end. 
-+a          unreferenced
-+arrEnum2   unreferenced
-+arrEnum    unreferenced
-+charArr    unreferenced
-+card       unreferenced
-+arrVar4    unreferenced
-+arrVar2a   unreferenced
-+arrVar2    unreferenced
-+arrVar     unreferenced
-+cube       unreferenced
-+heart      unreferenced
-+enum       unreferenced
-+cloudy1    unreferenced
-+n          unreferenced
-+i          unreferenced
-+cloudy     unreferenced
-+sunny1     unreferenced
-+sunny      unreferenced
-+x          unreferenced
-+
-+
-+Errors in program: 0
-
-===Unmatched Source Name: ./test/arrayTestA011.pas===
---- ./test/arrayTestA011.pas.err	2022-03-21 02:33:21.279320700 +0000
-+++ ./test/arrayTestA011.pas.lst	2022-03-21 02:35:03.139370600 +0000
-@@ -1 +1,66 @@
--arrayTestA011.pas(32,20) Error: Incompatible types: got "Single" expected "Array[1..10] Of LongInt"
-+P5 Pascal compiler vs. 1.4
-+Pascal-P5 complies with the requirements of level 0 of ISO/IEC 7185.
-+
-+
-+     1      -56 {$mode iso} 
-+     2      -56 {$RANGECHECKS ON} 
-+     3      -56 program arrayTestA; 
-+     4      -56  
-+     5      -56 type 
-+     6      -56   weather = (sunny, cloudy); 
-+     7      -56   subrangeType = 1..50; 
-+     8      -56   array1dim = array ['a'..'e'] of integer; 
-+     9      -56   arrType = array [1..50] of Integer; 
-+    10      -56 var 
-+    11      -56   a: array1dim; 
-+    12      -56   i: char; 
-+    13      -56   n: integer; 
-+    14      -56   x: array [0..100] of array [1..50] of Integer; 
-+    15      -56   arrVar: arrType; 
-+    16      -56  
-+    17      -56   arrVar2, arrVar2a: array [Boolean, 1..10] of real; 
-+    18      -56   arrVar3: array [Boolean] of array [1..10] of Integer; 
-+    19      -56   subarrVar3: array [1..10] of Integer; 
-+    20      -56   arrVar4: array [1..9, 10..19] of array [Boolean, subrangeType] of Integer; 
-+    21      -56  
-+    22      -56   arrEnum: array [weather] of weather; 
-+    23      -56   arrEnum2: array [weather] of (sunny1, cloudy1); 
-+    24      -56  
-+    25      -56   enum: weather; 
-+    26      -56   card: (heart, cube); 
-+    27      -56  
-+    28      -56   charArr : array [char] of Integer; 
-+    29      -56  
-+    30      -56 begin 
-+    31        3   arrVar3[true] := subarrVar3; 
-+    31   ****                                ^129
-+    32       11   arrVar3[true] := 1.0; {invalid, expected array of [1..10]} 
-+    32   ****                         ^129
-+    33       17 end. 
-+a          unreferenced
-+arrEnum2   unreferenced
-+arrEnum    unreferenced
-+charArr    unreferenced
-+card       unreferenced
-+arrVar4    unreferenced
-+arrVar2a   unreferenced
-+arrVar2    unreferenced
-+arrVar     unreferenced
-+cube       unreferenced
-+heart      unreferenced
-+enum       unreferenced
-+cloudy1    unreferenced
-+n          unreferenced
-+i          unreferenced
-+cloudy     unreferenced
-+sunny1     unreferenced
-+sunny      unreferenced
-+x          unreferenced
-+
-+
-+Errors in program: 2
-+
-+Error numbers in listing:
-+-------------------------
-+129  Type conflict of operands
-+
-
-===Unmatched Source Name: ./test/arrayTestA012.pas===
---- ./test/arrayTestA012.pas.err	2022-03-21 02:33:21.339321800 +0000
-+++ ./test/arrayTestA012.pas.lst	2022-03-21 02:35:03.495991700 +0000
-@@ -1 +1,73 @@
--arrayTestA012.pas(32,14) Error: Incompatible types: got "Single" expected "Array[0..1] Of Array[1..10] Of LongInt"
-+P5 Pascal compiler vs. 1.4
-+Pascal-P5 complies with the requirements of level 0 of ISO/IEC 7185.
-+
-+
-+     1      -56 {$mode iso} 
-+     2      -56 {$RANGECHECKS ON} 
-+     3      -56 program arrayTestA; 
-+     4      -56  
-+     5      -56 type 
-+     6      -56   weather = (sunny, cloudy); 
-+     7      -56   subrangeType = 1..50; 
-+     8      -56   array1dim = array ['a'..'e'] of integer; 
-+     9      -56   arrType = array [1..50] of Integer; 
-+    10      -56 var 
-+    11      -56   a: array1dim; 
-+    12      -56   i: char; 
-+    13      -56   n: integer; 
-+    14      -56   x: array [0..100] of array [1..50] of Integer; 
-+    15      -56   arrVar: arrType; 
-+    16      -56  
-+    17      -56   arrVar2, arrVar2a: array [Boolean, 1..10] of real; 
-+    18      -56   arrVar3, arrVar3_: array [Boolean] of array [1..10] of Integer; 
-+    18   ****                    ^101,25^6
-+    19      -56   subarrVar3: array [1..10] of Integer; 
-+    20      -56   arrVar4: array [1..9, 10..19] of array [Boolean, subrangeType] of Integer; 
-+    21      -56  
-+    22      -56   arrEnum: array [weather] of weather; 
-+    23      -56   arrEnum2: array [weather] of (sunny1, cloudy1); 
-+    24      -56  
-+    25      -56   enum: weather; 
-+    26      -56   card: (heart, cube); 
-+    27      -56  
-+    28      -56   charArr : array [char] of Integer; 
-+    29      -56  
-+    30      -56 begin 
-+    31        3   arrVar3:= arrVar3_; 
-+    31   ****                     ^25^59
-+    32        8   arrVar3 := 1.0; {invalid, expected array of [boolean, 1..10]} 
-+    32   ****                   ^129
-+    33       10 end. 
-+a          unreferenced
-+arrEnum2   unreferenced
-+arrEnum    unreferenced
-+charArr    unreferenced
-+card       unreferenced
-+arrVar4    unreferenced
-+arrVar3    unreferenced
-+arrVar2a   unreferenced
-+arrVar2    unreferenced
-+arrVar     unreferenced
-+cube       unreferenced
-+heart      unreferenced
-+enum       unreferenced
-+cloudy1    unreferenced
-+subarrVar3 unreferenced
-+n          unreferenced
-+i          unreferenced
-+cloudy     unreferenced
-+sunny1     unreferenced
-+sunny      unreferenced
-+x          unreferenced
-+
-+
-+Errors in program: 6
-+
-+Error numbers in listing:
-+-------------------------
-+  6  Illegal symbol
-+ 25  Illegal source character
-+ 59  Error in variable
-+101  Identifier declared twice
-+129  Type conflict of operands
-+
-
-===Unmatched Source Name: ./test/arrayTestA013.pas===
---- ./test/arrayTestA013.pas.err	2022-03-21 02:33:21.472319800 +0000
-+++ ./test/arrayTestA013.pas.lst	2022-03-21 02:35:03.833656800 +0000
-@@ -1 +1,69 @@
--arrayTestA013.pas(32,11) Error: Incompatible types: got "<enumeration type>" expected "weather"
-+P5 Pascal compiler vs. 1.4
-+Pascal-P5 complies with the requirements of level 0 of ISO/IEC 7185.
-+
-+
-+     1      -56 {$mode iso} 
-+     2      -56 {$RANGECHECKS ON} 
-+     3      -56 program arrayTestA; 
-+     4      -56  
-+     5      -56 type 
-+     6      -56   weather = (sunny, cloudy); 
-+     7      -56   subrangeType = 1..50; 
-+     8      -56   array1dim = array ['a'..'e'] of integer; 
-+     9      -56   arrType = array [1..50] of Integer; 
-+    10      -56 var 
-+    11      -56   a: array1dim; 
-+    12      -56   i: char; 
-+    13      -56   n: integer; 
-+    14      -56   x: array [0..100] of array [1..50] of Integer; 
-+    15      -56   arrVar: arrType; 
-+    16      -56  
-+    17      -56   arrVar2, arrVar2a: array [Boolean, 1..10] of real; 
-+    18      -56   arrVar3, arrVar3_: array [Boolean] of array [1..10] of Integer; 
-+    18   ****                    ^101,25^6
-+    19      -56   subarrVar3: array [1..10] of Integer; 
-+    20      -56   arrVar4: array [1..9, 10..19] of array [Boolean, subrangeType] of Integer; 
-+    21      -56  
-+    22      -56   arrEnum: array [weather] of weather; 
-+    23      -56   arrEnum2: array [weather] of (sunny1, cloudy1); 
-+    24      -56  
-+    25      -56   enum: weather; 
-+    26      -56   card: (heart, cube); 
-+    27      -56  
-+    28      -56   charArr : array [char] of Integer; 
-+    29      -56  
-+    30      -56 begin 
-+    31        3   arrEnum[sunny] := cloudy; 
-+    32       13   arrEnum[heart] := heart; {invalid array scripting pos 0} 
-+    32   ****                  ^139      ^129
-+    33       18 end. 
-+a          unreferenced
-+arrEnum2   unreferenced
-+charArr    unreferenced
-+card       unreferenced
-+arrVar4    unreferenced
-+arrVar3    unreferenced
-+arrVar3    unreferenced
-+arrVar2a   unreferenced
-+arrVar2    unreferenced
-+arrVar     unreferenced
-+cube       unreferenced
-+enum       unreferenced
-+cloudy1    unreferenced
-+subarrVar3 unreferenced
-+n          unreferenced
-+i          unreferenced
-+sunny1     unreferenced
-+x          unreferenced
-+
-+
-+Errors in program: 5
-+
-+Error numbers in listing:
-+-------------------------
-+  6  Illegal symbol
-+ 25  Illegal source character
-+101  Identifier declared twice
-+129  Type conflict of operands
-+139  Index type is not compatible with declaration
-+
-
-===Unmatched Source Name: ./test/arrayTestA014.pas===
---- ./test/arrayTestA014.pas.err	2022-03-21 02:33:21.535320100 +0000
-+++ ./test/arrayTestA014.pas.lst	2022-03-21 02:35:04.170510500 +0000
-@@ -1 +1,68 @@
--arrayTestA014.pas(32,21) Error: Incompatible types: got "<enumeration type>" expected "weather"
-+P5 Pascal compiler vs. 1.4
-+Pascal-P5 complies with the requirements of level 0 of ISO/IEC 7185.
-+
-+
-+     1      -56 {$mode iso} 
-+     2      -56 {$RANGECHECKS ON} 
-+     3      -56 program arrayTestA; 
-+     4      -56  
-+     5      -56 type 
-+     6      -56   weather = (sunny, cloudy); 
-+     7      -56   subrangeType = 1..50; 
-+     8      -56   array1dim = array ['a'..'e'] of integer; 
-+     9      -56   arrType = array [1..50] of Integer; 
-+    10      -56 var 
-+    11      -56   a: array1dim; 
-+    12      -56   i: char; 
-+    13      -56   n: integer; 
-+    14      -56   x: array [0..100] of array [1..50] of Integer; 
-+    15      -56   arrVar: arrType; 
-+    16      -56  
-+    17      -56   arrVar2, arrVar2a: array [Boolean, 1..10] of real; 
-+    18      -56   arrVar3, arrVar3_: array [Boolean] of array [1..10] of Integer; 
-+    18   ****                    ^101,25^6
-+    19      -56   subarrVar3: array [1..10] of Integer; 
-+    20      -56   arrVar4: array [1..9, 10..19] of array [Boolean, subrangeType] of Integer; 
-+    21      -56  
-+    22      -56   arrEnum: array [weather] of weather; 
-+    23      -56   arrEnum2: array [weather] of (sunny1, cloudy1); 
-+    24      -56  
-+    25      -56   enum: weather; 
-+    26      -56   card: (heart, cube); 
-+    27      -56  
-+    28      -56   charArr : array [char] of Integer; 
-+    29      -56  
-+    30      -56 begin 
-+    31        3   arrEnum[sunny] := cloudy; 
-+    32       13   arrEnum[sunny] := heart; {Illegal enumerated type assignment} 
-+    32   ****                            ^129
-+    33       19 end. 
-+a          unreferenced
-+arrEnum2   unreferenced
-+charArr    unreferenced
-+card       unreferenced
-+arrVar4    unreferenced
-+arrVar3    unreferenced
-+arrVar3    unreferenced
-+arrVar2a   unreferenced
-+arrVar2    unreferenced
-+arrVar     unreferenced
-+cube       unreferenced
-+enum       unreferenced
-+cloudy1    unreferenced
-+subarrVar3 unreferenced
-+n          unreferenced
-+i          unreferenced
-+sunny1     unreferenced
-+x          unreferenced
-+
-+
-+Errors in program: 4
-+
-+Error numbers in listing:
-+-------------------------
-+  6  Illegal symbol
-+ 25  Illegal source character
-+101  Identifier declared twice
-+129  Type conflict of operands
-+
-
-===Unmatched Source Name: ./test/arrayTestA015.pas===
---- ./test/arrayTestA015.pas.err	2022-03-21 02:33:21.678322800 +0000
-+++ ./test/arrayTestA015.pas.lst	2022-03-21 02:35:04.521428700 +0000
-@@ -1 +1,69 @@
--arrayTestA015.pas(32,11) Error: Incompatible types: got "Array[weather] Of weather" expected "weather"
-+P5 Pascal compiler vs. 1.4
-+Pascal-P5 complies with the requirements of level 0 of ISO/IEC 7185.
-+
-+
-+     1      -56 {$mode iso} 
-+     2      -56 {$RANGECHECKS ON} 
-+     3      -56 program arrayTestA; 
-+     4      -56  
-+     5      -56 type 
-+     6      -56   weather = (sunny, cloudy); 
-+     7      -56   subrangeType = 1..50; 
-+     8      -56   array1dim = array ['a'..'e'] of integer; 
-+     9      -56   arrType = array [1..50] of Integer; 
-+    10      -56 var 
-+    11      -56   a: array1dim; 
-+    12      -56   i: char; 
-+    13      -56   n: integer; 
-+    14      -56   x: array [0..100] of array [1..50] of Integer; 
-+    15      -56   arrVar: arrType; 
-+    16      -56  
-+    17      -56   arrVar2, arrVar2a: array [Boolean, 1..10] of real; 
-+    18      -56   arrVar3, arrVar3_: array [Boolean] of array [1..10] of Integer; 
-+    18   ****                    ^101,25^6
-+    19      -56   subarrVar3: array [1..10] of Integer; 
-+    20      -56   arrVar4: array [1..9, 10..19] of array [Boolean, subrangeType] of Integer; 
-+    21      -56  
-+    22      -56   arrEnum: array [weather] of weather; 
-+    23      -56   arrEnum2: array [weather] of (sunny1, cloudy1); 
-+    24      -56  
-+    25      -56   enum: weather; 
-+    26      -56   card: (heart, cube); 
-+    27      -56  
-+    28      -56   charArr : array [char] of Integer; 
-+    29      -56  
-+    30      -56 begin 
-+    31        3   enum := arrEnum[sunny]; 
-+    32       13   enum := arrEnum; {invalid, right operand is array of weather} 
-+    32   ****                    ^129
-+    33       14 end. 
-+a          unreferenced
-+arrEnum2   unreferenced
-+charArr    unreferenced
-+card       unreferenced
-+arrVar4    unreferenced
-+arrVar3    unreferenced
-+arrVar3    unreferenced
-+arrVar2a   unreferenced
-+arrVar2    unreferenced
-+arrVar     unreferenced
-+cube       unreferenced
-+heart      unreferenced
-+cloudy1    unreferenced
-+subarrVar3 unreferenced
-+n          unreferenced
-+i          unreferenced
-+cloudy     unreferenced
-+sunny1     unreferenced
-+x          unreferenced
-+
-+
-+Errors in program: 4
-+
-+Error numbers in listing:
-+-------------------------
-+  6  Illegal symbol
-+ 25  Illegal source character
-+101  Identifier declared twice
-+129  Type conflict of operands
-+
-
-===Unmatched Source Name: ./test/arrayTestA016.pas===
---- ./test/arrayTestA016.pas.err	2022-03-21 02:33:21.855321900 +0000
-+++ ./test/arrayTestA016.pas.lst	2022-03-21 02:35:05.221083100 +0000
-@@ -1 +1,68 @@
--arrayTestA016.pas(32,19) Error: Incompatible types: got "<enumeration type>" expected "weather"
-+P5 Pascal compiler vs. 1.4
-+Pascal-P5 complies with the requirements of level 0 of ISO/IEC 7185.
-+
-+
-+     1      -56 {$mode iso} 
-+     2      -56 {$RANGECHECKS ON} 
-+     3      -56 program arrayTestA; 
-+     4      -56  
-+     5      -56 type 
-+     6      -56   weather = (sunny, cloudy); 
-+     7      -56   subrangeType = 1..50; 
-+     8      -56   array1dim = array ['a'..'e'] of integer; 
-+     9      -56   arrType = array [1..50] of Integer; 
-+    10      -56 var 
-+    11      -56   a: array1dim; 
-+    12      -56   i: char; 
-+    13      -56   n: integer; 
-+    14      -56   x: array [0..100] of array [1..50] of Integer; 
-+    15      -56   arrVar: arrType; 
-+    16      -56  
-+    17      -56   arrVar2, arrVar2a: array [Boolean, 1..10] of real; 
-+    18      -56   arrVar3, arrVar3_: array [Boolean] of array [1..10] of Integer; 
-+    18   ****                    ^101,25^6
-+    19      -56   subarrVar3: array [1..10] of Integer; 
-+    20      -56   arrVar4: array [1..9, 10..19] of array [Boolean, subrangeType] of Integer; 
-+    21      -56  
-+    22      -56   arrEnum: array [weather] of weather; 
-+    23      -56   arrEnum2: array [weather] of (sunny1, cloudy1); 
-+    24      -56  
-+    25      -56   enum: weather; 
-+    26      -56   card: (heart, cube); 
-+    27      -56  
-+    28      -56   charArr : array [char] of Integer; 
-+    29      -56  
-+    30      -56 begin 
-+    31        3   enum := arrEnum[sunny]; 
-+    32       13   enum := arrEnum[heart]; {Invalid array scripting operation pos 0} 
-+    32   ****                          ^139
-+    33       20 end. 
-+a          unreferenced
-+arrEnum2   unreferenced
-+charArr    unreferenced
-+card       unreferenced
-+arrVar4    unreferenced
-+arrVar3    unreferenced
-+arrVar3    unreferenced
-+arrVar2a   unreferenced
-+arrVar2    unreferenced
-+arrVar     unreferenced
-+cube       unreferenced
-+cloudy1    unreferenced
-+subarrVar3 unreferenced
-+n          unreferenced
-+i          unreferenced
-+cloudy     unreferenced
-+sunny1     unreferenced
-+x          unreferenced
-+
-+
-+Errors in program: 4
-+
-+Error numbers in listing:
-+-------------------------
-+  6  Illegal symbol
-+ 25  Illegal source character
-+101  Identifier declared twice
-+139  Index type is not compatible with declaration
-+
-
-===Unmatched Source Name: ./test/arrayTestA017.pas===
---- ./test/arrayTestA017.pas.err	2022-03-21 02:33:21.920320100 +0000
-+++ ./test/arrayTestA017.pas.lst	2022-03-21 02:35:05.607793300 +0000
-@@ -1 +1,68 @@
--arrayTestA017.pas(32,19) Error: Incompatible types: got "<enumeration type>" expected "weather"
-+P5 Pascal compiler vs. 1.4
-+Pascal-P5 complies with the requirements of level 0 of ISO/IEC 7185.
-+
-+
-+     1      -56 {$mode iso} 
-+     2      -56 {$RANGECHECKS ON} 
-+     3      -56 program arrayTestA; 
-+     4      -56  
-+     5      -56 type 
-+     6      -56   weather = (sunny, cloudy); 
-+     7      -56   subrangeType = 1..50; 
-+     8      -56   array1dim = array ['a'..'e'] of integer; 
-+     9      -56   arrType = array [1..50] of Integer; 
-+    10      -56 var 
-+    11      -56   a: array1dim; 
-+    12      -56   i: char; 
-+    13      -56   n: integer; 
-+    14      -56   x: array [0..100] of array [1..50] of Integer; 
-+    15      -56   arrVar: arrType; 
-+    16      -56  
-+    17      -56   arrVar2, arrVar2a: array [Boolean, 1..10] of real; 
-+    18      -56   arrVar3, arrVar3_: array [Boolean] of array [1..10] of Integer; 
-+    18   ****                    ^101,25^6
-+    19      -56   subarrVar3: array [1..10] of Integer; 
-+    20      -56   arrVar4: array [1..9, 10..19] of array [Boolean, subrangeType] of Integer; 
-+    21      -56  
-+    22      -56   arrEnum: array [weather] of weather; 
-+    23      -56   arrEnum2: array [weather] of (sunny1, cloudy1); 
-+    24      -56  
-+    25      -56   enum: weather; 
-+    26      -56   card: (heart, cube); 
-+    27      -56  
-+    28      -56   charArr : array [char] of Integer; 
-+    29      -56  
-+    30      -56 begin 
-+    31        3   enum := arrEnum[sunny]; 
-+    32       13   enum := arrEnum2[sunny]; {Incompatible types: got (sunny1, cloudy1) expected "weather"} 
-+    32   ****                            ^129
-+    33       19 end. 
-+a          unreferenced
-+charArr    unreferenced
-+card       unreferenced
-+arrVar4    unreferenced
-+arrVar3    unreferenced
-+arrVar3    unreferenced
-+arrVar2a   unreferenced
-+arrVar2    unreferenced
-+arrVar     unreferenced
-+cube       unreferenced
-+heart      unreferenced
-+cloudy1    unreferenced
-+subarrVar3 unreferenced
-+n          unreferenced
-+i          unreferenced
-+cloudy     unreferenced
-+sunny1     unreferenced
-+x          unreferenced
-+
-+
-+Errors in program: 4
-+
-+Error numbers in listing:
-+-------------------------
-+  6  Illegal symbol
-+ 25  Illegal source character
-+101  Identifier declared twice
-+129  Type conflict of operands
-+
-
-===Unmatched Source Name: ./test/arrayTestA018.pas===
---- ./test/arrayTestA018.pas.err	2022-03-21 02:33:21.992320800 +0000
-+++ ./test/arrayTestA018.pas.lst	2022-03-21 02:35:05.990930900 +0000
-@@ -1 +1,68 @@
--arrayTestA018.pas(32,20) Error: Incompatible types: got "<enumeration type>" expected "weather"
-+P5 Pascal compiler vs. 1.4
-+Pascal-P5 complies with the requirements of level 0 of ISO/IEC 7185.
-+
-+
-+     1      -56 {$mode iso} 
-+     2      -56 {$RANGECHECKS ON} 
-+     3      -56 program arrayTestA; 
-+     4      -56  
-+     5      -56 type 
-+     6      -56   weather = (sunny, cloudy); 
-+     7      -56   subrangeType = 1..50; 
-+     8      -56   array1dim = array ['a'..'e'] of integer; 
-+     9      -56   arrType = array [1..50] of Integer; 
-+    10      -56 var 
-+    11      -56   a: array1dim; 
-+    12      -56   i: char; 
-+    13      -56   n: integer; 
-+    14      -56   x: array [0..100] of array [1..50] of Integer; 
-+    15      -56   arrVar: arrType; 
-+    16      -56  
-+    17      -56   arrVar2, arrVar2a: array [Boolean, 1..10] of real; 
-+    18      -56   arrVar3, arrVar3_: array [Boolean] of array [1..10] of Integer; 
-+    18   ****                    ^101,25^6
-+    19      -56   subarrVar3: array [1..10] of Integer; 
-+    20      -56   arrVar4: array [1..9, 10..19] of array [Boolean, subrangeType] of Integer; 
-+    21      -56  
-+    22      -56   arrEnum: array [weather] of weather; 
-+    23      -56   arrEnum2: array [weather] of (sunny1, cloudy1); 
-+    24      -56  
-+    25      -56   enum: weather; 
-+    26      -56   card: (heart, cube); 
-+    27      -56  
-+    28      -56   charArr : array [char] of Integer; 
-+    29      -56  
-+    30      -56 begin 
-+    31        3   enum := arrEnum[sunny]; 
-+    32       13   enum := arrEnum2[sunny1]; {Incompatible types: got "<enumeration type>" expected "weather"} 
-+    32   ****                            ^139^129
-+    33       18 end. 
-+a          unreferenced
-+charArr    unreferenced
-+card       unreferenced
-+arrVar4    unreferenced
-+arrVar3    unreferenced
-+arrVar3    unreferenced
-+arrVar2a   unreferenced
-+arrVar2    unreferenced
-+arrVar     unreferenced
-+cube       unreferenced
-+heart      unreferenced
-+cloudy1    unreferenced
-+subarrVar3 unreferenced
-+n          unreferenced
-+i          unreferenced
-+cloudy     unreferenced
-+x          unreferenced
-+
-+
-+Errors in program: 5
-+
-+Error numbers in listing:
-+-------------------------
-+  6  Illegal symbol
-+ 25  Illegal source character
-+101  Identifier declared twice
-+129  Type conflict of operands
-+139  Index type is not compatible with declaration
-+
-
-===Unmatched Source Name: ./test/arrayTestA019.pas===
---- ./test/arrayTestA019.pas.err	2022-03-21 02:33:22.057321400 +0000
-+++ ./test/arrayTestA019.pas.lst	2022-03-21 02:35:06.437575000 +0000
-@@ -1 +1,71 @@
--arrayTestA019.pas(34,19) Error: Incompatible types: got "weather2" expected "weather"
-+P5 Pascal compiler vs. 1.4
-+Pascal-P5 complies with the requirements of level 0 of ISO/IEC 7185.
-+
-+
-+     1      -56 {$mode iso} 
-+     2      -56 {$RANGECHECKS ON} 
-+     3      -56 program arrayTestA; 
-+     4      -56  
-+     5      -56 type 
-+     6      -56   weather = (sunny, cloudy); 
-+     7      -56 weather2 = (sunny1, cloudy1); 
-+     8      -56   subrangeType = 1..50; 
-+     9      -56   array1dim = array ['a'..'e'] of integer; 
-+    10      -56   arrType = array [1..50] of Integer; 
-+    11      -56 var 
-+    12      -56   a: array1dim; 
-+    13      -56   i: char; 
-+    14      -56   n: integer; 
-+    15      -56   x: array [0..100] of array [1..50] of Integer; 
-+    16      -56   arrVar: arrType; 
-+    17      -56  
-+    18      -56   arrVar2, arrVar2a: array [Boolean, 1..10] of real; 
-+    19      -56   arrVar3, arrVar3_: array [Boolean] of array [1..10] of Integer; 
-+    19   ****                    ^101,25^6
-+    20      -56   subarrVar3: array [1..10] of Integer; 
-+    21      -56   arrVar4: array [1..9, 10..19] of array [Boolean, subrangeType] of Integer; 
-+    22      -56  
-+    23      -56   arrEnum: array [weather] of weather; 
-+    24      -56   arrEnum2: array [weather] of weather2; 
-+    25      -56  
-+    26      -56   enum: weather; 
-+    27      -56   enumVar2 : weather2; 
-+    28      -56   card: (heart, cube); 
-+    29      -56  
-+    30      -56   charArr : array [char] of Integer; 
-+    31      -56  
-+    32      -56 begin 
-+    33        3   enumVar2 := arrEnum2[sunny]; 
-+    34       13   enum := arrEnum2[sunny]; {Incompatible types: got (sunny1, cloudy1) expected "weather"} 
-+    34   ****                            ^129
-+    35       19 end. 
-+a          unreferenced
-+arrEnum    unreferenced
-+charArr    unreferenced
-+card       unreferenced
-+arrVar4    unreferenced
-+arrVar3    unreferenced
-+arrVar3    unreferenced
-+arrVar2a   unreferenced
-+arrVar2    unreferenced
-+arrVar     unreferenced
-+cube       unreferenced
-+heart      unreferenced
-+subarrVar3 unreferenced
-+n          unreferenced
-+i          unreferenced
-+cloudy1    unreferenced
-+cloudy     unreferenced
-+sunny1     unreferenced
-+x          unreferenced
-+
-+
-+Errors in program: 4
-+
-+Error numbers in listing:
-+-------------------------
-+  6  Illegal symbol
-+ 25  Illegal source character
-+101  Identifier declared twice
-+129  Type conflict of operands
-+
-
-===Unmatched Source Name: ./test/arrayTestA020.pas===
---- ./test/arrayTestA020.pas.err	2022-03-21 02:33:22.124320300 +0000
-+++ ./test/arrayTestA020.pas.lst	2022-03-21 02:35:06.901275900 +0000
-@@ -1 +1,75 @@
--arrayTestA020.pas(36,5) Error: range check error while evaluating constants (101 must be between 0 and 100)
-+P5 Pascal compiler vs. 1.4
-+Pascal-P5 complies with the requirements of level 0 of ISO/IEC 7185.
-+
-+
-+     1      -56 {$mode iso} 
-+     2      -56 {$RANGECHECKS ON} 
-+     3      -56 program arrayTestA; 
-+     4      -56  
-+     5      -56 type 
-+     6      -56   weather = (sunny, cloudy); 
-+     7      -56   subrangeType = 1..50; 
-+     8      -56   array1dim = array ['a'..'e'] of integer; 
-+     9      -56   arrType = array [1..50] of Integer; 
-+    10      -56 var 
-+    11      -56   a: array1dim; 
-+    12      -56   i: char; 
-+    13      -56   n: integer; 
-+    14      -56   x: array [0..100] of array [1..50] of Integer; 
-+    15      -56   arrVar: arrType; 
-+    16      -56  
-+    17      -56   arrVar2, arrVar2a: array [Boolean, 1..10] of real; 
-+    18      -56   arrVar3, arrVar3_: array [Boolean] of array [1..10] of Integer; 
-+    18   ****                    ^101,25^6
-+    19      -56   subarrVar3: array [1..10] of Integer; 
-+    20      -56   arrVar4: array [1..9, 10..19] of array [Boolean, subrangeType] of Integer; 
-+    21      -56  
-+    22      -56   arrEnum: array [weather] of weather; 
-+    23      -56   arrEnum2: array [weather] of (sunny1, cloudy1); 
-+    24      -56  
-+    25      -56   enum: weather; 
-+    26      -56   card: (heart, cube); 
-+    27      -56  
-+    28      -56   charArr : array [char] of Integer; 
-+    29      -56  
-+    30      -56 begin 
-+    31        3   x[0][1] := 100; 
-+    32       15   x[0, 2] := 1000; 
-+    33       25  
-+    34       25 {invalid scripting, pos 0 should be range of 0..100} 
-+    35       25   {got "int" expected "Array[1..50] Of int"} 
-+    36       25   x[101] := 100; 
-+    36   ****                  ^129
-+    37       30 end. 
-+a          unreferenced
-+arrEnum2   unreferenced
-+arrEnum    unreferenced
-+charArr    unreferenced
-+card       unreferenced
-+arrVar4    unreferenced
-+arrVar3    unreferenced
-+arrVar3    unreferenced
-+arrVar2a   unreferenced
-+arrVar2    unreferenced
-+arrVar     unreferenced
-+cube       unreferenced
-+heart      unreferenced
-+enum       unreferenced
-+cloudy1    unreferenced
-+subarrVar3 unreferenced
-+n          unreferenced
-+i          unreferenced
-+cloudy     unreferenced
-+sunny1     unreferenced
-+sunny      unreferenced
-+
-+
-+Errors in program: 4
-+
-+Error numbers in listing:
-+-------------------------
-+  6  Illegal symbol
-+ 25  Illegal source character
-+101  Identifier declared twice
-+129  Type conflict of operands
-+
-
-===Unmatched Source Name: ./test/arrayTestA021.pas===
---- ./test/arrayTestA021.pas.err	2022-03-21 02:33:22.189322900 +0000
-+++ ./test/arrayTestA021.pas.lst	2022-03-21 02:35:07.289034100 +0000
-@@ -1 +1,71 @@
--arrayTestA021.pas(34,10) Error: range check error while evaluating constants (0 must be between 1 and 50)
-+P5 Pascal compiler vs. 1.4
-+Pascal-P5 complies with the requirements of level 0 of ISO/IEC 7185.
-+
-+
-+     1      -56 {$mode iso} 
-+     2      -56 {$RANGECHECKS ON} 
-+     3      -56 program arrayTestA; 
-+     4      -56  
-+     5      -56 type 
-+     6      -56   weather = (sunny, cloudy); 
-+     7      -56   subrangeType = 1..50; 
-+     8      -56   array1dim = array ['a'..'e'] of integer; 
-+     9      -56   arrType = array [1..50] of Integer; 
-+    10      -56 var 
-+    11      -56   a: array1dim; 
-+    12      -56   i: char; 
-+    13      -56   n: integer; 
-+    14      -56   x: array [0..100] of array [1..50] of Integer; 
-+    15      -56   arrVar: arrType; 
-+    16      -56  
-+    17      -56   arrVar2, arrVar2a: array [Boolean, 1..10] of real; 
-+    18      -56   arrVar3, arrVar3_: array [Boolean] of array [1..10] of Integer; 
-+    18   ****                    ^101,25^6
-+    19      -56   subarrVar3: array [1..10] of Integer; 
-+    20      -56   arrVar4: array [1..9, 10..19] of array [Boolean, subrangeType] of Integer; 
-+    21      -56  
-+    22      -56   arrEnum: array [weather] of weather; 
-+    23      -56   arrEnum2: array [weather] of (sunny1, cloudy1); 
-+    24      -56  
-+    25      -56   enum: weather; 
-+    26      -56   card: (heart, cube); 
-+    27      -56  
-+    28      -56   charArr : array [char] of Integer; 
-+    29      -56  
-+    30      -56 begin 
-+    31        3   x[0][1] := 100; 
-+    32       15   x[0, 2] := 1000; 
-+    33       25  
-+    34       25   x[100][0] := 100;  {invalid scripting, pos 1 should be range of 1..50} 
-+    35       35 end. 
-+a          unreferenced
-+arrEnum2   unreferenced
-+arrEnum    unreferenced
-+charArr    unreferenced
-+card       unreferenced
-+arrVar4    unreferenced
-+arrVar3    unreferenced
-+arrVar3    unreferenced
-+arrVar2a   unreferenced
-+arrVar2    unreferenced
-+arrVar     unreferenced
-+cube       unreferenced
-+heart      unreferenced
-+enum       unreferenced
-+cloudy1    unreferenced
-+subarrVar3 unreferenced
-+n          unreferenced
-+i          unreferenced
-+cloudy     unreferenced
-+sunny1     unreferenced
-+sunny      unreferenced
-+
-+
-+Errors in program: 3
-+
-+Error numbers in listing:
-+-------------------------
-+  6  Illegal symbol
-+ 25  Illegal source character
-+101  Identifier declared twice
-+
-
-===Unmatched Source Name: ./test/arrayTestA022.pas===
---- ./test/arrayTestA022.pas.err	2022-03-21 02:33:22.254320300 +0000
-+++ ./test/arrayTestA022.pas.lst	2022-03-21 02:35:07.562144000 +0000
-@@ -1 +1,73 @@
--arrayTestA022.pas(32,17) Error: Can't read or write variables of this type
-+P5 Pascal compiler vs. 1.4
-+Pascal-P5 complies with the requirements of level 0 of ISO/IEC 7185.
-+
-+
-+     1      -56 program arrayTestA; 
-+     2      -56  
-+     3      -56 type 
-+     4      -56   weather = (sunny, cloudy); 
-+     5      -56   subrangeType = 1..50; 
-+     6      -56   array1dim = array ['a'..'e'] of integer; 
-+     7      -56   arrType = array [1..50] of Integer; 
-+     8      -56 var 
-+     9      -56   a: array1dim; 
-+    10      -56   i: char; 
-+    11      -56   n: integer; 
-+    12      -56   x: array [0..100] of array [1..50] of Integer; 
-+    13      -56   arrVar: arrType; 
-+    14      -56  
-+    15      -56   arrVar2, arrVar2a: array [Boolean, 1..10] of real; 
-+    16      -56   arrVar3, arrVar3_: array [Boolean] of array [1..10] of Integer; 
-+    16   ****                    ^101,25^6
-+    17      -56   subarrVar3: array [1..10] of Integer; 
-+    18      -56   arrVar4: array [1..9, 10..19] of array [Boolean, subrangeType] of Integer; 
-+    19      -56  
-+    20      -56   arrEnum: array [weather] of weather; 
-+    21      -56   arrEnum2: array [weather] of (sunny1, cloudy1); 
-+    22      -56  
-+    23      -56   enum: weather; 
-+    24      -56   card: (heart, cube); 
-+    25      -56  
-+    26      -56   charArr : array [char] of Integer; 
-+    27      -56  
-+    28      -56 begin 
-+    29        3   arrVar := x[0]; 
-+    29   ****                   ^129
-+    30       10  
-+    31       10   {cannot write directly, except for the packed char[] i.e. strings} 
-+    32       10   WriteLn(arrVar); 
-+    32   ****                   ^176,116
-+    33       15 end. 
-+a          unreferenced
-+arrEnum2   unreferenced
-+arrEnum    unreferenced
-+charArr    unreferenced
-+card       unreferenced
-+arrVar4    unreferenced
-+arrVar3    unreferenced
-+arrVar3    unreferenced
-+arrVar2a   unreferenced
-+arrVar2    unreferenced
-+cube       unreferenced
-+heart      unreferenced
-+enum       unreferenced
-+cloudy1    unreferenced
-+subarrVar3 unreferenced
-+n          unreferenced
-+i          unreferenced
-+cloudy     unreferenced
-+sunny1     unreferenced
-+sunny      unreferenced
-+
-+
-+Errors in program: 6
-+
-+Error numbers in listing:
-+-------------------------
-+  6  Illegal symbol
-+ 25  Illegal source character
-+101  Identifier declared twice
-+116  Error in type of standard procedure parameter
-+129  Type conflict of operands
-+176  Missing file "output" in program heading
-+

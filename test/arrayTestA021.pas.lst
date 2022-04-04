@@ -1,5 +1,0 @@
-./test/arrayTestA021.pas:1: warning: unknown compiler directive `mode iso'
-./test/arrayTestA021.pas:2: warning: unknown compiler directive `rangechecks on'
-./test/arrayTestA021.pas:18: warning: identifiers should not end with an underscore
-./test/arrayTestA021.pas: In main program:
-./test/arrayTestA021.pas:34: error: constant out of range

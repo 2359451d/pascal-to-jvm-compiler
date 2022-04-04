@@ -1,4 +1,0 @@
-./test/arrayTestA004.pas:1: warning: unknown compiler directive `mode iso'
-./test/arrayTestA004.pas:2: warning: unknown compiler directive `rangechecks on'
-./test/arrayTestA004.pas: In main program:
-./test/arrayTestA004.pas:30: error: type mismatch in array assignment

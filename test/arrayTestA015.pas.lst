@@ -1,5 +1,0 @@
-./test/arrayTestA015.pas:1: warning: unknown compiler directive `mode iso'
-./test/arrayTestA015.pas:2: warning: unknown compiler directive `rangechecks on'
-./test/arrayTestA015.pas:18: warning: identifiers should not end with an underscore
-./test/arrayTestA015.pas: In main program:
-./test/arrayTestA015.pas:32: error: incompatible types in assignment

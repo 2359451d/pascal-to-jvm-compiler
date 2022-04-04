@@ -2568,8 +2568,6 @@ public class PascalCheckerVisitor extends PascalBaseVisitor<TypeDescriptor> {
                 return ErrorType.INVALID_EXPRESSION;
             }
 
-            System.out.println("lType = " + lType);
-            System.out.println("rType = " + rType);
             // relational expression
             if (!lType.equiv(rType)) {
                 if (lType instanceof FloatBaseType || rType instanceof FloatBaseType) {

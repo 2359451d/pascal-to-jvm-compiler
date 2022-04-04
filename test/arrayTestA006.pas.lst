@@ -1,4 +1,0 @@
-./test/arrayTestA006.pas:1: warning: unknown compiler directive `mode iso'
-./test/arrayTestA006.pas:2: warning: unknown compiler directive `rangechecks on'
-./test/arrayTestA006.pas: In main program:
-./test/arrayTestA006.pas:30: error: constant out of range

@@ -1,4 +1,0 @@
-./test/arrayTestA022.pas:16: warning: identifiers should not end with an underscore
-./test/arrayTestA022.pas: In main program:
-./test/arrayTestA022.pas:29: error: type mismatch in array assignment
-./test/arrayTestA022.pas:32: error: argument to `WriteLn' is of wrong type

@@ -1,5 +1,0 @@
-./test/arrayTestA013.pas:1: warning: unknown compiler directive `mode iso'
-./test/arrayTestA013.pas:2: warning: unknown compiler directive `rangechecks on'
-./test/arrayTestA013.pas:18: warning: identifiers should not end with an underscore
-./test/arrayTestA013.pas: In main program:
-./test/arrayTestA013.pas:32: error: type mismatch in array index

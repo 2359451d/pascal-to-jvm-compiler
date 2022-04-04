@@ -1,4 +1,0 @@
-./test/arithOperator003.pas: In main program:
-./test/arithOperator003.pas:14: error: invalid operands to `mod'
-./test/arithOperator003.pas:14: error: invalid operands to `mod'
-./test/arithOperator003.pas:14: confused by earlier errors, bailing out

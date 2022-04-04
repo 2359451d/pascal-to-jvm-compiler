@@ -1,3 +1,0 @@
-./test/addAssignment002.pas: In main program:
-./test/addAssignment002.pas:12: error: only Pascal string type, array of char, and char type
-./test/addAssignment002.pas:12: error:  are assignment compatible with a string
